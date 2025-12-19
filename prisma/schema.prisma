@@ -1,0 +1,442 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Authentication & User Management
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  adminTheme    String    @default("minimalist-light")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  USER
+}
+
+model Account {
+  id                 String    @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   @db.Text
+  access_token       String?   @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?   @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Content Management
+model Page {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @db.Text
+  description String?
+  data        Json?                          // Structured data for different page types
+  isPublished Boolean  @default(false)
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("landing_pages")
+}
+
+model Article {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  content         String   @db.Text
+  excerpt         String?
+  image           String?
+  featuredImage   String?  // Featured image for detail page
+  category        String?
+  tags            String[] @default([])  // Array of tags
+  author          String?  // Author name
+  readTime        Int?     // Reading time in minutes
+  metaDescription String?  // SEO meta description
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  @@map("landing_articles")
+}
+
+model News {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @db.Text
+  excerpt     String?
+  image       String?
+  category    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@map("landing_news")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  image       String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("landing_events")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  galleries   Gallery[] @relation("GalleryToAlbum")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("landing_albums")
+}
+
+model Gallery {
+  id        String   @id @default(cuid())
+  title     String
+  image     String
+  albumId   String?  // Foreign key to Album
+  album     Album?   @relation("GalleryToAlbum", fields: [albumId], references: [id], onDelete: SetNull)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@map("landing_galleries")
+}
+
+model LandingSection {
+  id        String   @id @default(cuid())
+  slug      String   @unique // Changed: removed themeId, slug now globally unique
+  type      String   // Type: hero, stats, programs, philosophy, cta, about, etc.
+  title     String
+  subtitle  String?
+  body      String?  @db.Text
+  image     String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  metadata  String?  @db.Text // JSON for theme-specific customizations if needed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("landing_sections")
+}
+
+enum ApplicantStatus {
+  pending
+  review
+  accepted
+  rejected
+}
+
+model Applicant {
+  id             String          @id @default(cuid())
+  registrationCode String?        @unique // Auto-generated registration code
+  nik            String          @unique
+  phone          String
+  fullName       String
+  email          String?
+  schoolOrigin   String?
+  programChoice  String?
+  programId      String?
+  academicYearId String?
+  status         ApplicantStatus @default(pending)
+  submissionData Json?
+  notes          String?
+  handledBy      String?
+  profileCompleted Boolean       @default(false)
+  
+  // Personal Data
+  gender         String?
+  nisn           String?
+  noKK           String?
+  placeOfBirth   String?
+  dateOfBirth    DateTime?
+  nationality    String?
+  religion       String?
+  motherTongue   String?
+  address        String?
+  village        String?
+  district       String?
+  city           String?
+  province       String?
+  postalCode     String?
+  
+  // Father Data
+  fatherName     String?
+  fatherNik      String?
+  fatherBirthYear Int?
+  fatherEducation String?
+  fatherOccupation String?
+  fatherIncome   String?
+  
+  // Mother Data
+  motherName     String?
+  motherNik      String?
+  motherBirthYear Int?
+  motherEducation String?
+  motherOccupation String?
+  motherIncome   String?
+  
+  // Guardian Data
+  guardianName   String?
+  guardianNik    String?
+  guardianBirthYear Int?
+  guardianEducation String?
+  guardianOccupation String?
+  guardianIncome String?
+  
+  // Contact Data
+  mobile         String?
+  
+  // Student Details
+  livesWith      String?
+  weight         Float?
+  height         Float?
+  distanceToSchool Float?
+  transportationMode String?
+  anakKe         Int?
+  jumlahSaudara  Int?
+  
+  // Achievements
+  achievements   String?
+  
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  payments       ApplicantPayment[]
+  validations    ApplicantValidation[]
+  program        Program?         @relation(fields: [programId], references: [id])
+  academicYear   TahunAjaran?     @relation(fields: [academicYearId], references: [id])
+
+  @@index([programId])
+  @@index([academicYearId])
+}
+
+model ApplicantPayment {
+  id           String     @id @default(cuid())
+  applicantId  String
+  method       String
+  amount       Int
+  proofUrl     String?
+  status       String     @default("pending")
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  applicant    Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+}
+
+model ApplicantValidation {
+  id           String     @id @default(cuid())
+  applicantId  String
+  validatorId  String?
+  result       String     // valid/invalid/needs-info
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  applicant    Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+}
+
+model AdmissionLandingSetting {
+  id                  String   @id @default(cuid())
+  heroTitle           String
+  heroDescription     String?
+  isApplyFormEnabled  Boolean  @default(true)  // Enable/disable apply form di landing
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("admission_landing_settings")
+}
+
+model AdmissionRegistrationCodeSetting {
+  id              String   @id @default(cuid())
+  tahunAjaranId   String   @unique           // Foreign key ke tahun ajaran (satu setting per tahun)
+  prefix          String   @default("DAFTAR")  // Prefix (e.g., "DAFTAR")
+  suffix          String   @default("")        // Suffix (e.g., "-2024")
+  padLength       Int      @default(4)         // Number padding (1, 001, 0001, etc.)
+  includeYearCode Boolean  @default(true)      // Include academic year code
+  nextNumber      Int      @default(1)         // Next sequence number to use
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tahunAjaran     TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+
+  @@map("admission_registration_code_settings")
+  @@index([tahunAjaranId])
+}
+
+model Program {
+  id          String      @id @default(cuid())
+  name        String
+  code        String?
+  description String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  applicants  Applicant[]
+
+  @@map("programs")
+}
+
+model TahunAjaran {
+  id         String     @id @default(cuid())
+  label      String
+  yearCode   String?    // Year code for registration code generation (e.g., "24", "2425")
+  startDate  DateTime?
+  endDate    DateTime?
+  isActive   Boolean    @default(false)
+  registrationFee Int    @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  applicants                        Applicant[]
+  registrationCodeSetting           AdmissionRegistrationCodeSetting?
+
+  @@map("tahun_ajaran")
+  @@index([isActive])
+}
+
+// Faculty Management
+model Faculty {
+  id         String   @id @default(cuid())
+  name       String
+  position   String   // Jabatan: Kepala Sekolah, Guru, etc.
+  department String?  // Jurusan/Bidang: TKJ, Multimedia, etc.
+  image      String?  // Photo URL
+  email      String?
+  phone      String?
+  bio        String?  @db.Text
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("landing_faculty")
+}
+
+// Theme Configuration
+model ThemeConfig {
+  id              String   @id @default(cuid())
+  name            String   // Theme name (Academic Classic, Modern Vibrant, etc.)
+  themeId         String   @unique // academic-classic, modern-vibrant, minimalist-clean
+  isActive        Boolean  @default(false) // Only one theme can be active
+  
+  // Main Colors
+  primaryColor    String   @default("#001f3f")
+  secondaryColor  String   @default("#FFFFFF")
+  accentColor     String   @default("#FFD700")
+  
+  // Additional Colors
+  textColor       String   @default("#1f2937") // Body text color
+  borderColor     String   @default("#e5e7eb") // Border and divider color
+  grayColor       String   @default("#6b7280") // Subtle elements color
+  
+  // Typography
+  headingFont     String   @default("'Playfair Display', serif")
+  bodyFont        String   @default("Inter, sans-serif")
+  
+  // Logo
+  logoUrl         String?
+  customLogoUrl   String?
+  
+  // Default Colors Storage (for reset functionality)
+  defaultPrimaryColor    String   @default("#001f3f")
+  defaultSecondaryColor  String   @default("#FFFFFF")
+  defaultAccentColor     String   @default("#FFD700")
+  defaultTextColor       String   @default("#1f2937")
+  defaultBorderColor     String   @default("#e5e7eb")
+  defaultGrayColor       String   @default("#6b7280")
+  defaultHeadingFont     String   @default("'Playfair Display', serif")
+  defaultBodyFont        String   @default("Inter, sans-serif")
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("landing_theme_configs")
+}
+
+// Media Management
+model Media {
+  id          String   @id @default(cuid())
+  title       String?
+  description String?
+  url         String   // Cloudinary URL
+  publicId    String   @unique // Cloudinary public ID for deletion
+  type        String   // image, video, raw
+  folder      String?  // Cloudinary folder path
+  size        Int?     // File size in bytes
+  width       Int?     // Image/video width
+  height      Int?     // Image/video height
+  format      String?  // jpg, png, mp4, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("landing_media")
+}

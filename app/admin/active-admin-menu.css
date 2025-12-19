@@ -1,0 +1,6 @@
+/* Custom class for active admin menu using theme variables */
+.active-admin-menu {
+  background-color: var(--sidebar-accent) !important;
+  color: var(--sidebar-accent-foreground) !important;
+  transition: background 0.2s, color 0.2s;
+}

@@ -1,0 +1,68 @@
+:root {
+  /* Academic Classic Theme Variables */
+  --ac-primary: #001f3f; /* Navy Blue */
+  --ac-secondary: #ffd700; /* Gold */
+  --ac-accent: #ffffff;
+  --ac-text: #1e293b;
+  --ac-background: #ffffff;
+
+  /* Modern Vibrant Theme Variables */
+  --mv-primary: #06b6d4; /* Cyan */
+  --mv-secondary: #f97316; /* Orange */
+  --mv-accent: #a855f7; /* Purple */
+  --mv-text: #1e293b;
+  --mv-background: #f8fafc;
+
+  /* Minimalist Clean Theme Variables */
+  --mc-primary: #0f172a; /* Slate 900 */
+  --mc-secondary: #64748b; /* Slate 500 */
+  --mc-accent: #e2e8f0; /* Slate 200 */
+  --mc-text: #1e293b;
+  --mc-background: #ffffff;
+}
+
+/* Dynamic Theme Classes */
+[data-theme='academic-classic'] {
+  --theme-primary: var(--ac-primary);
+  --theme-secondary: var(--ac-secondary);
+  --theme-accent: var(--ac-accent);
+  --theme-text: var(--ac-text);
+  --theme-background: var(--ac-background);
+}
+
+[data-theme='modern-vibrant'] {
+  --theme-primary: var(--mv-primary);
+  --theme-secondary: var(--mv-secondary);
+  --theme-accent: var(--mv-accent);
+  --theme-text: var(--mv-text);
+  --theme-background: var(--mv-background);
+}
+
+[data-theme='minimalist-clean'] {
+  --theme-primary: var(--mc-primary);
+  --theme-secondary: var(--mc-secondary);
+  --theme-accent: var(--mc-accent);
+  --theme-text: var(--mc-text);
+  --theme-background: var(--mc-background);
+}
+
+/* Apply theme variables */
+.theme-bg-primary {
+  background-color: var(--theme-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--theme-secondary);
+}
+
+.theme-text-primary {
+  color: var(--theme-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-secondary);
+}
+
+.theme-border-primary {
+  border-color: var(--theme-primary);
+}
