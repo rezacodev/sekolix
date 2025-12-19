@@ -75,128 +75,104 @@ Akses admin panel di [http://localhost:3000/admin](http://localhost:3000/admin)
 - Email notifications
 
 ### 📅 Planned
-- Landing page themes (3 variants)
-- SEO optimization
-- Multi-language support
+ # Sekolix
 
-## 🛠️ Tech Stack
+Sekolix adalah proyek open-source untuk membantu sekolah-sekolah di Indonesia melakukan digitalisasi dengan mudah, lengkap, terintegrasi penuh, dan murah (bahkan gratis).
 
-- **Framework**: Next.js 14+ (App Router)
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: NextAuth.js
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui + Radix UI
-- **Forms**: React Hook Form + Zod
-- **Rich Text**: Tiptap
-- **Tables**: TanStack Table
+## Daftar Isi
+- [Tentang Proyek](#tentang-proyek)
+- [Fitur Utama](#fitur-utama)
+- [Kondisi Saat Ini](#kondisi-saat-ini)
+- [Persiapan & Jalankan](#persiapan--jalankan)
+- [Struktur Proyek](#struktur-proyek)
+- [Dokumentasi](#dokumentasi)
+- [Kontribusi](#kontribusi)
+- [Lisensi](#lisensi)
+- [Kontak](#kontak)
 
-## 📁 Project Structure
+## Tentang Proyek
+
+Sekolix membantu sekolah mengelola website, konten, dan proses penerimaan siswa secara digital. Dibangun dengan Next.js, Prisma, dan PostgreSQL.
+
+## Fitur Utama
+
+- Autentikasi dan manajemen user (role-based)
+- Panel admin untuk mengelola konten (artikel, berita, event, halaman)
+- Modul penerimaan siswa (registrasi, validasi, pembayaran)
+- Galeri dan album foto
+- Multi-theme landing pages (beberapa tema tersedia, pengaturan tema masih disempurnakan)
+
+## Kondisi Saat Ini
+
+- Nama proyek di `package.json`: `sekolix`.
+- Tidak ditemukan referensi nama lama `sekokit` di repo.
+- Dev server dapat dijalankan secara lokal (`npm run dev`) dan aplikasi menyajikan halaman serta API (telah diuji singkat).
+- Prisma sudah dikonfigurasi dan ada skema serta migration/seed (lihat folder `prisma/`).
+- Beberapa fitur admin dan modul penerimaan siswa sudah berfungsi; tema landing page dan manajemen media masih dalam pengembangan.
+
+## Persiapan & Jalankan
+
+Persiapan singkat untuk development:
+
+```bash
+# Pasang dependensi
+npm install
+
+# Salin contoh environment dan sesuaikan
+cp .env.example .env.local
+# Edit .env.local (DATABASE_URL, NEXTAUTH_SECRET, dll.)
+
+# Generate Prisma client dan push schema
+npx prisma generate
+npx prisma db push
+
+# (Opsional) Seed data
+npm run prisma:seed
+
+# Jalankan development server
+npm run dev
+```
+
+Buka http://localhost:3000 untuk melihat aplikasi. Admin ada di `/admin`.
+
+Catatan singkat: saat pengujian, server development berjalan. Beberapa gambar remote mungkin mengembalikan 404 — ini bukan kegagalan build.
+
+## Struktur Proyek (singkat)
 
 ```
 sekolix/
-├── app/                    # Next.js app directory
-│   ├── (public)/          # Public pages
-│   ├── admin/             # Admin panel pages
-│   └── api/               # API routes
-├── src/
-│   ├── components/        # Reusable components
-│   ├── lib/              # Utilities & configurations
-│   └── types/            # TypeScript types
-├── prisma/               # Database schema
-├── doc/                  # 📚 Documentation
-│   ├── phase1/          # Phase 1 docs
-│   ├── phase2/          # Phase 2 docs
-│   ├── guides/          # Tutorials
-│   └── checklists/      # Scripts & checklists
-├── public/              # Static files
-├── SPEC.md             # System specification
-└── TODO.md             # Task tracking
+├─ app/            # Next.js app (halaman & api)
+├─ src/            # Komponen, hooks, lib
+├─ prisma/         # Schema & migration
+├─ public/         # Static assets
+├─ doc/            # Dokumentasi proyek (catatan development)
+├─ package.json
+└─ README.md
 ```
 
-## 🔧 Development
+## Dokumentasi
 
-### Running Tests
-```bash
-npm run test          # Run tests
-npm run test:watch    # Watch mode
-```
+Dokumentasi internal dan catatan ada di folder `doc/`.
 
-### Database Commands
-```bash
-npx prisma studio     # Open Prisma Studio
-npx prisma migrate dev  # Create migration
-npx prisma db push    # Push schema changes
-npx prisma generate   # Generate client
-```
+## Kontribusi
 
-### Code Quality
-```bash
-npm run lint          # Run ESLint
-npm run format        # Format with Prettier
-```
+1. Fork repo ini
+2. Buat branch fitur: `git checkout -b feature/nama-fitur`
+3. Commit perubahan: `git commit -m "Add: ..."`
+4. Push dan buat Pull Request
 
-## 📖 Learn More
+Terima kontribusi dari siapa saja — silakan ikuti panduan coding di `doc/`.
 
-### Next.js Resources
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Learn Next.js](https://nextjs.org/learn)
-- [Next.js GitHub](https://github.com/vercel/next.js)
+## Lisensi
 
-### Project Documentation
-- **Quick Reference**: [`doc/guides/QUICK_REFERENCE.md`](doc/guides/QUICK_REFERENCE.md)
-- **Implementation Guides**: [`doc/phase2/`](doc/phase2/)
-- **Full Documentation**: [`doc/INDEX.md`](doc/INDEX.md)
+Proyek ini open-source. Tambahkan file LICENSE sesuai kebijakan (mis. MIT) jika belum ada.
 
-## 🚀 Deployment
+## Kontak
 
-### Vercel (Recommended)
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-```
-
-### Environment Variables
-Pastikan set di production:
-- `DATABASE_URL`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL`
-- `CLOUDINARY_*` (jika menggunakan Cloudinary)
-
-Lihat deployment guide lengkap di [Next.js Deployment](https://nextjs.org/docs/app/building-your-application/deploying)
-
-## 📊 Progress
-
-- **Phase 1**: ✅ Complete (Setup & Infrastructure)
-- **Phase 2**: 🚧 In Progress (Admin Panel - 20/XX tasks)
-- **Phase 3**: 📅 Planned (Landing Page Themes)
-- **Phase 4**: 📅 Planned (Feature Development)
-- **Phase 5**: 📅 Planned (Testing & Deployment)
-
-Lihat detail di [`TODO.md`](TODO.md)
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👥 Team
-
-- **Developer**: [Your Name]
-- **Designer**: [Designer Name]
+Jika butuh bantuan atau ingin kontribusi, buka isu (Issue) di repository atau hubungi pemilik proyek.
 
 ---
 
-**Last Updated**: December 9, 2025  
-**Version**: 1.3.0 (Phase 2 - Admin Panel)
+**Last Updated**: December 19, 2025
+Catatan singkat: saat pengujian, server development berjalan. Beberapa gambar remote mungkin mengembalikan 404 — ini bukan kegagalan build.
 
