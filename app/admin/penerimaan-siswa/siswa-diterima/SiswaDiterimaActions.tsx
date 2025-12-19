@@ -4,6 +4,15 @@ import { useState, useEffect } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 interface ApplicantRow {
   id: string;
@@ -39,7 +48,6 @@ export default function SiswaDiterimaActions() {
           return;
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error('Failed to fetch years', err);
       }
       await fetchItems({});
@@ -53,7 +61,6 @@ export default function SiswaDiterimaActions() {
           setPrograms(data || []);
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error('Failed to fetch programs', err);
       }
     })();
@@ -84,7 +91,6 @@ export default function SiswaDiterimaActions() {
       const accepted = data.filter((a) => a.status === 'accepted');
       setItems(accepted);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('Failed to fetch applicants', err);
       setItems([]);
     } finally {
@@ -111,11 +117,61 @@ export default function SiswaDiterimaActions() {
   };
 
   const columns: ColumnDef<ApplicantRow, unknown>[] = [
-    { accessorKey: 'registrationCode', header: 'Kode' },
+    {
+      accessorKey: 'registrationCode',
+      header: 'Kode',
+      cell: ({ row }) => {
+        const code = row.getValue('registrationCode') as string | null;
+        return code ? (
+          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">{code}</code>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        );
+      },
+    },
     { accessorKey: 'fullName', header: 'Nama' },
     { accessorFn: (row) => row.program?.name ?? '', id: 'program', header: 'Program' },
     { accessorFn: (row) => row.academicYear?.label ?? '', id: 'academicYear', header: 'Tahun Ajaran' },
-    { accessorKey: 'status', header: 'Status' },
+    {
+      id: 'actions',
+      header: 'Aksi',
+      cell: ({ row }) => {
+        const applicant = row.original as ApplicantRow;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem onClick={async () => {
+                try {
+                  const params = new URLSearchParams();
+                  params.set('applicantId', applicant.id);
+                  const res = await fetch(`/api/admin/penerimaan-siswa/export/biodata?${params.toString()}`);
+                  if (!res.ok) throw new Error('Gagal membuat biodata');
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${applicant.registrationCode ?? applicant.id}_biodata.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  alert('Gagal mencetak biodata');
+                }
+              }}>Cetak Biodata</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
   ];
 
   return (
@@ -199,7 +255,6 @@ export default function SiswaDiterimaActions() {
                 a.remove();
                 URL.revokeObjectURL(url);
               } catch (err) {
-                // eslint-disable-next-line no-console
                 console.error(err);
                 alert('Gagal mendownload PDF');
               }
@@ -228,7 +283,6 @@ export default function SiswaDiterimaActions() {
                 a.remove();
                 URL.revokeObjectURL(url);
               } catch (err) {
-                // eslint-disable-next-line no-console
                 console.error(err);
                 alert('Gagal mendownload Excel');
               }

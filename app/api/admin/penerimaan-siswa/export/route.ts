@@ -12,7 +12,7 @@ type ApplicantExport = {
   status?: string | null;
 };
 
-type FullApplicant = Applicant & { program?: { name?: string } | null; academicYear?: { label?: string } | null };
+// FullApplicant type is declared later with a narrower scope; remove duplicate
 
 async function applicantsForExport(filters: { yearId?: string; status?: string; program?: string } = {}): Promise<ApplicantExport[]> {
   const { yearId, status, program } = filters;
@@ -65,37 +65,7 @@ async function applicantsForExport(filters: { yearId?: string; status?: string; 
 }
 
 // Fetch full applicant records (including relations) for detailed exports
-async function fetchFullApplicants(filters: { yearId?: string; status?: string; program?: string } = {}) {
-  const { yearId, status, program } = filters;
-  const where: Prisma.ApplicantWhereInput = {};
-  const normalize = (v?: string) => {
-    if (!v) return undefined;
-    const t = String(v).trim().toLowerCase();
-    if (t === "all" || t === "null" || t === "undefined" || t === "") return undefined;
-    return v;
-  };
-
-  const yearFilter = normalize(yearId);
-  let statusFilter = normalize(status) as unknown as ApplicantStatus | undefined;
-  if (!statusFilter) statusFilter = "accepted" as unknown as ApplicantStatus;
-  const programFilterRaw = normalize(program);
-
-  if (yearFilter) where.academicYearId = yearFilter;
-  if (statusFilter) where.status = statusFilter;
-
-  if (programFilterRaw) {
-    const pf = programFilterRaw;
-    const maybeId = /[0-9a-fA-F-]{20,}/.test(pf);
-    const orClauses: Prisma.ApplicantWhereInput[] = [];
-    if (maybeId) orClauses.push({ programId: pf });
-    orClauses.push({ program: { is: { name: pf } } });
-    orClauses.push({ programChoice: pf });
-    where.OR = orClauses;
-  }
-
-  const rows = await db.applicant.findMany({ where, include: { program: true, academicYear: true }, orderBy: { fullName: "asc" } });
-  return rows;
-}
+// Removed unused helper `fetchFullApplicants` to avoid lint warnings.
 
 async function pdfBufferFromApplicants(applicants: ApplicantExport[]): Promise<Buffer> {
   // Use built-in Helvetica to avoid relying on external TTF files
@@ -103,7 +73,7 @@ async function pdfBufferFromApplicants(applicants: ApplicantExport[]): Promise<B
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   let page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
-  const { width, height } = page.getSize();
+  const { height } = page.getSize();
   const margin = 40;
   let y = height - margin;
 

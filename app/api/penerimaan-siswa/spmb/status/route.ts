@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         fullName: true,
         nik: true,
         phone: true,
+        email: true,
         programChoice: true,
         status: true,
         notes: true,
@@ -66,7 +67,19 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             label: true,
+            registrationFee: true,
           },
+        },
+        payments: {
+          select: {
+            id: true,
+            method: true,
+            amount: true,
+            status: true,
+            proofUrl: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
         },
       },
     });
@@ -78,9 +91,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // compute payment summary
+    let registrationFee = 0;
+    if (applicant?.academicYear?.registrationFee) {
+      registrationFee = Number(applicant.academicYear.registrationFee || 0);
+    }
+
+    type ApplicantPayment = {
+      id: string;
+      method?: string | null;
+      amount: number | string;
+      status?: string | null;
+      proofUrl?: string | null;
+      createdAt: Date;
+    };
+
+    const payments = (applicant?.payments ?? []) as ApplicantPayment[];
+    const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
     return NextResponse.json({
       status: "ok",
       applicant,
+      billing: {
+        registrationFee,
+        totalPaid,
+        remaining: Math.max(0, registrationFee - totalPaid),
+        payments,
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

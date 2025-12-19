@@ -198,7 +198,14 @@ export default function PembayaranActions() {
     {
       accessorKey: "registrationCode",
       header: "Kode",
-      cell: ({ row }) => row.original.registrationCode ?? "-",
+      cell: ({ row }) => {
+        const code = row.original.registrationCode ?? null;
+        return code ? (
+          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">{code}</code>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        );
+      },
     },
     {
       accessorKey: "fullName",

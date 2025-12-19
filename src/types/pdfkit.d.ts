@@ -1,4 +1,4 @@
 declare module "pdfkit" {
-  const content: any;
+  const content: unknown;
   export default content;
 }
