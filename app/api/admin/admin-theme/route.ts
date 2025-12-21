@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
+// Note: import `db` dynamically inside handlers to avoid initializing PrismaClient
+// during Next.js build on platforms like Vercel where DATABASE_URL may be unavailable
+// at build time.
 
 const ALLOWED_THEMES = [
   "classic-light",
@@ -17,6 +19,8 @@ export async function GET() {
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { db } = await import("@/lib/db");
 
     const user = await db.user.findUnique({
       where: { email: session.user.email },
@@ -47,6 +51,8 @@ export async function POST(req: Request) {
     if (!adminTheme || !ALLOWED_THEMES.includes(adminTheme)) {
       return NextResponse.json({ error: "Invalid theme" }, { status: 400 });
     }
+
+    const { db } = await import("@/lib/db");
 
     const updated = await db.user.update({
       where: { email: session.user.email },
