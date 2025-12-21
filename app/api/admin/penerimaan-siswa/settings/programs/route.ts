@@ -3,11 +3,30 @@ import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const programs = await db.program.findMany({
-      orderBy: { name: "asc" },
-    });
+    const url = new URL(request.url);
+    const page = url.searchParams.get("page");
+    const pageSize = Number(url.searchParams.get("pageSize") || "10");
+    const search = url.searchParams.get("search") || "";
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { code: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (page !== null) {
+      const p = Number(page || 0);
+      const skip = p * pageSize;
+      const totalCount = await db.program.count({ where });
+      const items = await db.program.findMany({ where, orderBy: { name: "asc" }, skip, take: pageSize });
+      return NextResponse.json({ items, totalCount, page: p, pageSize });
+    }
+
+    const programs = await db.program.findMany({ orderBy: { name: "asc" } });
     return NextResponse.json(programs);
   } catch (error) {
     console.error("Error fetching programs:", error);

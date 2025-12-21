@@ -11,20 +11,36 @@ export default function PageActions() {
   const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
-    fetchPages();
-  }, []);
+    void fetchPages(pageIndex, pageSize, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, pageSize, search]);
 
-  const fetchPages = async () => {
+  const fetchPages = async (p = 0, ps = 10, s = "") => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/website-landing/pages");
-      if (response.ok) {
-        const data = await response.json();
-        setPages(data);
+      const q = new URLSearchParams({ page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/website-landing/pages?${q.toString()}`);
+      if (!res.ok) {
+        setPages([]);
+        setTotalCount(0);
+        return;
       }
+      const data = await res.json();
+      setPages(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? p);
+      setPageSize(data.pageSize ?? ps);
     } catch (error) {
       console.error("Error fetching pages:", error);
+      setPages([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +58,7 @@ export default function PageActions() {
       });
 
       if (response.ok) {
-        fetchPages();
+        void fetchPages(pageIndex, pageSize, search);
         setConfirmDelete(null);
       } else {
         const error = await response.json();
@@ -104,6 +120,13 @@ export default function PageActions() {
           data={pages}
           searchKey="title"
           filterConfig={filterConfig}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => setPageIndex(p)}
+          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); }}
+          onSearchChange={(v) => { setSearch(v); setPageIndex(0); }}
         />
       )}
       <ConfirmDialog

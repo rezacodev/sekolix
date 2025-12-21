@@ -33,6 +33,10 @@ export default function SiswaDiterimaActions() {
   // use 'all' as explicit sentinel for no-filter so Select changes reliably
   const [selectedProgram, setSelectedProgram] = useState<string | null>("all");
   const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -71,7 +75,8 @@ export default function SiswaDiterimaActions() {
     setIsLoading(true);
     try {
       const url = new URL('/api/admin/penerimaan-siswa/applicant', window.location.origin);
-      // If the caller provided the key in opts, use that value (even if null)
+      // server-side: request accepted applicants only
+      url.searchParams.set('status', 'accepted');
       const yearToUse = Object.prototype.hasOwnProperty.call(opts, 'yearId') ? opts.yearId : selectedYear;
       if (yearToUse) url.searchParams.set('yearId', yearToUse);
 
@@ -82,14 +87,28 @@ export default function SiswaDiterimaActions() {
         url.searchParams.set('program', selectedProgram);
       }
 
+      // pagination params
+      url.searchParams.set('page', String(pageIndex));
+      url.searchParams.set('pageSize', String(pageSize));
+      if (search) url.searchParams.set('search', search);
+
       const res = await fetch(url.toString());
       if (!res.ok) {
         setItems([]);
+        setTotalCount(0);
         return;
       }
-      const data = (await res.json()) as ApplicantRow[];
-      const accepted = data.filter((a) => a.status === 'accepted');
-      setItems(accepted);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        // legacy fallback
+        setItems((data as ApplicantRow[]).filter((a) => a.status === 'accepted'));
+        setTotalCount((data as ApplicantRow[]).length);
+      } else {
+        setItems(data.items || []);
+        setTotalCount(data.totalCount ?? 0);
+        setPageIndex(data.page ?? pageIndex);
+        setPageSize(data.pageSize ?? pageSize);
+      }
     } catch (err) {
       console.error('Failed to fetch applicants', err);
       setItems([]);
@@ -298,7 +317,18 @@ export default function SiswaDiterimaActions() {
       {isLoading ? (
         <div className="text-center py-10">Memuat...</div>
       ) : (
-        <DataTable<ApplicantRow, unknown> columns={columns} data={items} searchKey="fullName" />
+        <DataTable<ApplicantRow, unknown>
+          columns={columns}
+          data={items}
+          searchKey="fullName"
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => { setPageIndex(p); void fetchItems({ yearId: selectedYear }); }}
+          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); void fetchItems({ yearId: selectedYear }); }}
+          onSearchChange={(v) => { setSearch(v); setPageIndex(0); void fetchItems({ yearId: selectedYear, program: selectedProgram }); }}
+        />
       )}
     </div>
   );

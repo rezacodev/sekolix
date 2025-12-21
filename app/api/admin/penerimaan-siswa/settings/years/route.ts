@@ -3,11 +3,27 @@ import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const years = await db.tahunAjaran.findMany({
-      orderBy: { startDate: "desc" },
-    });
+    const url = new URL(request.url);
+    const page = url.searchParams.get("page");
+    const pageSize = Number(url.searchParams.get("pageSize") || "10");
+    const search = url.searchParams.get("search") || "";
+
+    const where: any = {};
+    if (search) {
+      where.label = { contains: search, mode: "insensitive" };
+    }
+
+    if (page !== null) {
+      const p = Number(page || 0);
+      const skip = p * pageSize;
+      const totalCount = await db.tahunAjaran.count({ where });
+      const items = await db.tahunAjaran.findMany({ where, orderBy: { startDate: "desc" }, skip, take: pageSize });
+      return NextResponse.json({ items, totalCount, page: p, pageSize });
+    }
+
+    const years = await db.tahunAjaran.findMany({ where, orderBy: { startDate: "desc" } });
     return NextResponse.json(years);
   } catch (error) {
     console.error("Error fetching years:", error);

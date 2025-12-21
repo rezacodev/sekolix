@@ -14,24 +14,39 @@ export default function EventActions() {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    void fetchEvents(pageIndex, pageSize, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, pageSize, search]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (p = 0, ps = 10, s = "") => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/website-landing/events");
-      if (response.ok) {
-        const data = await response.json();
-        setEvents(data);
-      } else {
+      const q = new URLSearchParams({ page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/website-landing/events?${q.toString()}`);
+      if (!res.ok) {
         toast.error("Gagal memuat acara");
+        setEvents([]);
+        setTotalCount(0);
+        return;
       }
+      const data = await res.json();
+      setEvents(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? p);
+      setPageSize(data.pageSize ?? ps);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast.error("Terjadi kesalahan saat memuat acara");
+      setEvents([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +65,7 @@ export default function EventActions() {
 
       if (response.ok) {
         toast.success("Acara berhasil dihapus");
-        fetchEvents();
+        void fetchEvents(pageIndex, pageSize, search);
         setConfirmDelete(null);
       } else {
         const data = await response.json();
@@ -89,6 +104,13 @@ export default function EventActions() {
           columns={createColumns({ onDelete: handleDelete, onEdit: handleEdit })}
           data={events}
           searchKey="title"
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => setPageIndex(p)}
+          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); }}
+          onSearchChange={(v) => { setSearch(v); setPageIndex(0); }}
         />
       )}
       <ConfirmDialog

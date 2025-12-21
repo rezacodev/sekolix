@@ -14,24 +14,40 @@ export default function NewsActions() {
   const router = useRouter();
   const [news, setNews] = useState<News[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchNews();
-  }, []);
+    void fetchNews(pageIndex, pageSize, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, pageSize, search]);
 
-  const fetchNews = async () => {
+  const fetchNews = async (p = 0, ps = 10, s = "") => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/website-landing/news");
-      if (response.ok) {
-        const data = await response.json();
-        setNews(data);
-      } else {
+      const q = new URLSearchParams({ page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/website-landing/news?${q.toString()}`);
+      if (!res.ok) {
         toast.error("Gagal memuat berita");
+        setNews([]);
+        setTotalCount(0);
+        return;
       }
+      const data = await res.json();
+      // data: { items, totalCount, page, pageSize }
+      setNews(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? p);
+      setPageSize(data.pageSize ?? ps);
     } catch (error) {
       console.error("Error fetching news:", error);
       toast.error("Terjadi kesalahan saat memuat berita");
+      setNews([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +66,7 @@ export default function NewsActions() {
 
       if (response.ok) {
         toast.success("Berita berhasil dihapus");
-        fetchNews();
+        void fetchNews(pageIndex, pageSize, search);
         setConfirmDelete(null);
       } else {
         const data = await response.json();
@@ -111,6 +127,13 @@ export default function NewsActions() {
           data={news}
           searchKey="title"
           filterConfig={filterConfig}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => setPageIndex(p)}
+          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); }}
+          onSearchChange={(v) => { setSearch(v); setPageIndex(0); }}
         />
       )}
       <ConfirmDialog

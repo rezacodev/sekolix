@@ -45,6 +45,14 @@ interface DataTableProps<TData, TValue> {
   enableRowOrdering?: boolean;
   onReorder?: (data: TData[]) => void;
   getRowId?: (originalRow: TData, index: number) => string;
+  // Server-side mode
+  serverSide?: boolean;
+  totalCount?: number;
+  pageIndex?: number;
+  pageSize?: number;
+  onPageChange?: (pageIndex: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  onSearchChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -56,11 +64,19 @@ export function DataTable<TData, TValue>({
   enableRowOrdering = false,
   onReorder,
   getRowId,
+  serverSide = false,
+  totalCount,
+  pageIndex = 0,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
+  onSearchChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [localSearch, setLocalSearch] = React.useState("");
   // Memoize columns and data to provide stable references to the table instance
   const memoColumns = React.useMemo(() => columns, [columns]);
   const memoData = React.useMemo(() => data, [data]);
@@ -93,6 +109,18 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
+    manualPagination: serverSide,
+    pageCount: serverSide && totalCount ? Math.ceil(totalCount / pageSize) : undefined,
+    onPaginationChange: (updater) => {
+      // updater can be an object or function
+      const next = typeof updater === "function" ? updater(table.getState().pagination) : updater;
+      if (serverSide && onPageChange) {
+        onPageChange(next.pageIndex ?? 0);
+      }
+      if (!serverSide) {
+        // default react table behavior handled internally
+      }
+    },
   });
 
   const moveItem = React.useCallback((list: TData[], from: number, to: number) => {
@@ -123,10 +151,16 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
-              value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn(searchKey)?.setFilterValue(event.target.value)
-              }
+              value={serverSide ? localSearch : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? "")}
+              onChange={(event) => {
+                const v = event.target.value;
+                if (serverSide) {
+                  setLocalSearch(v);
+                  onSearchChange?.(v);
+                } else {
+                  table.getColumn(searchKey)?.setFilterValue(v);
+                }
+              }}
               className="pl-8"
             />
           </div>
@@ -254,22 +288,34 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <select
-              value={table.getState().pagination.pageSize}
+              value={serverSide ? pageSize : table.getState().pagination.pageSize}
               onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
+                const newSize = Number(e.target.value);
+                if (serverSide) {
+                  onPageSizeChange?.(newSize);
+                } else {
+                  table.setPageSize(newSize);
+                }
               }}
               className="h-8 w-[70px] rounded-md border border-input bg-background px-2 py-1 text-sm"
             >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
+              {[10, 20, 30, 40, 50].map((ps) => (
+                <option key={ps} value={ps}>
+                  {ps}
                 </option>
               ))}
             </select>
           </div>
           <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {serverSide ? (
+              <>
+                Page {pageIndex + 1} of {totalCount ? Math.max(1, Math.ceil(totalCount / pageSize)) : 1}
+              </>
+            ) : (
+              <>
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              </>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Button

@@ -37,6 +37,10 @@ export function ProgramsSettingsClient({
   const [programs, setPrograms] = useState<Program[]>(initialPrograms);
   const [isLoading, setIsLoading] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
 
   // Modal state for add/edit
   const [open, setOpen] = useState(false);
@@ -46,12 +50,24 @@ export function ProgramsSettingsClient({
   const [description, setDescription] = useState("");
 
   const refreshPrograms = useCallback(async () => {
-    const res = await fetch("/api/admin/penerimaan-siswa/settings/programs");
+    const url = new URL("/api/admin/penerimaan-siswa/settings/programs", window.location.origin);
+    url.searchParams.set("page", String(pageIndex));
+    url.searchParams.set("pageSize", String(pageSize));
+    if (search) url.searchParams.set("search", search);
+    const res = await fetch(url.toString());
     if (res.ok) {
       const data = await res.json();
-      setPrograms(data);
+      if (Array.isArray(data)) {
+        setPrograms(data);
+        setTotalCount(undefined);
+      } else {
+        setPrograms(data.items || []);
+        setTotalCount(typeof data.totalCount === "number" ? data.totalCount : undefined);
+        setPageIndex(typeof data.page === "number" ? data.page : pageIndex);
+        setPageSize(typeof data.pageSize === "number" ? data.pageSize : pageSize);
+      }
     }
-  }, []);
+  }, [pageIndex, pageSize, search]);
 
   const openAdd = () => {
     setEditing(null);
@@ -175,7 +191,27 @@ export function ProgramsSettingsClient({
       </div>
 
       <div>
-        <DataTable columns={columns} data={programs} />
+        <DataTable
+          columns={columns}
+          data={programs}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => {
+            setPageIndex(p);
+            void refreshPrograms();
+          }}
+          onPageSizeChange={(ps) => {
+            setPageSize(ps);
+            void refreshPrograms();
+          }}
+          onSearchChange={(s) => {
+            setSearch(s);
+            setPageIndex(0);
+            void refreshPrograms();
+          }}
+        />
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

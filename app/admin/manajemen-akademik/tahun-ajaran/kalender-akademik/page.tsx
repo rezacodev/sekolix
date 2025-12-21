@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import KalenderClient from "./KalenderClient";
 
-export const revalidate = 0;
+// Allow short ISR to reduce DB load on Vercel+Neon deployments
+export const revalidate = 60;
 
 export default async function KalenderAkademikPage() {
   const years = await db.tahunAjaran.findMany({ orderBy: { startDate: "desc" } });

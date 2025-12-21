@@ -9,20 +9,37 @@ import { createColumns, Faculty } from "./columns";
 export default function FacultyActions() {
   const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFaculty();
+    void fetchFaculty();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchFaculty = async () => {
+  const fetchFaculty = async (p = pageIndex, ps = pageSize, s = search) => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/admin/website-landing/faculty");
+      const url = new URL("/api/admin/website-landing/faculty", window.location.origin);
+      url.searchParams.set("page", String(p));
+      url.searchParams.set("pageSize", String(ps));
+      if (s) url.searchParams.set("search", s);
+      const res = await fetch(url.toString());
       if (res.ok) {
         const data = await res.json();
-        setFaculty(data);
+        if (Array.isArray(data)) {
+          setFaculty(data);
+          setTotalCount(undefined);
+        } else {
+          setFaculty(data.items || []);
+          setTotalCount(typeof data.totalCount === "number" ? data.totalCount : undefined);
+          setPageIndex(typeof data.page === "number" ? data.page : p);
+          setPageSize(typeof data.pageSize === "number" ? data.pageSize : ps);
+        }
       }
     } catch (error) {
       console.error("Error fetching faculty:", error);
@@ -44,7 +61,7 @@ export default function FacultyActions() {
       });
 
       if (res.ok) {
-        fetchFaculty();
+        void fetchFaculty(pageIndex, pageSize, search);
       } else {
         const data = await res.json();
         setError(data?.error || "Gagal menghapus data");
@@ -103,6 +120,16 @@ export default function FacultyActions() {
           data={faculty}
           searchKey="name"
           filterConfig={filterConfig}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => void fetchFaculty(p, pageSize, search)}
+          onPageSizeChange={(ps) => void fetchFaculty(0, ps, search)}
+          onSearchChange={(s) => {
+            setSearch(s);
+            void fetchFaculty(0, pageSize, s);
+          }}
         />
       )}
 

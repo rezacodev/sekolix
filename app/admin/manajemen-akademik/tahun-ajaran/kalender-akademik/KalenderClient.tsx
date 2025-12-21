@@ -18,7 +18,29 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 type Year = { id: string; name: string; start?: string; end?: string };
 type EventItem = { id: string; title: string; description?: string; startDate: string; endDate?: string };
 
-function EventTable({ events, onDeleteRequested, onEdit }: { events: EventItem[]; onDeleteRequested: (id: string) => void; onEdit: (ev: EventItem) => void }) {
+function EventTable({
+  events,
+  onDeleteRequested,
+  onEdit,
+  serverSide,
+  totalCount,
+  pageIndex,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  onSearchChange,
+}: {
+  events: EventItem[];
+  onDeleteRequested: (id: string) => void;
+  onEdit: (ev: EventItem) => void;
+  serverSide?: boolean;
+  totalCount?: number;
+  pageIndex?: number;
+  pageSize?: number;
+  onPageChange?: (p: number) => void;
+  onPageSizeChange?: (ps: number) => void;
+  onSearchChange?: (v: string) => void;
+}) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const columns: ColumnDef<EventItem>[] = [
@@ -76,13 +98,31 @@ function EventTable({ events, onDeleteRequested, onEdit }: { events: EventItem[]
     },
   ];
 
-  return <DataTable columns={columns} data={events} searchKey="title" searchPlaceholder="Cari kegiatan..." />;
+  return (
+    <DataTable
+      columns={columns}
+      data={events}
+      searchKey="title"
+      searchPlaceholder="Cari kegiatan..."
+      serverSide={serverSide}
+      totalCount={totalCount}
+      pageIndex={pageIndex}
+      pageSize={pageSize}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      onSearchChange={onSearchChange}
+    />
+  );
 }
 
 export function KalenderClient({ initialYears }: { initialYears: Year[] }) {
   const [years] = useState<Year[]>(initialYears);
   const [yearId, setYearId] = useState<string | null>(initialYears[0]?.id ?? null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -92,12 +132,27 @@ export function KalenderClient({ initialYears }: { initialYears: Year[] }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchEvents = async (p = pageIndex, ps = pageSize, s = search) => {
     if (!yearId) return;
-    fetch(`/api/admin/manajemen-akademik/academic-events?yearId=${yearId}`)
-      .then((r) => r.json())
-      .then((data) => setEvents(data || []))
-      .catch((err) => console.error(err));
+    try {
+      const q = new URLSearchParams({ yearId, page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/manajemen-akademik/academic-events?${q.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch events");
+      const data = await res.json();
+      // data: { items, totalCount, page, pageSize }
+      setEvents(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? 0);
+      setPageSize(data.pageSize ?? ps);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents(pageIndex, pageSize, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yearId]);
 
   const submit = async () => {
@@ -142,9 +197,8 @@ export function KalenderClient({ initialYears }: { initialYears: Year[] }) {
       setForm({ title: "", description: "", startDate: "", endDate: "" });
       setErrors({});
 
-      // refresh
-      const list = await fetch(`/api/admin/manajemen-akademik/academic-events?yearId=${yearId}`);
-      setEvents(await list.json());
+      // refresh current page
+      await fetchEvents(pageIndex, pageSize, search);
     } catch (err) {
       console.error(err);
       toast.error("Terjadi kesalahan saat menyimpan kegiatan");
@@ -182,18 +236,37 @@ export function KalenderClient({ initialYears }: { initialYears: Year[] }) {
 
       {!isCalendarOpen && (
         <div className="mt-4">
-          <EventTable
-            events={events}
-            onEdit={(ev) => {
-              setEditingId(ev.id);
-              setForm({ title: ev.title, description: ev.description ?? "", startDate: ev.startDate.slice(0, 10), endDate: ev.endDate ? ev.endDate.slice(0, 10) : "" });
-              setShowAdd(true);
-            }}
-            onDeleteRequested={(id: string) => {
-              setConfirmDeleteId(id);
-              setConfirmOpen(true);
-            }}
-          />
+              <EventTable
+                events={events}
+                onEdit={(ev) => {
+                  setEditingId(ev.id);
+                  setForm({ title: ev.title, description: ev.description ?? "", startDate: ev.startDate.slice(0, 10), endDate: ev.endDate ? ev.endDate.slice(0, 10) : "" });
+                  setShowAdd(true);
+                }}
+                onDeleteRequested={(id: string) => {
+                  setConfirmDeleteId(id);
+                  setConfirmOpen(true);
+                }}
+                // server-side pagination props
+                serverSide
+                totalCount={totalCount}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                onPageChange={(p) => {
+                  setPageIndex(p);
+                  fetchEvents(p, pageSize, search);
+                }}
+                onPageSizeChange={(ps) => {
+                  setPageSize(ps);
+                  setPageIndex(0);
+                  fetchEvents(0, ps, search);
+                }}
+                onSearchChange={(v) => {
+                  setSearch(v);
+                  setPageIndex(0);
+                  fetchEvents(0, pageSize, v);
+                }}
+              />
         </div>
       )}
 
@@ -208,8 +281,7 @@ export function KalenderClient({ initialYears }: { initialYears: Year[] }) {
           if (!confirmDeleteId) return;
           try {
             await fetch(`/api/admin/manajemen-akademik/academic-events?id=${confirmDeleteId}`, { method: "DELETE" });
-            const res = await fetch(`/api/admin/manajemen-akademik/academic-events?yearId=${yearId}`);
-            setEvents(await res.json());
+            await fetchEvents(pageIndex, pageSize, search);
           } catch (err) {
             console.error(err);
           } finally {

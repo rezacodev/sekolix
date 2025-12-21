@@ -15,23 +15,38 @@ export default function ArticleActions() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
-    fetchArticles();
-  }, []);
+    void fetchArticles(pageIndex, pageSize, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, pageSize, search]);
 
-  const fetchArticles = async () => {
+  const fetchArticles = async (p = 0, ps = 10, s = "") => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/website-landing/articles");
-      if (response.ok) {
-        const data = await response.json();
-        setArticles(data);
-      } else {
+      const q = new URLSearchParams({ page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/website-landing/articles?${q.toString()}`);
+      if (!res.ok) {
         toast.error("Gagal memuat artikel");
+        setArticles([]);
+        setTotalCount(0);
+        return;
       }
+      const data = await res.json();
+      setArticles(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? p);
+      setPageSize(data.pageSize ?? ps);
     } catch (error) {
       console.error("Error fetching articles:", error);
       toast.error("Terjadi kesalahan saat memuat artikel");
+      setArticles([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +65,7 @@ export default function ArticleActions() {
 
       if (response.ok) {
         toast.success("Artikel berhasil dihapus");
-        fetchArticles();
+        void fetchArticles(pageIndex, pageSize, search);
         setConfirmDelete(null);
       } else {
         const data = await response.json();
@@ -111,6 +126,13 @@ export default function ArticleActions() {
           data={articles}
           searchKey="title"
           filterConfig={filterConfig}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={(p) => setPageIndex(p)}
+          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); }}
+          onSearchChange={(v) => { setSearch(v); setPageIndex(0); }}
         />
       )}
       <ConfirmDialog

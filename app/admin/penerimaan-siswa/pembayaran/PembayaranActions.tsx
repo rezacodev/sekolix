@@ -37,6 +37,10 @@ interface ApplicantWithBilling {
 export default function PembayaranActions() {
   const [items, setItems] = useState<ApplicantWithBilling[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
   const [years, setYears] = useState<{ id: string; label: string; isActive: boolean }[]>([]);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
@@ -57,15 +61,27 @@ export default function PembayaranActions() {
   const [proofUrl, setProofUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchApplicants = async (yearId?: string | null) => {
+  const fetchApplicants = async (
+    yearId?: string | null,
+    p = pageIndex,
+    ps = pageSize,
+    s = search
+  ) => {
     try {
+      setIsLoading(true);
       const url = new URL("/api/admin/penerimaan-siswa/applicant", window.location.origin);
       const yearToUse = yearId ?? selectedYear;
       if (yearToUse) url.searchParams.set("yearId", yearToUse);
+      url.searchParams.set("page", String(p));
+      url.searchParams.set("pageSize", String(ps));
+      if (s) url.searchParams.set("search", s);
       const res = await fetch(url.toString());
       if (res.ok) {
         const data = await res.json();
-        setItems(data);
+        setItems(data.items || []);
+        setTotalCount(typeof data.totalCount === "number" ? data.totalCount : undefined);
+        setPageIndex(typeof data.page === "number" ? data.page : p);
+        setPageSize(typeof data.pageSize === "number" ? data.pageSize : ps);
       } else {
         console.error("Failed to fetch applicants");
       }
@@ -96,7 +112,7 @@ export default function PembayaranActions() {
         const defaultYear = active ? active.id : (data && data[0] ? data[0].id : null);
         setSelectedYear(defaultYear);
         setIsLoading(true);
-        await fetchApplicants(defaultYear);
+        await fetchApplicants(defaultYear, 0, pageSize, "");
       } catch (err) {
         console.error("Failed to fetch years", err);
         await fetchApplicants();
@@ -155,7 +171,7 @@ export default function PembayaranActions() {
       if (res.ok) {
         toast.success("Pembayaran berhasil dicatat");
         setModalOpen(false);
-        fetchApplicants();
+        void fetchApplicants(selectedYear, pageIndex, pageSize, search);
       } else {
         const data = await res.json();
         toast.error(data?.error || "Gagal mencatat pembayaran");
@@ -326,7 +342,22 @@ export default function PembayaranActions() {
             </div>
           </div>
 
-          <DataTable columns={columns} data={items} searchKey="fullName" filterConfig={filterConfig} />
+          <DataTable
+            columns={columns}
+            data={items}
+            searchKey="fullName"
+            filterConfig={filterConfig}
+            serverSide
+            totalCount={totalCount}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            onPageChange={(p) => void fetchApplicants(selectedYear, p, pageSize, search)}
+            onPageSizeChange={(ps) => void fetchApplicants(selectedYear, 0, ps, search)}
+            onSearchChange={(s) => {
+              setSearch(s);
+              void fetchApplicants(selectedYear, 0, pageSize, s);
+            }}
+          />
 
           {/* Payment Dialog */}
           <Dialog open={modalOpen} onOpenChange={(open) => setModalOpen(open)}>

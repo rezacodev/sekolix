@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const events = await db.event.findMany({
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get("page") || "0");
+    const pageSize = Number(url.searchParams.get("pageSize") || "10");
+    const search = url.searchParams.get("search") || "";
+
+    const whereBase: Prisma.EventWhereInput = {};
+    if (search) whereBase.title = { contains: search, mode: "insensitive" };
+
+    const totalCount = await db.event.count({ where: whereBase });
+
+    const items = await db.event.findMany({
+      where: whereBase,
       orderBy: { startDate: "desc" },
+      skip: page * pageSize,
+      take: pageSize,
       select: {
         id: true,
         title: true,
@@ -21,7 +35,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(events);
+    return NextResponse.json({ items, totalCount, page, pageSize });
   } catch (error) {
     console.error("Failed to fetch events:", error);
     return NextResponse.json(

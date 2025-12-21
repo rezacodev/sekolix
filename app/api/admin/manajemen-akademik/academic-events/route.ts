@@ -1,18 +1,32 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const yearId = url.searchParams.get("yearId");
+    const page = Number(url.searchParams.get("page") || "0");
+    const pageSize = Number(url.searchParams.get("pageSize") || "10");
+    const search = url.searchParams.get("search") || "";
 
-    const events = yearId
-      ? await db.academicEvent.findMany({ where: { tahunAjaranId: yearId }, orderBy: { startDate: "asc" } })
-      : await db.academicEvent.findMany({ orderBy: { startDate: "asc" } });
+    const whereBase: Prisma.AcademicEventWhereInput = {};
+    if (yearId) whereBase.tahunAjaranId = yearId;
+    if (search) whereBase.title = { contains: search, mode: "insensitive" };
 
-    return NextResponse.json(events);
+    const totalCount = await db.academicEvent.count({ where: whereBase });
+
+    const items = await db.academicEvent.findMany({
+      where: whereBase,
+      orderBy: { startDate: "asc" },
+      skip: page * pageSize,
+      take: pageSize,
+      select: { id: true, title: true, description: true, startDate: true, endDate: true },
+    });
+
+    return NextResponse.json({ items, totalCount, page, pageSize });
   } catch (error) {
     console.error("Error fetching academic events:", error);
     return NextResponse.json({ message: "Terjadi kesalahan saat mengambil kegiatan" }, { status: 500 });

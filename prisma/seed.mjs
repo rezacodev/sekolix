@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -250,6 +251,49 @@ async function main() {
     }
 
     // ============================================
+    // 4.5 SEED DEFAULT USERS (admin + editor)
+    // ============================================
+    console.log("\n🔐 Ensuring default users (admin + editor) exist...");
+
+    // Admin user
+    const adminEmail = "admin@sekolix.test";
+    let admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (!admin) {
+      const hashed = await bcrypt.hash("Admin123!", 10);
+      admin = await prisma.user.create({
+        data: {
+          name: "Admin Sekolah",
+          email: adminEmail,
+          password: hashed,
+          role: "ADMIN",
+          adminTheme: "classic-light",
+        },
+      });
+      console.log(`  ✓ Created admin user: ${adminEmail}`);
+    } else {
+      console.log(`  ✓ Admin user exists: ${adminEmail}`);
+    }
+
+    // Editor user
+    const editorEmail = "editor@sekolix.test";
+    let editor = await prisma.user.findUnique({ where: { email: editorEmail } });
+    if (!editor) {
+      const hashed = await bcrypt.hash("Editor123!", 10);
+      editor = await prisma.user.create({
+        data: {
+          name: "Editor Sekolah",
+          email: editorEmail,
+          password: hashed,
+          role: "EDITOR",
+          adminTheme: "minimalist-light",
+        },
+      });
+      console.log(`  ✓ Created editor user: ${editorEmail}`);
+    } else {
+      console.log(`  ✓ Editor user exists: ${editorEmail}`);
+    }
+
+    // ============================================
     // 5. SETUP DUMMY APPLICANTS (distribute across available years)
     // ============================================
     console.log(`\n👥 Setting up dummy applicants across available academic years...`);
@@ -488,21 +532,179 @@ async function main() {
     console.log(
       `\n✅ Seeding complete! Created ${createdCount} of ${dummyApplicants.length} applicants\n`
     );
+    // ============================================
+    // 6. ADDITIONAL CONTENT: PAGES, ARTICLES, NEWS, EVENTS, MEDIA, GALLERY, FACULTY
+    // ============================================
+    console.log("\n📚 Seeding site content: pages, articles, news, events, media, gallery, faculty...");
+
+    // Pages (profile pages)
+    const profilePages = [
+      { title: "Sejarah", slug: "sejarah", content: "Sejarah sekolah sejak didirikan...", description: "Sejarah singkat sekolah" },
+      { title: "Visi & Misi", slug: "visi-misi", content: "Visi: Menjadi... Misi: ...", description: "Visi dan Misi sekolah" },
+      { title: "Struktur Organisasi", slug: "struktur", content: "Struktur organisasi sekolah...", description: "Struktur organisasi" },
+      { title: "Fasilitas", slug: "fasilitas", content: "Fasilitas yang tersedia: laboratorium, perpustakaan...", description: "Fasilitas sekolah" },
+      { title: "Program Keahlian", slug: "program-keahlian", content: "Program unggulan: Multimedia, Akuntansi...", description: "Daftar program keahlian" },
+    ];
+
+    for (const p of profilePages) {
+      const existing = await prisma.page.findUnique({ where: { slug: p.slug } });
+      if (!existing) {
+        await prisma.page.create({ data: { title: p.title, slug: p.slug, content: p.content, description: p.description, isPublished: true, isVisible: true } });
+        console.log(`  ✓ Page seeded: ${p.title}`);
+      }
+    }
+
+    // Articles
+    const sampleArticles = [
+      { title: "Kegiatan Literasi Sekolah", slug: "kegiatan-literasi", excerpt: "Program literasi siswa...", category: "Academic", content: "Detail kegiatan literasi...", isPublished: true },
+      { title: "Ekstrakurikuler Juara", slug: "ekskul-juara", excerpt: "Prestasi ekstrakurikuler...", category: "Achievement", content: "Detail prestasi...", isPublished: true },
+      { title: "Peningkatan Mutu Pembelajaran", slug: "peningkatan-mutu", excerpt: "Inisiatif peningkatan mutu...", category: "Academic", content: "Detail program...", isPublished: false },
+    ];
+
+    for (const a of sampleArticles) {
+      const existing = await prisma.article.findUnique({ where: { slug: a.slug } });
+      if (!existing) {
+        await prisma.article.create({ data: { title: a.title, slug: a.slug, content: a.content, excerpt: a.excerpt, category: a.category, isPublished: a.isPublished } });
+        console.log(`  ✓ Article seeded: ${a.title}`);
+      }
+    }
+
+    // News
+    const sampleNews = [
+      { title: "Penerimaan Siswa Baru Dibuka", slug: "psb-dibuka", excerpt: "Pendaftaran dibuka sampai...", content: "Informasi pendaftaran...", category: "Announcement", isPublished: true },
+      { title: "Libur Semester", slug: "libur-semester", excerpt: "Libur semester pada...", content: "Detail libur...", category: "Announcement", isPublished: true },
+      { title: "Juara Lomba Sains", slug: "juara-lomba-sains", excerpt: "Siswa meraih juara...", content: "Detail lomba...", category: "Achievement", isPublished: true },
+    ];
+    for (const n of sampleNews) {
+      const existing = await prisma.news.findUnique({ where: { slug: n.slug } });
+      if (!existing) {
+        await prisma.news.create({ data: { title: n.title, slug: n.slug, content: n.content, excerpt: n.excerpt, category: n.category, isPublished: n.isPublished } });
+        console.log(`  ✓ News seeded: ${n.title}`);
+      }
+    }
+
+    // Events (site-level) — create some events tied to active year where relevant
+    const sampleEvents = [
+      { title: "OSN Sekolah", slug: "osn-sekolah", description: "Olimpiade sains internal", startDate: new Date(activeYear.startDate || new Date()), endDate: new Date((activeYear.startDate || new Date()).getTime() + 2 * 24 * 3600 * 1000), location: "Aula" },
+      { title: "Festival Seni", slug: "festival-seni", description: "Festival seni tahunan", startDate: new Date((activeYear.startDate || new Date()).getTime() + 30 * 24 * 3600 * 1000), endDate: new Date((activeYear.startDate || new Date()).getTime() + 32 * 24 * 3600 * 1000), location: "Lapangan" },
+      { title: "Open House", slug: "open-house", description: "Open house untuk calon siswa dan orang tua", startDate: new Date((activeYear.startDate || new Date()).getTime() + 10 * 24 * 3600 * 1000), endDate: new Date((activeYear.startDate || new Date()).getTime() + 10 * 24 * 3600 * 1000), location: "Gedung Serbaguna" },
+    ];
+    for (const ev of sampleEvents) {
+      const existing = await prisma.event.findUnique({ where: { slug: ev.slug } });
+      if (!existing) {
+        await prisma.event.create({ data: { title: ev.title, slug: ev.slug, description: ev.description, startDate: ev.startDate, endDate: ev.endDate, location: ev.location, isPublished: true } });
+        console.log(`  ✓ Event seeded: ${ev.title}`);
+      }
+    }
+
+    // Media
+    const mediaItems = [
+      { title: "Hero Image", url: "https://placehold.co/1200x600", publicId: "hero-1200x600", type: "image", folder: "landing_media", size: 102400 },
+      { title: "Facility Image", url: "https://placehold.co/800x600", publicId: "facility-800x600", type: "image", folder: "landing_media", size: 64000 },
+      { title: "Teacher Photo", url: "https://placehold.co/400x400", publicId: "teacher-400x400", type: "image", folder: "landing_media", size: 32000 },
+    ];
+    for (const m of mediaItems) {
+      const existing = await prisma.media.findFirst({ where: { publicId: m.publicId } });
+      if (!existing) {
+        await prisma.media.create({ data: m });
+        console.log(`  ✓ Media seeded: ${m.title}`);
+      }
+    }
+
+    // Albums & Galleries
+    const albumDefs = [
+      { name: "Kegiatan Sekolah", description: "Foto kegiatan selama satu tahun" },
+      { name: "Fasilitas", description: "Foto fasilitas sekolah" },
+    ];
+    for (const a of albumDefs) {
+      let album = await prisma.album.findUnique({ where: { name: a.name } });
+      if (!album) {
+        album = await prisma.album.create({ data: a });
+        console.log(`  ✓ Album created: ${a.name}`);
+      }
+
+      // create 4 images per album
+      for (let i = 1; i <= 4; i++) {
+        const title = `${a.name} - Foto ${i}`;
+        const imageUrl = `https://placehold.co/800x600?text=${encodeURIComponent(title)}`;
+        const exists = await prisma.gallery.findFirst({ where: { title, albumId: album.id } });
+        if (!exists) {
+          await prisma.gallery.create({ data: { title, image: imageUrl, albumId: album.id, order: i } });
+        }
+      }
+    }
+
+    // Landing sections
+    const sections = [
+      { slug: "hero", type: "hero", title: "Selamat Datang di Sekolah Kami", subtitle: "Mencetak generasi unggul", body: "Informasi singkat tentang sekolah.", isActive: true, order: 0 },
+      { slug: "programs", type: "programs", title: "Program Keahlian", subtitle: "Pilih program yang sesuai", body: "Multimedia, Akuntansi, Teknik Komputer", isActive: true, order: 10 },
+      { slug: "cta-apply", type: "cta", title: "Daftar Sekarang", subtitle: "Pendaftaran dibuka", body: "Klik tombol daftar untuk memulai proses pendaftaran", isActive: true, order: 20 },
+    ];
+    for (const s of sections) {
+      const existing = await prisma.landingSection.findUnique({ where: { slug: s.slug } });
+      if (!existing) {
+        await prisma.landingSection.create({ data: { slug: s.slug, type: s.type, title: s.title, subtitle: s.subtitle, body: s.body, isActive: s.isActive, order: s.order } });
+        console.log(`  ✓ Landing section seeded: ${s.slug}`);
+      }
+    }
+
+    // Theme configs
+    const themes = [
+      { name: "Academic Classic", themeId: "academic-classic", primaryColor: "#001f3f", headingFont: "'Playfair Display', serif", bodyFont: "Inter, sans-serif", isActive: true },
+      { name: "Modern Vibrant", themeId: "modern-vibrant", primaryColor: "#ff6b6b", headingFont: "'Poppins', sans-serif", bodyFont: "Inter, sans-serif", isActive: false },
+    ];
+    for (const t of themes) {
+      const existing = await prisma.themeConfig.findFirst({ where: { themeId: t.themeId } });
+      if (!existing) {
+        await prisma.themeConfig.create({ data: t });
+        console.log(`  ✓ Theme created: ${t.name}`);
+      }
+    }
+
+    // Faculty
+    const facultyList = [
+      { name: "Drs. H. Ahmad Suparman", position: "Kepala Sekolah", department: null, email: "kepsek@sekolix.test", phone: "08123450001", bio: "Kepala sekolah berpengalaman" },
+      { name: "Siti Aminah, S.Pd.", position: "Guru Multimedia", department: "Multimedia", email: "siti.aminah@sekolix.test", phone: "08123450002" , bio: "Guru multimedia berpengalaman"},
+      { name: "Budi Santoso, S.Kom.", position: "Guru TKJ", department: "Teknik Komputer", email: "budi.santoso@sekolix.test", phone: "08123450003" , bio: "Guru TKJ"},
+      { name: "Rina Marlina, S.Ak.", position: "Guru Akuntansi", department: "Akuntansi", email: "rina.marlina@sekolix.test", phone: "08123450004" , bio: "Guru akuntansi"},
+    ];
+    for (const f of facultyList) {
+      const existing = await prisma.faculty.findFirst({ where: { email: f.email } });
+      if (!existing) {
+        await prisma.faculty.create({ data: { name: f.name, position: f.position, department: f.department, email: f.email, phone: f.phone, bio: f.bio } });
+        console.log(`  ✓ Faculty added: ${f.name}`);
+      }
+    }
+
+    // Applicant payments & validations (for accepted applicants)
+    const acceptedApplicants = await prisma.applicant.findMany({ where: { status: "accepted" }, take: 20 });
+    for (let i = 0; i < acceptedApplicants.length; i++) {
+      const a = acceptedApplicants[i];
+      // create a payment for some applicants to simulate partial/complete payments
+      if (i % 2 === 0) {
+        const amount = (a.academicYearId ? (await prisma.tahunAjaran.findUnique({ where: { id: a.academicYearId } })).registrationFee : 0) || 0;
+        if (amount > 0) {
+          await prisma.applicantPayment.create({ data: { applicantId: a.id, method: "Transfer", amount: Math.floor(amount / (i % 3 === 0 ? 1 : 2)), status: "confirmed" } });
+        }
+      }
+
+      // create validation record for some
+      if (i % 3 === 0) {
+        await prisma.applicantValidation.create({ data: { applicantId: a.id, result: "valid", notes: "Dokumen lengkap" } });
+      }
+    }
 
     // ============================================
-    // 6. SUMMARY
+    // 7. SUMMARY
     // ============================================
-    console.log("📊 Final Summary:");
+    console.log("\n📊 Final Summary:");
     console.log(`   Academic Years: ${years.length}`);
     console.log(`   Active Year: ${activeYear.label} (${activeYear.yearCode})`);
-    console.log(`   Program: ${programs["Multimedia"]?.name ?? "N/A"}`);
-    
+    console.log(`   Program example: ${programs["Multimedia"]?.name ?? "N/A"}`);
     const totalApplicants = await prisma.applicant.count();
     console.log(`   Total Applicants: ${totalApplicants}`);
 
-    const settings = await prisma.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: activeYear.id },
-    });
+    const settings = await prisma.admissionRegistrationCodeSetting.findUnique({ where: { tahunAjaranId: activeYear.id } });
     if (settings) {
       console.log(`\n⚙️  Registration Code Settings (${activeYear.label}):`);
       console.log(`   Format: ${settings.prefix}${activeYear.yearCode}${String(settings.nextNumber).padStart(settings.padLength, "0")}${settings.suffix || ""}`);

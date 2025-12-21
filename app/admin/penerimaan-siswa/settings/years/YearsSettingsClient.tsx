@@ -44,6 +44,10 @@ export function YearsSettingsClient({ initialYears, showRegistrationFee = true, 
 	const [years, setYears] = useState<Year[]>(initialYears);
 	const [isLoading, setIsLoading] = useState(false);
 	const [togglingId, setTogglingId] = useState<string | null>(null);
+	const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
+	const [pageIndex, setPageIndex] = useState(0);
+	const [pageSize, setPageSize] = useState(10);
+	const [search, setSearch] = useState("");
 
 	const [open, setOpen] = useState(false);
 	const [editing, setEditing] = useState<Year | null>(null);
@@ -61,13 +65,30 @@ export function YearsSettingsClient({ initialYears, showRegistrationFee = true, 
 		registrationFee: typeof y.registrationFee === "number" ? y.registrationFee : Number(y.registrationFee) || 0,
 	}), []);
 
-	const refreshYears = useCallback(async () => {
-		const res = await fetch("/api/admin/penerimaan-siswa/settings/years");
-		if (res.ok) {
-			const data = await res.json();
-			setYears(data.map((d: TahunAjaranRow) => mapRow(d)));
+	const refreshYears = useCallback(async (p = pageIndex, ps = pageSize, s = search) => {
+		setIsLoading(true);
+		const url = new URL("/api/admin/penerimaan-siswa/settings/years", window.location.origin);
+		url.searchParams.set("page", String(p));
+		url.searchParams.set("pageSize", String(ps));
+		if (s) url.searchParams.set("search", s);
+		try {
+			const res = await fetch(url.toString());
+			if (res.ok) {
+				const data = await res.json();
+				if (Array.isArray(data)) {
+					setYears(data.map((d: TahunAjaranRow) => mapRow(d)));
+					setTotalCount(undefined);
+				} else {
+					setYears((data.items || []).map((d: TahunAjaranRow) => mapRow(d)));
+					setTotalCount(typeof data.totalCount === "number" ? data.totalCount : undefined);
+					setPageIndex(typeof data.page === "number" ? data.page : p);
+					setPageSize(typeof data.pageSize === "number" ? data.pageSize : ps);
+				}
+			}
+		} finally {
+			setIsLoading(false);
 		}
-	}, [mapRow]);
+	}, [mapRow, pageIndex, pageSize, search]);
 
 	const openAdd = useCallback(() => {
 		setEditing(null);
@@ -217,7 +238,17 @@ export function YearsSettingsClient({ initialYears, showRegistrationFee = true, 
 			</div>
 
 			<div>
-				<DataTable columns={columns} data={years} />
+				<DataTable
+					columns={columns}
+					data={years}
+					serverSide
+					totalCount={totalCount}
+					pageIndex={pageIndex}
+					pageSize={pageSize}
+					onPageChange={(p) => { setPageIndex(p); void refreshYears(p, pageSize, search); }}
+					onPageSizeChange={(ps) => { setPageSize(ps); void refreshYears(0, ps, search); }}
+					onSearchChange={(s) => { setSearch(s); setPageIndex(0); void refreshYears(0, pageSize, s); }}
+				/>
 			</div>
 
 			<Dialog open={open} onOpenChange={setOpen}>
