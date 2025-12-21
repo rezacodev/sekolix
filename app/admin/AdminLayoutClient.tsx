@@ -124,6 +124,15 @@ const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = 
     { label: "Pengaturan Penerimaan", href: "/admin/penerimaan-siswa/settings" },
     { label: "Tahun Ajaran" },
   ],
+  "/admin/manajemen-akademik/tahun-ajaran": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Tahun Ajaran" },
+  ],
+  "/admin/manajemen-akademik/tahun-ajaran/kalender-akademik": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Tahun Ajaran", href: "/admin/manajemen-akademik/tahun-ajaran" },
+    { label: "Kalender Akademik" },
+  ],
 };
 
 type SubMenu = {
@@ -181,6 +190,25 @@ const appCategories: AppCategory[] = [
     ],
   },
   {
+    id: "akademik",
+    name: "Manajemen Akademik",
+    icon: ClipboardList,
+    color: "bg-emerald",
+    description: "Kelola modul akademik",
+    subMenus: [
+      { id: "tahun-ajaran", label: "Tahun Ajaran", href: "/admin/manajemen-akademik/tahun-ajaran" },
+      { id: "data-guru", label: "Data Guru", href: "/admin/manajemen-akademik/data-guru" },
+      { id: "data-siswa", label: "Data Siswa Aktif", href: "/admin/manajemen-akademik/data-siswa-aktif" },
+      { id: "kurikulum-mapel", label: "Kurikulum & Mata Pelajaran", href: "/admin/manajemen-akademik/kurikulum-mapel" },
+      { id: "kelas-rombel", label: "Kelas & Rombel", href: "/admin/manajemen-akademik/kelas-rombel" },
+      { id: "guru-pengampu", label: "Guru Pengampu", href: "/admin/manajemen-akademik/guru-pengampu" },
+      { id: "jadwal-pelajaran", label: "Jadwal Pelajaran", href: "/admin/manajemen-akademik/jadwal-pelajaran" },
+      { id: "penilaian-nilai", label: "Penilaian & Nilai", href: "/admin/manajemen-akademik/penilaian-nilai" },
+      { id: "rapor", label: "Rapor", href: "/admin/manajemen-akademik/rapor" },
+      { id: "pengaturan-akademik", label: "Pengaturan Akademik", href: "/admin/manajemen-akademik/pengaturan-akademik" },
+    ],
+  },
+  {
     id: "users",
     name: "Manajemen Pengguna",
     icon: Users,
@@ -219,6 +247,8 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
       menuToExpand = "users";
     } else if (pathname.startsWith("/admin/settings")) {
       menuToExpand = "settings";
+    } else if (pathname.startsWith("/admin/manajemen-akademik")) {
+      menuToExpand = "akademik";
     }
 
     return menuToExpand ? [menuToExpand] : [];
@@ -273,6 +303,8 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
       menuToExpand = "users";
     } else if (pathname.startsWith("/admin/settings")) {
       menuToExpand = "settings";
+    } else if (pathname.startsWith("/admin/manajemen-akademik")) {
+      menuToExpand = "akademik";
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -525,7 +557,7 @@ function AdminLayoutContent({
           </Button>
         </div>
 
-        <ScrollArea className="flex-1 px-3 py-4 bg-muted/30">
+        <ScrollArea className="px-3 py-4 bg-muted/30 h-[calc(100vh-4rem)]">
           <nav className="flex flex-col gap-1">
             {appCategories.map((app) => {
               const Icon = app.icon;

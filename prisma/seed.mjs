@@ -110,6 +110,59 @@ async function main() {
     console.log(`\n  📍 Active year: ${activeYear.label} (${activeYear.yearCode})\n`);
 
     // ============================================
+    // Academic events seeding (create default KBM if none exist)
+    // ============================================
+    console.log("\n📌 Seeding academic events (if none present)...");
+    for (const y of years) {
+      const existingEvents = await prisma.academicEvent.count({ where: { tahunAjaranId: y.id } });
+      if (existingEvents === 0) {
+        const start = y.startDate || new Date();
+        const end = y.endDate || new Date(start.getFullYear(), 11, 31);
+
+        await prisma.academicEvent.create({
+          data: {
+            tahunAjaranId: y.id,
+            title: "KBM (Default)",
+            description: "Kegiatan belajar mengajar (default jika tidak ada kegiatan spesifik)",
+            startDate: start,
+            endDate: end,
+          },
+        });
+
+        // sample events for the active year
+        if (activeYear && y.id === activeYear.id) {
+          // national holiday (example)
+          const holidayDate = new Date(start.getFullYear(), 11, 25);
+          await prisma.academicEvent.create({
+            data: {
+              tahunAjaranId: y.id,
+              title: "Libur Nasional",
+              description: "Contoh libur nasional",
+              startDate: holidayDate,
+              endDate: holidayDate,
+            },
+          });
+
+          // midterm exam sample
+          const utsStart = new Date(start.getFullYear(), 9, 7);
+          const utsEnd = new Date(start.getFullYear(), 9, 11);
+          await prisma.academicEvent.create({
+            data: {
+              tahunAjaranId: y.id,
+              title: "Ujian Tengah Semester",
+              description: "Ujian tengah semester contoh",
+              startDate: utsStart,
+              endDate: utsEnd,
+            },
+          });
+        }
+        console.log(`  ✓ Seeded default events for ${y.label}`);
+      } else {
+        console.log(`  ✓ ${y.label} already has ${existingEvents} event(s)`);
+      }
+    }
+
+    // ============================================
     // 2. SETUP PROGRAMS
     // ============================================
     console.log("🎓 Setting up programs...");

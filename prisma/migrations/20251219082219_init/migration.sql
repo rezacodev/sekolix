@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'EDITOR', 'USER');
 
+-- CreateEnum
+CREATE TYPE "ApplicantStatus" AS ENUM ('pending', 'review', 'accepted', 'rejected');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -11,6 +14,7 @@ CREATE TABLE "users" (
     "image" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "adminTheme" TEXT NOT NULL DEFAULT 'classic-light',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -59,7 +63,9 @@ CREATE TABLE "landing_pages" (
     "slug" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "description" TEXT,
+    "data" JSONB,
     "isPublished" BOOLEAN NOT NULL DEFAULT false,
+    "isVisible" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -123,10 +129,22 @@ CREATE TABLE "landing_events" (
 );
 
 -- CreateTable
+CREATE TABLE "landing_albums" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "landing_albums_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "landing_galleries" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "image" TEXT NOT NULL,
+    "albumId" TEXT,
     "order" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -150,6 +168,153 @@ CREATE TABLE "landing_sections" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "landing_sections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Applicant" (
+    "id" TEXT NOT NULL,
+    "registrationCode" TEXT,
+    "nik" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "email" TEXT,
+    "schoolOrigin" TEXT,
+    "programChoice" TEXT,
+    "programId" TEXT,
+    "academicYearId" TEXT,
+    "status" "ApplicantStatus" NOT NULL DEFAULT 'pending',
+    "submissionData" JSONB,
+    "notes" TEXT,
+    "handledBy" TEXT,
+    "profileCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "gender" TEXT,
+    "nisn" TEXT,
+    "noKK" TEXT,
+    "placeOfBirth" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
+    "nationality" TEXT,
+    "religion" TEXT,
+    "motherTongue" TEXT,
+    "address" TEXT,
+    "village" TEXT,
+    "district" TEXT,
+    "city" TEXT,
+    "province" TEXT,
+    "postalCode" TEXT,
+    "fatherName" TEXT,
+    "fatherNik" TEXT,
+    "fatherBirthYear" INTEGER,
+    "fatherEducation" TEXT,
+    "fatherOccupation" TEXT,
+    "fatherIncome" TEXT,
+    "motherName" TEXT,
+    "motherNik" TEXT,
+    "motherBirthYear" INTEGER,
+    "motherEducation" TEXT,
+    "motherOccupation" TEXT,
+    "motherIncome" TEXT,
+    "guardianName" TEXT,
+    "guardianNik" TEXT,
+    "guardianBirthYear" INTEGER,
+    "guardianEducation" TEXT,
+    "guardianOccupation" TEXT,
+    "guardianIncome" TEXT,
+    "mobile" TEXT,
+    "livesWith" TEXT,
+    "weight" DOUBLE PRECISION,
+    "height" DOUBLE PRECISION,
+    "distanceToSchool" DOUBLE PRECISION,
+    "transportationMode" TEXT,
+    "anakKe" INTEGER,
+    "jumlahSaudara" INTEGER,
+    "achievements" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Applicant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ApplicantPayment" (
+    "id" TEXT NOT NULL,
+    "applicantId" TEXT NOT NULL,
+    "method" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "proofUrl" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ApplicantPayment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ApplicantValidation" (
+    "id" TEXT NOT NULL,
+    "applicantId" TEXT NOT NULL,
+    "validatorId" TEXT,
+    "result" TEXT NOT NULL,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ApplicantValidation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "admission_landing_settings" (
+    "id" TEXT NOT NULL,
+    "heroTitle" TEXT NOT NULL,
+    "heroDescription" TEXT,
+    "isApplyFormEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "admission_landing_settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "admission_registration_code_settings" (
+    "id" TEXT NOT NULL,
+    "tahunAjaranId" TEXT NOT NULL,
+    "prefix" TEXT NOT NULL DEFAULT 'DAFTAR',
+    "suffix" TEXT NOT NULL DEFAULT '',
+    "padLength" INTEGER NOT NULL DEFAULT 4,
+    "includeYearCode" BOOLEAN NOT NULL DEFAULT true,
+    "nextNumber" INTEGER NOT NULL DEFAULT 1,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "admission_registration_code_settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "programs" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT,
+    "description" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "programs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "tahun_ajaran" (
+    "id" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "yearCode" TEXT,
+    "startDate" TIMESTAMP(3),
+    "endDate" TIMESTAMP(3),
+    "isActive" BOOLEAN NOT NULL DEFAULT false,
+    "registrationFee" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "tahun_ajaran_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -247,7 +412,34 @@ CREATE UNIQUE INDEX "landing_news_slug_key" ON "landing_news"("slug");
 CREATE UNIQUE INDEX "landing_events_slug_key" ON "landing_events"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "landing_albums_name_key" ON "landing_albums"("name");
+
+-- CreateIndex
+CREATE INDEX "landing_galleries_albumId_idx" ON "landing_galleries"("albumId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "landing_sections_slug_key" ON "landing_sections"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Applicant_registrationCode_key" ON "Applicant"("registrationCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Applicant_nik_key" ON "Applicant"("nik");
+
+-- CreateIndex
+CREATE INDEX "Applicant_programId_idx" ON "Applicant"("programId");
+
+-- CreateIndex
+CREATE INDEX "Applicant_academicYearId_idx" ON "Applicant"("academicYearId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "admission_registration_code_settings_tahunAjaranId_key" ON "admission_registration_code_settings"("tahunAjaranId");
+
+-- CreateIndex
+CREATE INDEX "admission_registration_code_settings_tahunAjaranId_idx" ON "admission_registration_code_settings"("tahunAjaranId");
+
+-- CreateIndex
+CREATE INDEX "tahun_ajaran_isActive_idx" ON "tahun_ajaran"("isActive");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "landing_theme_configs_themeId_key" ON "landing_theme_configs"("themeId");
@@ -260,3 +452,21 @@ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userI
 
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "landing_galleries" ADD CONSTRAINT "landing_galleries_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "landing_albums"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Applicant" ADD CONSTRAINT "Applicant_programId_fkey" FOREIGN KEY ("programId") REFERENCES "programs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Applicant" ADD CONSTRAINT "Applicant_academicYearId_fkey" FOREIGN KEY ("academicYearId") REFERENCES "tahun_ajaran"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApplicantPayment" ADD CONSTRAINT "ApplicantPayment_applicantId_fkey" FOREIGN KEY ("applicantId") REFERENCES "Applicant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApplicantValidation" ADD CONSTRAINT "ApplicantValidation_applicantId_fkey" FOREIGN KEY ("applicantId") REFERENCES "Applicant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "admission_registration_code_settings" ADD CONSTRAINT "admission_registration_code_settings_tahunAjaranId_fkey" FOREIGN KEY ("tahunAjaranId") REFERENCES "tahun_ajaran"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -20,7 +20,7 @@ model User {
   image         String?
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
-  adminTheme    String    @default("minimalist-light")
+  adminTheme    String    @default("classic-light")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -358,9 +358,27 @@ model TahunAjaran {
 
   applicants                        Applicant[]
   registrationCodeSetting           AdmissionRegistrationCodeSetting?
+  academicEvents                    AcademicEvent[]
 
   @@map("tahun_ajaran")
   @@index([isActive])
+}
+
+// Academic events / kegiatan per tahun ajaran
+model AcademicEvent {
+  id             String      @id @default(cuid())
+  tahunAjaranId  String
+  title          String
+  description    String?     @db.Text
+  startDate      DateTime
+  endDate        DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tahunAjaran    TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+
+  @@map("academic_events")
+  @@index([tahunAjaranId])
 }
 
 // Faculty Management
