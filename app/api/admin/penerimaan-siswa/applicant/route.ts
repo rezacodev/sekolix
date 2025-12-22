@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, ApplicantStatus } from "@prisma/client";
 import { UserRole } from "@/types";
 
 const allowedRoles: UserRole[] = ["ADMIN", "EDITOR"];
@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     const status = url.searchParams.get("status") || undefined;
     const page = url.searchParams.get("page");
     const pageSize = Number(url.searchParams.get("pageSize") || "10");
-    const search = url.searchParams.get("search") || "";
 
     const whereClause: Prisma.ApplicantWhereInput = {};
     if (yearId) {
@@ -38,11 +37,11 @@ export async function GET(request: NextRequest) {
     }
     if (status) {
       // applicant status is stored in `status` field
-      whereClause.status = status as any;
+      whereClause.status = status as ApplicantStatus;
     }
 
     // If page param is present, return paginated results; otherwise preserve existing behavior (full array)
-    let applicants = [] as any[];
+    let applicants = [];
     if (page !== null) {
       const p = Number(page || 0);
       const skip = p * pageSize;

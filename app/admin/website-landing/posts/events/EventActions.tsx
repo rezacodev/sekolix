@@ -22,7 +22,6 @@ export default function EventActions() {
 
   useEffect(() => {
     void fetchEvents(pageIndex, pageSize, search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, pageSize, search]);
 
   const fetchEvents = async (p = 0, ps = 10, s = "") => {

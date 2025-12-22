@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 // GET - Fetch all faculty
 export async function GET(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     const search = url.searchParams.get("search") || "";
     const department = url.searchParams.get("department") || undefined;
 
-    const baseWhere: any = { isActive: true };
+    const baseWhere: Prisma.FacultyWhereInput = { isActive: true };
     if (department) baseWhere.department = department;
     if (search) {
       baseWhere.OR = [

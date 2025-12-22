@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { ApplicationAccessDropdown } from "./ApplicationAccessDropdown";
@@ -30,9 +31,7 @@ export function Navbar() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-xl transform hover:rotate-12 transition-transform">
-                S1
-              </div>
+              <Image src="/images/logo-sekolix.png" alt="Sekolix" width={56} height={56} className="rounded-2xl shadow-md object-contain" priority />
               <div>
                 <h1 className="text-xl font-bold gradient-text">SMK Negeri 1 Jakarta</h1>
                 <p className="text-xs text-gray-600">Future Ready School</p>

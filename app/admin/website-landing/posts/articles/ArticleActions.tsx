@@ -22,7 +22,6 @@ export default function ArticleActions() {
 
   useEffect(() => {
     void fetchArticles(pageIndex, pageSize, search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, pageSize, search]);
 
   const fetchArticles = async (p = 0, ps = 10, s = "") => {

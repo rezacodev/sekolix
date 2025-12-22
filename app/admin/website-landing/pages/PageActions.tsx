@@ -18,7 +18,6 @@ export default function PageActions() {
 
   useEffect(() => {
     void fetchPages(pageIndex, pageSize, search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, pageSize, search]);
 
   const fetchPages = async (p = 0, ps = 10, s = "") => {

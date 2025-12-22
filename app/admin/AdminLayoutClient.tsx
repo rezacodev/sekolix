@@ -1,6 +1,7 @@
 "use client";
 
 import "./active-admin-menu.css";
+import Image from 'next/image';
 
 import { useSession } from "next-auth/react";
 import type { Session } from "next-auth";
@@ -538,9 +539,12 @@ function AdminLayoutContent({
         {/* Header with Logo and Toggle */}
         <div className="flex h-16 items-center justify-between border-b border-border bg-card px-4">
           {!isSidebarMinimized && (
-            <div>
-              <h2 className="text-xl font-bold tracking-tight">Sekolix</h2>
-              <p className="text-xs text-muted-foreground">Admin Panel</p>
+            <div className="flex items-center gap-3">
+              <Image src="/images/logo-sekolix-transparent.png" alt="Sekolix" width={40} height={40} className="rounded-md object-contain" priority />
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">Sekolix</h2>
+                <p className="text-xs text-muted-foreground">Admin Panel</p>
+              </div>
             </div>
           )}
           <Button

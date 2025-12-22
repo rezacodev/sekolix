@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const pageSize = Number(url.searchParams.get("pageSize") || "10");
     const search = url.searchParams.get("search") || "";
 
-    const where: any = {};
+    const where: Prisma.TahunAjaranWhereInput = {};
     if (search) {
       where.label = { contains: search, mode: "insensitive" };
     }
@@ -140,12 +141,10 @@ export async function PATCH(request: NextRequest) {
     const startDate = start ? new Date(start) : null;
     const endDate = end ? new Date(end) : null;
 
-    // Prisma client types may be out of sync until migrations are applied; cast payload to any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
+    const payload: Prisma.TahunAjaranUpdateInput = {
       label: name,
-      startDate: startDate,
-      endDate: endDate,
+      startDate: startDate ?? undefined,
+      endDate: endDate ?? undefined,
       registrationFee: typeof registrationFee === "number" ? registrationFee : Number(registrationFee) || 0,
     };
 

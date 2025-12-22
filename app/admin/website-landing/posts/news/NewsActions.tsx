@@ -22,7 +22,6 @@ export default function NewsActions() {
 
   useEffect(() => {
     void fetchNews(pageIndex, pageSize, search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, pageSize, search]);
 
   const fetchNews = async (p = 0, ps = 10, s = "") => {

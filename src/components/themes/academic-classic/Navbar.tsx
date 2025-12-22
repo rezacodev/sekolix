@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { ApplicationAccessDropdown } from './ApplicationAccessDropdown';
@@ -47,12 +48,10 @@ export function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              S1
-            </div>
+            <Image src="/images/logo-sekolix-transparent.png" alt="Sekolix" width={56} height={56} className="rounded-md object-contain" priority />
             <div>
               <h1 className="text-xl font-bold text-blue-900">SMK Negeri 1 Jakarta</h1>
-              <p className="text-xs text-gray-600\">Unggul dalam Prestasi, Prima dalam Karakter</p>
+              <p className="text-xs text-gray-600">Unggul dalam Prestasi, Prima dalam Karakter</p>
             </div>
           </Link>
           
