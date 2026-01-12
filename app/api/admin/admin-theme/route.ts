@@ -10,7 +10,7 @@ const ALLOWED_THEMES = [
   "modern-light",
   "minimalist-light",
   "midnight-emerald",
-  "violet-night",
+  "violet-night"
 ];
 
 export async function GET() {
@@ -24,12 +24,13 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { email: session.user.email },
-      select: { adminTheme: true },
+      select: { adminTheme: true }
     });
 
-    const theme = user?.adminTheme && ALLOWED_THEMES.includes(user.adminTheme)
-      ? user.adminTheme
-      : "minimalist-light";
+    const theme =
+      user?.adminTheme && ALLOWED_THEMES.includes(user.adminTheme)
+        ? user.adminTheme
+        : "minimalist-light";
 
     return NextResponse.json({ adminTheme: theme });
   } catch (error) {
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
     const updated = await db.user.update({
       where: { email: session.user.email },
       data: { adminTheme },
-      select: { adminTheme: true },
+      select: { adminTheme: true }
     });
 
     return NextResponse.json({ adminTheme: updated.adminTheme });

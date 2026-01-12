@@ -18,9 +18,7 @@ interface TestimonialsSectionProps {
   testimonials: Testimonial[];
 }
 
-export default function TestimonialsSection({
-  testimonials,
-}: TestimonialsSectionProps) {
+export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   return (
     <section className="py-16 md:py-24 bg-linear-to-br from-purple-50 via-white to-cyan-50 relative overflow-hidden">
       {/* Background Decoration */}
@@ -38,8 +36,8 @@ export default function TestimonialsSection({
             Apa Kata Mereka?
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Dengarkan pengalaman siswa dan alumni yang telah merasakan
-            pendidikan berkualitas di sekolah kami
+            Dengarkan pengalaman siswa dan alumni yang telah merasakan pendidikan berkualitas di
+            sekolah kami
           </p>
         </div>
 
@@ -58,10 +56,7 @@ export default function TestimonialsSection({
                 {/* Stars */}
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 fill-yellow-400 text-yellow-400"
-                    />
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
 
@@ -84,9 +79,7 @@ export default function TestimonialsSection({
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900">
-                      {testimonial.name}
-                    </h4>
+                    <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
                     <p className="text-sm text-gray-500">
                       {testimonial.role} • {testimonial.year}
                     </p>

@@ -12,8 +12,8 @@ function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
-  const [email, setEmail] = useState("admin@sekolix.test");
-  const [password, setPassword] = useState("Admin123!");
+  const [email, setEmail] = useState("admin@sekolix.com");
+  const [password, setPassword] = useState("admin123");
   const [loading, setLoading] = useState(false);
   const error = searchParams.get("error");
 
@@ -30,7 +30,7 @@ function LoginFormContent() {
       redirect: false,
       email,
       password,
-      callbackUrl: "/admin",
+      callbackUrl: "/admin"
     });
     setLoading(false);
     if (res?.error) return alert(res.error);
@@ -45,9 +45,7 @@ function LoginFormContent() {
             <LogIn className="h-6 w-6" />
             <CardTitle className="text-2xl font-bold">Login Admin</CardTitle>
           </div>
-          <CardDescription>
-            Masukkan email dan password untuk mengakses admin panel
-          </CardDescription>
+          <CardDescription>Masukkan email dan password untuk mengakses admin panel</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -64,8 +62,8 @@ function LoginFormContent() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@sekolix.test"
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@sekolix.com"
                 required
               />
             </div>
@@ -77,7 +75,7 @@ function LoginFormContent() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="Masukkan sandi Anda"
                 required
               />
@@ -86,10 +84,19 @@ function LoginFormContent() {
               {loading ? "Sedang masuk..." : "Masuk"}
             </Button>
           </form>
-          <div className="mt-4 rounded-md bg-muted p-3 text-xs text-muted-foreground">
-            <div className="font-medium mb-1">Akun Uji:</div>
-            <div>admin@sekolix.test / Admin123!</div>
-            <div>editor@sekolix.test / Editor123!</div>
+          <div className="mt-4 rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-xs text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <div className="font-medium mb-2">📝 Kredensial Admin:</div>
+            <div className="space-y-1">
+              <div>
+                <strong>Email:</strong> admin@sekolix.com
+              </div>
+              <div>
+                <strong>Password:</strong> admin123
+              </div>
+            </div>
+            <div className="mt-2 text-xs opacity-75">
+              Gunakan akun ini untuk mengakses admin panel
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -99,7 +106,9 @@ function LoginFormContent() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}
+    >
       <LoginFormContent />
     </Suspense>
   );

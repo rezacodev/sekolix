@@ -1,6 +1,6 @@
 /**
  * Components Index
- * 
+ *
  * Central export point for all components organized by category:
  * - ui/: Generic UI primitives from shadcn/ui
  * - common/: Reusable components used across the app
@@ -13,14 +13,14 @@
  */
 
 // UI Components
-export * from './ui';
+export * from "./ui";
 
 // Common Components
-export * from './common';
+export * from "./common";
 
 // Feature Components
-export * from './features';
+export * from "./features";
 
 // Other feature-specific exports
-export { default as DynamicThemeRenderer } from './DynamicThemeRenderer';
-export { ThemeProvider } from './ThemeProvider';
+export { default as DynamicThemeRenderer } from "./DynamicThemeRenderer";
+export { ThemeProvider } from "./ThemeProvider";

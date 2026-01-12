@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type ThemeName = 'academic-classic' | 'modern-vibrant' | 'minimalist-clean';
+export type ThemeName = "academic-classic" | "modern-vibrant" | "minimalist-clean";
 
 interface ThemeContextType {
   currentTheme: ThemeName;
@@ -18,16 +18,14 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
-  const [currentTheme, setCurrentTheme] = useState<ThemeName>(
-    initialTheme || 'academic-classic'
-  );
+  const [currentTheme, setCurrentTheme] = useState<ThemeName>(initialTheme || "academic-classic");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Fetch active theme from database
     const fetchActiveTheme = async () => {
       try {
-        const response = await fetch('/api/admin/website-landing/theme/active');
+        const response = await fetch("/api/admin/landing-website/theme/active");
         if (response.ok) {
           const data = await response.json();
           if (data.theme) {
@@ -35,7 +33,7 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch active theme:', error);
+        console.error("Failed to fetch active theme:", error);
       } finally {
         setIsLoading(false);
       }
@@ -47,19 +45,19 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
   const setTheme = async (theme: ThemeName) => {
     try {
       // Update theme in database
-      const response = await fetch('/api/admin/website-landing/theme/active', {
-        method: 'POST',
+      const response = await fetch("/api/admin/landing-website/theme/active", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ theme }),
+        body: JSON.stringify({ theme })
       });
 
       if (response.ok) {
         setCurrentTheme(theme);
       }
     } catch (error) {
-      console.error('Failed to update theme:', error);
+      console.error("Failed to update theme:", error);
     }
   };
 
@@ -73,7 +71,7 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 }

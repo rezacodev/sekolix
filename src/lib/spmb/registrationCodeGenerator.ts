@@ -6,19 +6,17 @@ import { db } from "../db/index";
  * Example: "DAFTAR24001" or "DAFTAR-2024-0001-2025"
  * Settings are per academic year
  */
-export async function generateRegistrationCode(
-  yearId: string
-): Promise<string> {
+export async function generateRegistrationCode(yearId: string): Promise<string> {
   try {
     // Get registration code settings for this academic year
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
       // Create default settings for this year if not exists
       const year = await db.tahunAjaran.findUnique({
-        where: { id: yearId },
+        where: { id: yearId }
       });
 
       if (!year) {
@@ -32,14 +30,14 @@ export async function generateRegistrationCode(
           suffix: "",
           padLength: 4,
           includeYearCode: true,
-          nextNumber: 1,
-        },
+          nextNumber: 1
+        }
       });
     }
 
     // Get year code
     const year = await db.tahunAjaran.findUnique({
-      where: { id: yearId },
+      where: { id: yearId }
     });
 
     let yearCode = "";
@@ -48,31 +46,24 @@ export async function generateRegistrationCode(
     }
 
     // Build registration code
-    const paddedNumber = String(settings.nextNumber).padStart(
-      settings.padLength,
-      "0"
-    );
-    const registrationCode =
-      settings.prefix +
-      yearCode +
-      paddedNumber +
-      (settings.suffix || "");
+    const paddedNumber = String(settings.nextNumber).padStart(settings.padLength, "0");
+    const registrationCode = settings.prefix + yearCode + paddedNumber + (settings.suffix || "");
 
     // Validasi keunikan kode per tahun ajaran
     const existingCode = await db.applicant.findFirst({
       where: {
-        registrationCode: registrationCode,
+        registrationCode: registrationCode
         // Validate that the applicant belongs to this academic year if possible
-      },
+      }
     });
 
     if (existingCode) {
       // Jika kode sudah ada, increment counter dan coba lagi
       await db.admissionRegistrationCodeSetting.update({
         where: { tahunAjaranId: yearId },
-        data: { nextNumber: settings.nextNumber + 1 },
+        data: { nextNumber: settings.nextNumber + 1 }
       });
-      
+
       // Recursive call untuk generate kode yang unik
       return generateRegistrationCode(yearId);
     }
@@ -80,7 +71,7 @@ export async function generateRegistrationCode(
     // Increment nextNumber for next code generation
     await db.admissionRegistrationCodeSetting.update({
       where: { tahunAjaranId: yearId },
-      data: { nextNumber: settings.nextNumber + 1 },
+      data: { nextNumber: settings.nextNumber + 1 }
     });
 
     return registrationCode;
@@ -96,12 +87,12 @@ export async function generateRegistrationCode(
 export async function getRegistrationCodeSettings(yearId: string) {
   try {
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
       const year = await db.tahunAjaran.findUnique({
-        where: { id: yearId },
+        where: { id: yearId }
       });
 
       if (!year) {
@@ -115,8 +106,8 @@ export async function getRegistrationCodeSettings(yearId: string) {
           suffix: "",
           padLength: 4,
           includeYearCode: true,
-          nextNumber: 1,
-        },
+          nextNumber: 1
+        }
       });
     }
 
@@ -133,12 +124,12 @@ export async function getRegistrationCodeSettings(yearId: string) {
 export async function resetRegistrationCodeCounter(yearId: string, startNumber: number = 1) {
   try {
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
       const year = await db.tahunAjaran.findUnique({
-        where: { id: yearId },
+        where: { id: yearId }
       });
 
       if (!year) {
@@ -152,13 +143,13 @@ export async function resetRegistrationCodeCounter(yearId: string, startNumber: 
           suffix: "",
           padLength: 4,
           includeYearCode: true,
-          nextNumber: startNumber,
-        },
+          nextNumber: startNumber
+        }
       });
     } else {
       settings = await db.admissionRegistrationCodeSetting.update({
         where: { tahunAjaranId: yearId },
-        data: { nextNumber: startNumber },
+        data: { nextNumber: startNumber }
       });
     }
 
@@ -183,12 +174,12 @@ export async function updateRegistrationCodeSettings(
 ) {
   try {
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
       const year = await db.tahunAjaran.findUnique({
-        where: { id: yearId },
+        where: { id: yearId }
       });
 
       if (!year) {
@@ -202,8 +193,8 @@ export async function updateRegistrationCodeSettings(
           suffix: data.suffix ?? "",
           padLength: data.padLength ?? 4,
           includeYearCode: data.includeYearCode ?? true,
-          nextNumber: 1,
-        },
+          nextNumber: 1
+        }
       });
     } else {
       settings = await db.admissionRegistrationCodeSetting.update({
@@ -212,9 +203,8 @@ export async function updateRegistrationCodeSettings(
           prefix: data.prefix ?? settings.prefix,
           suffix: data.suffix ?? settings.suffix,
           padLength: data.padLength ?? settings.padLength,
-          includeYearCode:
-            data.includeYearCode ?? settings.includeYearCode,
-        },
+          includeYearCode: data.includeYearCode ?? settings.includeYearCode
+        }
       });
     }
 

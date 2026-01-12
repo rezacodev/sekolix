@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin } from "lucide-react";
 
 interface FooterProps {
   schoolName: string;
@@ -17,7 +17,7 @@ export default function CleanFooter({
   address,
   phone,
   email,
-  socialMedia,
+  socialMedia
 }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
@@ -27,9 +27,7 @@ export default function CleanFooter({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
           {/* School Info */}
           <div>
-            <h3 className="text-2xl font-light text-slate-900 mb-6">
-              {schoolName}
-            </h3>
+            <h3 className="text-2xl font-light text-slate-900 mb-6">{schoolName}</h3>
             <p className="text-slate-600 leading-relaxed font-light mb-8">
               Excellence in education. Building tomorrow&apos;s leaders today.
             </p>
@@ -84,18 +82,16 @@ export default function CleanFooter({
               Quick Links
             </h4>
             <ul className="space-y-3">
-              {['About', 'Admissions', 'Programs', 'Faculty', 'News', 'Contact'].map(
-                (link) => (
-                  <li key={link}>
-                    <a
-                      href={`/${link.toLowerCase()}`}
-                      className="text-slate-600 hover:text-slate-900 transition-colors duration-300 font-light"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
+              {["About", "Admissions", "Programs", "Faculty", "News", "Contact"].map(link => (
+                <li key={link}>
+                  <a
+                    href={`/${link.toLowerCase()}`}
+                    className="text-slate-600 hover:text-slate-900 transition-colors duration-300 font-light"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -137,16 +133,10 @@ export default function CleanFooter({
             © {currentYear} {schoolName}. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a
-              href="/privacy"
-              className="hover:text-slate-900 transition-colors font-light"
-            >
+            <a href="/privacy" className="hover:text-slate-900 transition-colors font-light">
               Privacy
             </a>
-            <a
-              href="/terms"
-              className="hover:text-slate-900 transition-colors font-light"
-            >
+            <a href="/terms" className="hover:text-slate-900 transition-colors font-light">
               Terms
             </a>
           </div>

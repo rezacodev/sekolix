@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue
+} from "@/components/ui/select";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +17,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 
 interface ApplicantRow {
@@ -41,56 +47,60 @@ export default function SiswaDiterimaActions() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/penerimaan-siswa/settings/years');
+        const res = await fetch("/api/admin/penerimaan-siswa/settings/years");
         if (res.ok) {
           const data = (await res.json()) as YearItem[];
           setYears(data || []);
-          const active = (data || []).find((y) => y.isActive);
-          const defaultYear = active ? active.id : (data && data[0] ? data[0].id : null);
+          const active = (data || []).find(y => y.isActive);
+          const defaultYear = active ? active.id : data && data[0] ? data[0].id : null;
           setSelectedYear(defaultYear);
           await fetchItems({ yearId: defaultYear ?? undefined });
           return;
         }
       } catch (err) {
-        console.error('Failed to fetch years', err);
+        console.error("Failed to fetch years", err);
       }
       await fetchItems({});
     })();
     // fetch master programs for filter options
     (async () => {
       try {
-        const res = await fetch('/api/admin/penerimaan-siswa/settings/programs');
+        const res = await fetch("/api/admin/penerimaan-siswa/settings/programs");
         if (res.ok) {
           const data = await res.json();
           setPrograms(data || []);
         }
       } catch (err) {
-        console.error('Failed to fetch programs', err);
+        console.error("Failed to fetch programs", err);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchItems = async (opts: { yearId?: string | null; program?: string | null } = {}): Promise<void> => {
+  const fetchItems = async (
+    opts: { yearId?: string | null; program?: string | null } = {}
+  ): Promise<void> => {
     setIsLoading(true);
     try {
-      const url = new URL('/api/admin/penerimaan-siswa/applicant', window.location.origin);
+      const url = new URL("/api/admin/penerimaan-siswa/applicant", window.location.origin);
       // server-side: request accepted applicants only
-      url.searchParams.set('status', 'accepted');
-      const yearToUse = Object.prototype.hasOwnProperty.call(opts, 'yearId') ? opts.yearId : selectedYear;
-      if (yearToUse) url.searchParams.set('yearId', yearToUse);
+      url.searchParams.set("status", "accepted");
+      const yearToUse = Object.prototype.hasOwnProperty.call(opts, "yearId")
+        ? opts.yearId
+        : selectedYear;
+      if (yearToUse) url.searchParams.set("yearId", yearToUse);
 
       // For program, treat explicit opts.program as override. 'all' means no filter.
-      if (Object.prototype.hasOwnProperty.call(opts, 'program')) {
-        if (opts.program && opts.program !== 'all') url.searchParams.set('program', opts.program);
-      } else if (selectedProgram && selectedProgram !== 'all') {
-        url.searchParams.set('program', selectedProgram);
+      if (Object.prototype.hasOwnProperty.call(opts, "program")) {
+        if (opts.program && opts.program !== "all") url.searchParams.set("program", opts.program);
+      } else if (selectedProgram && selectedProgram !== "all") {
+        url.searchParams.set("program", selectedProgram);
       }
 
       // pagination params
-      url.searchParams.set('page', String(pageIndex));
-      url.searchParams.set('pageSize', String(pageSize));
-      if (search) url.searchParams.set('search', search);
+      url.searchParams.set("page", String(pageIndex));
+      url.searchParams.set("pageSize", String(pageSize));
+      if (search) url.searchParams.set("search", search);
 
       const res = await fetch(url.toString());
       if (!res.ok) {
@@ -101,7 +111,7 @@ export default function SiswaDiterimaActions() {
       const data = await res.json();
       if (Array.isArray(data)) {
         // legacy fallback
-        setItems((data as ApplicantRow[]).filter((a) => a.status === 'accepted'));
+        setItems((data as ApplicantRow[]).filter(a => a.status === "accepted"));
         setTotalCount((data as ApplicantRow[]).length);
       } else {
         setItems(data.items || []);
@@ -110,7 +120,7 @@ export default function SiswaDiterimaActions() {
         setPageSize(data.pageSize ?? pageSize);
       }
     } catch (err) {
-      console.error('Failed to fetch applicants', err);
+      console.error("Failed to fetch applicants", err);
       setItems([]);
     } finally {
       setIsLoading(false);
@@ -120,15 +130,27 @@ export default function SiswaDiterimaActions() {
   const exportCSV = (rows: ApplicantRow[]) => {
     if (!rows || rows.length === 0) return;
     const headers = ["Kode", "Nama", "Program", "Tahun Ajaran", "Status"];
-    const csv = [headers.join(",")].concat(
-      rows.map((r) => [r.registrationCode ?? "", r.fullName, r.program?.name ?? "", r.academicYear?.label ?? "", r.status ?? ""].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-    ).join("\n");
+    const csv = [headers.join(",")]
+      .concat(
+        rows.map(r =>
+          [
+            r.registrationCode ?? "",
+            r.fullName,
+            r.program?.name ?? "",
+            r.academicYear?.label ?? "",
+            r.status ?? ""
+          ]
+            .map(c => `"${String(c).replace(/"/g, '""')}"`)
+            .join(",")
+        )
+      )
+      .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `siswa_diterima_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `siswa_diterima_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -137,23 +159,29 @@ export default function SiswaDiterimaActions() {
 
   const columns: ColumnDef<ApplicantRow, unknown>[] = [
     {
-      accessorKey: 'registrationCode',
-      header: 'Kode',
+      accessorKey: "registrationCode",
+      header: "Kode",
       cell: ({ row }) => {
-        const code = row.getValue('registrationCode') as string | null;
+        const code = row.getValue("registrationCode") as string | null;
         return code ? (
-          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">{code}</code>
+          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">
+            {code}
+          </code>
         ) : (
           <span className="text-xs text-muted-foreground">-</span>
         );
-      },
+      }
     },
-    { accessorKey: 'fullName', header: 'Nama' },
-    { accessorFn: (row) => row.program?.name ?? '', id: 'program', header: 'Program' },
-    { accessorFn: (row) => row.academicYear?.label ?? '', id: 'academicYear', header: 'Tahun Ajaran' },
+    { accessorKey: "fullName", header: "Nama" },
+    { accessorFn: row => row.program?.name ?? "", id: "program", header: "Program" },
     {
-      id: 'actions',
-      header: 'Aksi',
+      accessorFn: row => row.academicYear?.label ?? "",
+      id: "academicYear",
+      header: "Tahun Ajaran"
+    },
+    {
+      id: "actions",
+      header: "Aksi",
       cell: ({ row }) => {
         const applicant = row.original as ApplicantRow;
         return (
@@ -166,31 +194,37 @@ export default function SiswaDiterimaActions() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem onClick={async () => {
-                try {
-                  const params = new URLSearchParams();
-                  params.set('applicantId', applicant.id);
-                  const res = await fetch(`/api/admin/penerimaan-siswa/export/biodata?${params.toString()}`);
-                  if (!res.ok) throw new Error('Gagal membuat biodata');
-                  const blob = await res.blob();
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${applicant.registrationCode ?? applicant.id}_biodata.pdf`;
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  URL.revokeObjectURL(url);
-                } catch (err) {
-                  console.error(err);
-                  alert('Gagal mencetak biodata');
-                }
-              }}>Cetak Biodata</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  try {
+                    const params = new URLSearchParams();
+                    params.set("applicantId", applicant.id);
+                    const res = await fetch(
+                      `/api/admin/penerimaan-siswa/export/biodata?${params.toString()}`
+                    );
+                    if (!res.ok) throw new Error("Gagal membuat biodata");
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${applicant.registrationCode ?? applicant.id}_biodata.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    console.error(err);
+                    alert("Gagal mencetak biodata");
+                  }
+                }}
+              >
+                Cetak Biodata
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
-      },
-    },
+      }
+    }
   ];
 
   return (
@@ -207,7 +241,7 @@ export default function SiswaDiterimaActions() {
             <div className="w-64">
               <Select
                 value={selectedYear ?? undefined}
-                onValueChange={(val) => {
+                onValueChange={val => {
                   const v = val || undefined;
                   setSelectedYear(v ?? null);
                   void fetchItems({ yearId: v });
@@ -217,8 +251,10 @@ export default function SiswaDiterimaActions() {
                   <SelectValue placeholder="Semua" />
                 </SelectTrigger>
                 <SelectContent>
-                  {years.map((y) => (
-                    <SelectItem key={y.id} value={y.id}>{y.label}</SelectItem>
+                  {years.map(y => (
+                    <SelectItem key={y.id} value={y.id}>
+                      {y.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -232,12 +268,12 @@ export default function SiswaDiterimaActions() {
             <div className="w-48">
               <Select
                 value={selectedProgram ?? undefined}
-                onValueChange={(val) => {
+                onValueChange={val => {
                   // Keep 'all' literal in state so Select displays reliably
                   const v = val ?? "all";
                   setSelectedProgram(v ?? null);
-                    // pass literal 'all' so fetchItems treats it as clear
-                    void fetchItems({ program: v });
+                  // pass literal 'all' so fetchItems treats it as clear
+                  void fetchItems({ program: v });
                 }}
               >
                 <SelectTrigger>
@@ -245,8 +281,10 @@ export default function SiswaDiterimaActions() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua</SelectItem>
-                  {programs.map((p) => (
-                    <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                  {programs.map(p => (
+                    <SelectItem key={p.id} value={p.name}>
+                      {p.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -254,29 +292,36 @@ export default function SiswaDiterimaActions() {
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            <button onClick={() => exportCSV(items)} className="rounded-lg bg-primary px-4 py-2 text-sm text-white">Export CSV</button>
+            <button
+              onClick={() => exportCSV(items)}
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-white"
+            >
+              Export CSV
+            </button>
             <button
               onClick={async () => {
-              try {
-                const params = new URLSearchParams();
-                params.set('type', 'pdf');
-                if (selectedYear) params.set('yearId', selectedYear);
-                if (selectedProgram) params.set('program', selectedProgram);
-                const res = await fetch(`/api/admin/penerimaan-siswa/export?${params.toString()}`);
-                if (!res.ok) throw new Error('Export PDF gagal');
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `siswa_diterima_${new Date().toISOString().slice(0,10)}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-              } catch (err) {
-                console.error(err);
-                alert('Gagal mendownload PDF');
-              }
+                try {
+                  const params = new URLSearchParams();
+                  params.set("type", "pdf");
+                  if (selectedYear) params.set("yearId", selectedYear);
+                  if (selectedProgram) params.set("program", selectedProgram);
+                  const res = await fetch(
+                    `/api/admin/penerimaan-siswa/export?${params.toString()}`
+                  );
+                  if (!res.ok) throw new Error("Export PDF gagal");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `siswa_diterima_${new Date().toISOString().slice(0, 10)}.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  alert("Gagal mendownload PDF");
+                }
               }}
               className="rounded-lg border px-4 py-2 text-sm"
             >
@@ -285,26 +330,28 @@ export default function SiswaDiterimaActions() {
 
             <button
               onClick={async () => {
-              try {
-                const params = new URLSearchParams();
-                params.set('type', 'xlsx');
-                if (selectedYear) params.set('yearId', selectedYear);
-                if (selectedProgram) params.set('program', selectedProgram);
-                const res = await fetch(`/api/admin/penerimaan-siswa/export?${params.toString()}`);
-                if (!res.ok) throw new Error('Export Excel gagal');
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `siswa_diterima_${new Date().toISOString().slice(0,10)}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-              } catch (err) {
-                console.error(err);
-                alert('Gagal mendownload Excel');
-              }
+                try {
+                  const params = new URLSearchParams();
+                  params.set("type", "xlsx");
+                  if (selectedYear) params.set("yearId", selectedYear);
+                  if (selectedProgram) params.set("program", selectedProgram);
+                  const res = await fetch(
+                    `/api/admin/penerimaan-siswa/export?${params.toString()}`
+                  );
+                  if (!res.ok) throw new Error("Export Excel gagal");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `siswa_diterima_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  alert("Gagal mendownload Excel");
+                }
               }}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white"
             >
@@ -325,9 +372,20 @@ export default function SiswaDiterimaActions() {
           totalCount={totalCount}
           pageIndex={pageIndex}
           pageSize={pageSize}
-          onPageChange={(p) => { setPageIndex(p); void fetchItems({ yearId: selectedYear }); }}
-          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); void fetchItems({ yearId: selectedYear }); }}
-          onSearchChange={(v) => { setSearch(v); setPageIndex(0); void fetchItems({ yearId: selectedYear, program: selectedProgram }); }}
+          onPageChange={p => {
+            setPageIndex(p);
+            void fetchItems({ yearId: selectedYear });
+          }}
+          onPageSizeChange={ps => {
+            setPageSize(ps);
+            setPageIndex(0);
+            void fetchItems({ yearId: selectedYear });
+          }}
+          onSearchChange={v => {
+            setSearch(v);
+            setPageIndex(0);
+            void fetchItems({ yearId: selectedYear, program: selectedProgram });
+          }}
         />
       )}
     </div>

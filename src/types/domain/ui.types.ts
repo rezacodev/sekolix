@@ -22,7 +22,7 @@ export interface DialogProps {
 }
 
 export interface AlertProps {
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   message: string;
   duration?: number;
 }

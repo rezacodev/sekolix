@@ -1,11 +1,11 @@
 /**
  * API Endpoints
- * 
+ *
  * Centralized definitions of all API endpoint paths
  */
 
 // Base paths
-export const API_BASE = '/api';
+export const API_BASE = "/api";
 export const API_ADMIN = `${API_BASE}/admin`;
 export const API_WEBSITE = `${API_ADMIN}/website-landing`;
 export const API_SPMB = `${API_BASE}/penerimaan-siswa`;

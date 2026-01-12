@@ -15,7 +15,7 @@ export default function MinimalHero({
   subtitle,
   body,
   description,
-  established = "Established 1985",
+  established = "Established 1985"
 }: MinimalHeroProps) {
   return (
     <section className="pt-32 pb-24 md:pt-40 md:pb-32">
@@ -30,7 +30,9 @@ export default function MinimalHero({
             <span className="accent-blue">{subtitle || "Education"}</span>
           </h1>
           <p className="text-xl md:text-2xl text-neutral-600 mb-12 max-w-2xl leading-relaxed">
-            {body || description || "Empowering students through knowledge, innovation, and character development."}
+            {body ||
+              description ||
+              "Empowering students through knowledge, innovation, and character development."}
           </p>
           <div className="flex flex-wrap gap-6">
             <button className="btn-primary-minimal">Daftar Sekarang</button>

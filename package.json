@@ -2,6 +2,7 @@
   "name": "sekolix",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "prebuild": "prisma migrate deploy",
@@ -13,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "prisma:seed:modular": "node prisma/seeds/index.js"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.19",
@@ -29,6 +31,8 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
@@ -56,6 +60,7 @@
     "pdfkit": "^0.17.2",
     "prisma": "^5.16.2",
     "react": "19.2.1",
+    "react-day-picker": "^9.13.0",
     "react-dom": "19.2.1",
     "react-hook-form": "^7.68.0",
     "react-textarea-autosize": "^8.5.9",
@@ -77,6 +82,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "node prisma/seeds/index.js"
   }
 }

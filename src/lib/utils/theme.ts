@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from "@/lib/db";
 
 export interface ThemeConfig {
   id: string;
@@ -33,13 +33,13 @@ export async function getActiveThemeConfig(): Promise<ThemeConfig | null> {
   try {
     const activeTheme = await db.themeConfig.findFirst({
       where: {
-        isActive: true,
-      },
+        isActive: true
+      }
     });
 
     return activeTheme;
   } catch (error) {
-    console.error('Error fetching active theme config:', error);
+    console.error("Error fetching active theme config:", error);
     return null;
   }
 }
@@ -51,8 +51,8 @@ export async function getThemeConfigById(themeId: string): Promise<ThemeConfig |
   try {
     const theme = await db.themeConfig.findUnique({
       where: {
-        themeId,
-      },
+        themeId
+      }
     });
 
     return theme;
@@ -85,42 +85,42 @@ export function generateThemeVariables(config: ThemeConfig): string {
  */
 export function getDefaultThemeConfig(themeId: string): ThemeConfig {
   const defaults: Record<string, Partial<ThemeConfig>> = {
-    'academic-classic': {
-      primaryColor: '#1e3a8a',
-      secondaryColor: '#FFFFFF',
-      accentColor: '#d97706',
-      textColor: '#1f2937',
-      borderColor: '#e5e7eb',
-      grayColor: '#6b7280',
+    "academic-classic": {
+      primaryColor: "#1e3a8a",
+      secondaryColor: "#FFFFFF",
+      accentColor: "#d97706",
+      textColor: "#1f2937",
+      borderColor: "#e5e7eb",
+      grayColor: "#6b7280",
       headingFont: "'Playfair Display', serif",
-      bodyFont: "'Inter', sans-serif",
+      bodyFont: "'Inter', sans-serif"
     },
-    'modern-vibrant': {
-      primaryColor: '#06b6d4',
-      secondaryColor: '#f97316',
-      accentColor: '#a855f7',
-      textColor: '#0f172a',
-      borderColor: '#e2e8f0',
-      grayColor: '#64748b',
+    "modern-vibrant": {
+      primaryColor: "#06b6d4",
+      secondaryColor: "#f97316",
+      accentColor: "#a855f7",
+      textColor: "#0f172a",
+      borderColor: "#e2e8f0",
+      grayColor: "#64748b",
       headingFont: "'Poppins', sans-serif",
-      bodyFont: "'Poppins', sans-serif",
+      bodyFont: "'Poppins', sans-serif"
     },
-    'minimalist-clean': {
-      primaryColor: '#171717',
-      secondaryColor: '#FFFFFF',
-      accentColor: '#3b82f6',
-      textColor: '#171717',
-      borderColor: '#e5e5e5',
-      grayColor: '#525252',
+    "minimalist-clean": {
+      primaryColor: "#171717",
+      secondaryColor: "#FFFFFF",
+      accentColor: "#3b82f6",
+      textColor: "#171717",
+      borderColor: "#e5e5e5",
+      grayColor: "#525252",
       headingFont: "'Inter', sans-serif",
-      bodyFont: "'Inter', sans-serif",
-    },
+      bodyFont: "'Inter', sans-serif"
+    }
   };
 
-  const defaultConfig = defaults[themeId] || defaults['academic-classic'];
+  const defaultConfig = defaults[themeId] || defaults["academic-classic"];
 
   return {
-    id: 'default',
+    id: "default",
     name: themeId,
     themeId,
     isActive: false,
@@ -141,6 +141,6 @@ export function getDefaultThemeConfig(themeId: string): ThemeConfig {
     defaultBorderColor: defaultConfig.borderColor!,
     defaultGrayColor: defaultConfig.grayColor!,
     defaultHeadingFont: defaultConfig.headingFont!,
-    defaultBodyFont: defaultConfig.bodyFont!,
+    defaultBodyFont: defaultConfig.bodyFont!
   };
 }

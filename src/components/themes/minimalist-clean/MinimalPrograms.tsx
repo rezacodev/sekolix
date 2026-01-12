@@ -20,7 +20,7 @@ export default function MinimalPrograms({
   programs,
   badge = "Program Keahlian",
   title,
-  subtitle,
+  subtitle
 }: MinimalProgramsProps) {
   return (
     <section className="py-20 md:py-32">
@@ -51,9 +51,7 @@ export default function MinimalPrograms({
                     {program.description}
                   </p>
                 </div>
-                <button className="btn-minimal self-start md:self-center">
-                  Lihat Detail
-                </button>
+                <button className="btn-minimal self-start md:self-center">Lihat Detail</button>
               </div>
             </div>
           ))}

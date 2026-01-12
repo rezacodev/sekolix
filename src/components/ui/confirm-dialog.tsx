@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -31,21 +31,17 @@ export function ConfirmDialog({
   isDestructive = true,
   isLoading = false,
   onConfirm,
-  onCancel,
+  onCancel
 }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <Dialog open={open} onOpenChange={isOpen => !isOpen && onCancel()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter className="gap-3 sm:gap-3">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </Button>
           <Button

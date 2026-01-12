@@ -1,12 +1,13 @@
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { Navbar, VibrantFooter } from '@/components/themes/modern-vibrant';
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { Navbar, VibrantFooter } from "@/components/themes/modern-vibrant";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ModernVibrantContact() {
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
   return (
     <ThemeProvider {...themeConfig}>
@@ -17,7 +18,9 @@ export default async function ModernVibrantContact() {
           <section className="bg-linear-to-r from-cyan-500 to-purple-500 text-white py-20">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-4xl font-bold mb-4">Hubungi Kami</h1>
-              <p className="text-lg text-cyan-100">Ajukan pertanyaan, kolaborasi, atau informasi pendaftaran siswa</p>
+              <p className="text-lg text-cyan-100">
+                Ajukan pertanyaan, kolaborasi, atau informasi pendaftaran siswa
+              </p>
             </div>
           </section>
 
@@ -45,13 +48,22 @@ export default async function ModernVibrantContact() {
                 </div>
                 <div>
                   <label className="text-sm text-slate-200">Email</label>
-                  <input type="email" className="mt-2 w-full rounded-xl bg-slate-900/60 border border-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none" />
+                  <input
+                    type="email"
+                    className="mt-2 w-full rounded-xl bg-slate-900/60 border border-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                  />
                 </div>
                 <div>
                   <label className="text-sm text-slate-200">Pesan</label>
-                  <textarea rows={4} className="mt-2 w-full rounded-xl bg-slate-900/60 border border-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none" />
+                  <textarea
+                    rows={4}
+                    className="mt-2 w-full rounded-xl bg-slate-900/60 border border-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                  />
                 </div>
-                <button type="button" className="w-full rounded-xl bg-linear-to-r from-cyan-500 to-purple-500 py-3 font-semibold text-white shadow-lg shadow-cyan-500/30">
+                <button
+                  type="button"
+                  className="w-full rounded-xl bg-linear-to-r from-cyan-500 to-purple-500 py-3 font-semibold text-white shadow-lg shadow-cyan-500/30"
+                >
                   Kirim Pesan
                 </button>
               </form>
@@ -67,7 +79,7 @@ export default async function ModernVibrantContact() {
           socialMedia={{
             facebook: "https://facebook.com/smkn1jakarta",
             instagram: "https://instagram.com/smkn1jakarta",
-            twitter: "https://twitter.com/smkn1jakarta",
+            twitter: "https://twitter.com/smkn1jakarta"
           }}
         />
       </div>

@@ -1,14 +1,14 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getActiveThemeId } from '@/lib/utils';
-import prisma from '@/lib/db';
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getActiveThemeId } from "@/lib/utils";
+import prisma from "@/lib/db";
 
 // Import page components from each theme
-import AcademicClassicArticleDetail from '../../../academic-classic/informasi/articles/[slug]/page';
-import ModernVibrantArticleDetail from '../../../modern-vibrant/informasi/articles/[slug]/page';
-import MinimalistCleanArticleDetail from '../../../minimalist-clean/informasi/articles/[slug]/page';
+import AcademicClassicArticleDetail from "../../../academic-classic/informasi/articles/[slug]/page";
+import ModernVibrantArticleDetail from "../../../modern-vibrant/informasi/articles/[slug]/page";
+import MinimalistCleanArticleDetail from "../../../minimalist-clean/informasi/articles/[slug]/page";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface ArticleSlugRedirectProps {
@@ -18,14 +18,14 @@ interface ArticleSlugRedirectProps {
 async function getArticle(slug: string) {
   try {
     const article = await prisma.article.findUnique({
-      where: { 
+      where: {
         slug,
-        isPublished: true,
-      },
+        isPublished: true
+      }
     });
     return article;
   } catch (error) {
-    console.error('Error fetching article:', error);
+    console.error("Error fetching article:", error);
     return null;
   }
 }
@@ -36,19 +36,19 @@ export async function generateMetadata({ params }: ArticleSlugRedirectProps): Pr
 
   if (!article) {
     return {
-      title: 'Artikel Tidak Ditemukan',
+      title: "Artikel Tidak Ditemukan"
     };
   }
 
   return {
     title: `${article.title} - SMK Negeri 1 Jakarta`,
     description: article.excerpt || article.metaDescription,
-    keywords: article.tags?.join(', '),
+    keywords: article.tags?.join(", "),
     openGraph: {
       title: article.title,
-      description: article.excerpt || article.metaDescription || '',
-      images: article.featuredImage ? [article.featuredImage] : [],
-    },
+      description: article.excerpt || article.metaDescription || "",
+      images: article.featuredImage ? [article.featuredImage] : []
+    }
   };
 }
 
@@ -56,7 +56,7 @@ export default async function ArticleSlugRedirect({ params }: ArticleSlugRedirec
   const resolvedParams = await params;
   const { slug } = resolvedParams;
   const article = await getArticle(slug);
-  
+
   if (!article) {
     notFound();
   }
@@ -67,9 +67,9 @@ export default async function ArticleSlugRedirect({ params }: ArticleSlugRedirec
   const paramsPromise = Promise.resolve(resolvedParams);
 
   switch (activeThemeId) {
-    case 'modern-vibrant':
+    case "modern-vibrant":
       return <ModernVibrantArticleDetail params={paramsPromise} />;
-    case 'minimalist-clean':
+    case "minimalist-clean":
       return <MinimalistCleanArticleDetail params={paramsPromise} />;
     default:
       return <AcademicClassicArticleDetail params={paramsPromise} />;

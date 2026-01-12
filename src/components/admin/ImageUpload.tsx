@@ -12,12 +12,7 @@ interface ImageUploadProps {
   disabled?: boolean;
 }
 
-export function ImageUpload({
-  value,
-  onChange,
-  onRemove,
-  disabled,
-}: ImageUploadProps) {
+export function ImageUpload({ value, onChange, onRemove, disabled }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,7 +29,7 @@ export function ImageUpload({
       // Upload to API
       const response = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        body: formData
       });
 
       if (!response.ok) throw new Error("Upload failed");
@@ -52,12 +47,7 @@ export function ImageUpload({
   if (value) {
     return (
       <div className="relative w-full h-60 rounded-md overflow-hidden">
-        <Image
-          src={value}
-          alt="Upload"
-          fill
-          className="object-cover"
-        />
+        <Image src={value} alt="Upload" fill className="object-cover" />
         <Button
           type="button"
           onClick={onRemove}
@@ -80,9 +70,7 @@ export function ImageUpload({
           <p className="mb-2 text-sm text-muted-foreground">
             <span className="font-semibold">Click to upload</span> or drag and drop
           </p>
-          <p className="text-xs text-muted-foreground">
-            PNG, JPG, GIF up to 10MB
-          </p>
+          <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
         </div>
         <input
           type="file"

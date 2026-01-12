@@ -19,7 +19,7 @@ interface TimelineProps {
 export function Timeline({
   events,
   title = "Our Journey Through Time",
-  subtitle = "Decades of excellence in education and achievement",
+  subtitle = "Decades of excellence in education and achievement"
 }: TimelineProps) {
   return (
     <section className="py-16 bg-gray-50">
@@ -27,7 +27,10 @@ export function Timeline({
         {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-4">
-            <div className="flex items-center gap-2 px-4 py-1 academic-accent-bg-light rounded-full academic-accent-border" style={{borderWidth: '1px'}}>
+            <div
+              className="flex items-center gap-2 px-4 py-1 academic-accent-bg-light rounded-full academic-accent-border"
+              style={{ borderWidth: "1px" }}
+            >
               <div className="w-2 h-2 academic-accent-bg rounded-full" />
               <span className="text-[#001f3f] font-serif text-sm uppercase tracking-wider">
                 History & Milestones
@@ -37,9 +40,7 @@ export function Timeline({
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-[#001f3f] mb-4">
             {title}
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
-            {subtitle}
-          </p>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">{subtitle}</p>
           <div className="w-24 h-1 academic-accent-bg mx-auto" />
         </div>
 
@@ -88,9 +89,7 @@ export function Timeline({
                       </h3>
 
                       {/* Description */}
-                      <p className="text-gray-700 leading-relaxed">
-                        {event.description}
-                      </p>
+                      <p className="text-gray-700 leading-relaxed">{event.description}</p>
                     </Card>
                   </div>
 

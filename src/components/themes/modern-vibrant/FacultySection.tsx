@@ -34,20 +34,25 @@ export function FacultySection({
   return (
     <section className="py-20 bg-gradient-to-br from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-         {/* Header */}
+        {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
             <p className="text-sm text-gray-600">{subtitle}</p>
           </div>
           <div>
-            <a href={viewAllLink} className="inline-flex items-center text-sm text-primary hover:underline">Lihat semua</a>
+            <a
+              href={viewAllLink}
+              className="inline-flex items-center text-sm text-primary hover:underline"
+            >
+              Lihat semua
+            </a>
           </div>
         </div>
 
         {/* Faculty Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayFaculty.map((member) => (
+          {displayFaculty.map(member => (
             <Card
               key={member.id}
               className="overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 bg-white group hover:-translate-y-2"
@@ -74,12 +79,8 @@ export function FacultySection({
 
                 {/* Name and Position Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
-                  <h3 className="text-white text-xl font-bold mb-1">
-                    {member.name}
-                  </h3>
-                  <p className="text-blue-300 font-medium text-sm mb-1">
-                    {member.position}
-                  </p>
+                  <h3 className="text-white text-xl font-bold mb-1">{member.name}</h3>
+                  <p className="text-blue-300 font-medium text-sm mb-1">{member.position}</p>
                   <p className="text-gray-300 text-sm">{member.department}</p>
                 </div>
               </div>

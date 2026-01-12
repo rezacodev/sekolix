@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from "lucide-react";
 
 interface SimpleHeroProps {
   title: string;
@@ -9,25 +9,20 @@ interface SimpleHeroProps {
   ctaLink: string;
 }
 
-export default function SimpleHero({
-  title,
-  subtitle,
-  ctaText,
-  ctaLink,
-}: SimpleHeroProps) {
+export default function SimpleHero({ title, subtitle, ctaText, ctaLink }: SimpleHeroProps) {
   return (
     <section className="min-h-screen flex items-center justify-center px-4 bg-white">
       <div className="max-w-5xl mx-auto text-center">
         {/* Large Typography */}
         <h1 className="text-6xl md:text-8xl lg:text-9xl font-light text-slate-900 mb-8 leading-tight tracking-tight">
-          {title.split(' ').map((word, index) => (
+          {title.split(" ").map((word, index) => (
             <span
               key={index}
               className="inline-block opacity-0 animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+              style={{ animationDelay: `${index * 100}ms`, animationFillMode: "forwards" }}
             >
               {word}
-              {index < title.split(' ').length - 1 && '\u00A0'}
+              {index < title.split(" ").length - 1 && "\u00A0"}
             </span>
           ))}
         </h1>

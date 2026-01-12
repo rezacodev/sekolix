@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Loading component
 function ThemeLoader() {

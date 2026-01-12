@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { ExternalLink, Calendar, Clock } from 'lucide-react';
+import { useState } from "react";
+import Image from "next/image";
+import { ExternalLink, Calendar, Clock } from "lucide-react";
 
 interface CardData {
   id: string;
@@ -22,25 +22,19 @@ interface InteractiveCardsProps {
   subtitle: string;
 }
 
-export default function InteractiveCards({
-  cards,
-  title,
-  subtitle,
-}: InteractiveCardsProps) {
+export default function InteractiveCards({ cards, title, subtitle }: InteractiveCardsProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
     <section className="py-20 px-4 bg-linear-to-br from-slate-50 via-purple-50 to-orange-50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            {title}
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">{title}</h2>
           <p className="text-xl text-slate-600">{subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {cards.map((card) => (
+          {cards.map(card => (
             <a
               key={card.id}
               href={card.link}
@@ -50,24 +44,17 @@ export default function InteractiveCards({
             >
               <div
                 className={`relative bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-500 ${
-                  hoveredId === card.id
-                    ? 'scale-105 shadow-2xl -translate-y-2'
-                    : 'scale-100'
+                  hoveredId === card.id ? "scale-105 shadow-2xl -translate-y-2" : "scale-100"
                 }`}
               >
                 {/* Image Container */}
                 <div className="relative h-64 overflow-hidden">
                   <div
                     className={`relative w-full h-full transition-transform duration-700 ${
-                      hoveredId === card.id ? 'scale-110' : 'scale-100'
+                      hoveredId === card.id ? "scale-110" : "scale-100"
                     }`}
                   >
-                    <Image
-                      src={card.imageUrl}
-                      alt={card.title}
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={card.imageUrl} alt={card.title} fill className="object-cover" />
                   </div>
 
                   {/* Gradient Overlay */}
@@ -86,9 +73,7 @@ export default function InteractiveCards({
                   {/* Hover Icon */}
                   <div
                     className={`absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center transition-all duration-300 ${
-                      hoveredId === card.id
-                        ? 'opacity-100 scale-100'
-                        : 'opacity-0 scale-0'
+                      hoveredId === card.id ? "opacity-100 scale-100" : "opacity-0 scale-0"
                     }`}
                   >
                     <ExternalLink className="w-5 h-5 text-slate-900" />
@@ -115,24 +100,20 @@ export default function InteractiveCards({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-slate-600 line-clamp-3 mb-4">
-                    {card.description}
-                  </p>
+                  <p className="text-slate-600 line-clamp-3 mb-4">{card.description}</p>
 
                   {/* Read More Link */}
                   <div className="flex items-center gap-2 text-purple-600 font-semibold">
                     <span
                       className={`transition-transform duration-300 ${
-                        hoveredId === card.id ? 'translate-x-2' : ''
+                        hoveredId === card.id ? "translate-x-2" : ""
                       }`}
                     >
                       Read More
                     </span>
                     <ExternalLink
                       className={`w-4 h-4 transition-transform duration-300 ${
-                        hoveredId === card.id
-                          ? 'translate-x-1'
-                          : ''
+                        hoveredId === card.id ? "translate-x-1" : ""
                       }`}
                     />
                   </div>
@@ -141,10 +122,10 @@ export default function InteractiveCards({
                 {/* Animated Border */}
                 <div
                   className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
-                    hoveredId === card.id ? 'opacity-100' : 'opacity-0'
+                    hoveredId === card.id ? "opacity-100" : "opacity-0"
                   }`}
                   style={{
-                    border: `3px solid ${card.color}`,
+                    border: `3px solid ${card.color}`
                   }}
                 />
               </div>
@@ -152,7 +133,7 @@ export default function InteractiveCards({
               {/* Shadow Effect */}
               <div
                 className={`absolute inset-0 rounded-2xl blur-xl transition-opacity duration-300 -z-10 ${
-                  hoveredId === card.id ? 'opacity-50' : 'opacity-0'
+                  hoveredId === card.id ? "opacity-50" : "opacity-0"
                 }`}
                 style={{ backgroundColor: card.color }}
               />

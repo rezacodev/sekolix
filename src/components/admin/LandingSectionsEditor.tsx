@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 export type LandingSectionShape = {
   id: string;
@@ -29,9 +29,13 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
   const [savingId, setSavingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const handleChange = (id: string, field: keyof LandingSectionShape, value: string | number | boolean | null) => {
-    setItems((prev) =>
-      prev.map((section) => (section.id === id ? { ...section, [field]: value } : section))
+  const handleChange = (
+    id: string,
+    field: keyof LandingSectionShape,
+    value: string | number | boolean | null
+  ) => {
+    setItems(prev =>
+      prev.map(section => (section.id === id ? { ...section, [field]: value } : section))
     );
   };
 
@@ -39,9 +43,9 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
     setSavingId(section.id);
     setMessage(null);
 
-    const response = await fetch('/api/admin/website-landing/landing-sections', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/admin/landing-website/landing-sections", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: section.id,
         title: section.title,
@@ -51,15 +55,15 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
         order: section.order,
         isActive: section.isActive,
         type: section.type,
-        metadata: section.metadata,
-      }),
+        metadata: section.metadata
+      })
     });
 
     if (response.ok) {
-      setMessage('Perubahan tersimpan');
+      setMessage("Perubahan tersimpan");
     } else {
       const result = await response.json().catch(() => null);
-      setMessage(result?.message || 'Gagal menyimpan perubahan');
+      setMessage(result?.message || "Gagal menyimpan perubahan");
     }
 
     setSavingId(null);
@@ -79,26 +83,37 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
           <h3 className="text-lg font-semibold tracking-wide">Bagian Landing (Global)</h3>
           <Badge variant="secondary">{sortedSections.length} bagian</Badge>
         </div>
-        <p className="mt-2 text-sm text-slate-600">Bagian yang digunakan di semua tema. Edit sekali, semua tema terupdate.</p>
+        <p className="mt-2 text-sm text-slate-600">
+          Bagian yang digunakan di semua tema. Edit sekali, semua tema terupdate.
+        </p>
         <div className="mt-6 space-y-6">
-          {sortedSections.map((section) => (
+          {sortedSections.map(section => (
             <div key={section.id} className="rounded-2xl border border-slate-200 p-4">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-xs uppercase tracking-wide text-slate-500">{section.slug}</p>
-                    <Badge variant="outline" className="capitalize">{section.type}</Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {section.type}
+                    </Badge>
                   </div>
                   <h4 className="text-xl font-bold text-slate-900">{section.title}</h4>
                 </div>
-                <Button size="sm" variant="ghost" disabled={savingId === section.id} onClick={() => handleSave(section)}>
-                  {savingId === section.id ? 'Menyimpan...' : 'Simpan'}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={savingId === section.id}
+                  onClick={() => handleSave(section)}
+                >
+                  {savingId === section.id ? "Menyimpan..." : "Simpan"}
                 </Button>
               </div>
 
               {/* Live Preview Card */}
               <div className="mb-4 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Pratinjau</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                  Pratinjau
+                </p>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-slate-900">{section.title}</h3>
                   {section.subtitle && (
@@ -122,7 +137,7 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                   </span>
                   <Input
                     value={section.title}
-                    onChange={(event) => handleChange(section.id, 'title', event.target.value)}
+                    onChange={event => handleChange(section.id, "title", event.target.value)}
                     placeholder="Misal: Hero Section"
                   />
                 </div>
@@ -132,7 +147,7 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                   </span>
                   <Input
                     value={section.type}
-                    onChange={(event) => handleChange(section.id, 'type', event.target.value)}
+                    onChange={event => handleChange(section.id, "type", event.target.value)}
                     placeholder="hero, stats, programs, cta, dll"
                   />
                 </div>
@@ -141,8 +156,8 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                     Subjudul
                   </span>
                   <Input
-                    value={section.subtitle ?? ''}
-                    onChange={(event) => handleChange(section.id, 'subtitle', event.target.value)}
+                    value={section.subtitle ?? ""}
+                    onChange={event => handleChange(section.id, "subtitle", event.target.value)}
                     placeholder="Ringkasan pendek"
                   />
                 </div>
@@ -153,7 +168,9 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                   <Input
                     type="number"
                     value={section.order}
-                    onChange={(event) => handleChange(section.id, 'order', Number(event.target.value))}
+                    onChange={event =>
+                      handleChange(section.id, "order", Number(event.target.value))
+                    }
                     placeholder="0"
                   />
                 </div>
@@ -162,8 +179,8 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                     Konten
                   </span>
                   <Textarea
-                    value={section.body ?? ''}
-                    onChange={(event) => handleChange(section.id, 'body', event.target.value)}
+                    value={section.body ?? ""}
+                    onChange={event => handleChange(section.id, "body", event.target.value)}
                     placeholder="Jelaskan detail section"
                     className="min-h-[120px]"
                   />
@@ -173,8 +190,8 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                     Gambar
                   </span>
                   <Input
-                    value={section.image ?? ''}
-                    onChange={(event) => handleChange(section.id, 'image', event.target.value)}
+                    value={section.image ?? ""}
+                    onChange={event => handleChange(section.id, "image", event.target.value)}
                     placeholder="https://example.com/hero.jpg"
                   />
                 </div>
@@ -184,7 +201,7 @@ export const LandingSectionsEditor = ({ sections }: LandingSectionsEditorProps) 
                   <input
                     type="checkbox"
                     checked={section.isActive}
-                    onChange={(event) => handleChange(section.id, 'isActive', event.target.checked)}
+                    onChange={event => handleChange(section.id, "isActive", event.target.checked)}
                     className="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-0"
                   />
                   Aktifkan pada landing page

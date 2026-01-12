@@ -14,14 +14,14 @@ const statusOptions = [
   { value: "pending", label: "Pending" },
   { value: "review", label: "Dalam Review" },
   { value: "accepted", label: "Diterima" },
-  { value: "rejected", label: "Ditolak" },
+  { value: "rejected", label: "Ditolak" }
 ];
 
 export function ApplicantStatusForm({
   applicantId,
   initialStatus,
   initialHandledBy,
-  initialNotes,
+  initialNotes
 }: Props) {
   const [status, setStatus] = useState(initialStatus);
   const [notes, setNotes] = useState(initialNotes ?? "");
@@ -36,13 +36,13 @@ export function ApplicantStatusForm({
       const response = await fetch(`/api/admin/penerimaan-siswa/applicant/${applicantId}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           status,
           notes: notes.trim() || null,
-          handledBy: handledBy.trim() || null,
-        }),
+          handledBy: handledBy.trim() || null
+        })
       });
 
       if (!response.ok) {
@@ -66,10 +66,10 @@ export function ApplicantStatusForm({
         <label className="text-sm font-semibold text-slate-700">Status</label>
         <select
           value={status}
-          onChange={(event) => setStatus(event.target.value as Props["initialStatus"])}
+          onChange={event => setStatus(event.target.value as Props["initialStatus"])}
           className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          {statusOptions.map((option) => (
+          {statusOptions.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -81,7 +81,7 @@ export function ApplicantStatusForm({
         <label className="text-sm font-semibold text-slate-700">Catatan</label>
         <textarea
           value={notes}
-          onChange={(event) => setNotes(event.target.value)}
+          onChange={event => setNotes(event.target.value)}
           rows={3}
           className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           placeholder="Catatan tambahan untuk tim validasi"
@@ -93,7 +93,7 @@ export function ApplicantStatusForm({
         <input
           type="text"
           value={handledBy}
-          onChange={(event) => setHandledBy(event.target.value)}
+          onChange={event => setHandledBy(event.target.value)}
           className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           placeholder="Nama admin/editor"
         />

@@ -1,6 +1,6 @@
 "use client";
 
-import { MinimalNavbar } from './MinimalNavbar';
+import { MinimalNavbar } from "./MinimalNavbar";
 
 export function Header() {
   return (

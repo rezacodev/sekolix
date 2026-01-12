@@ -24,12 +24,13 @@ export function TestimonialSection({ testimonials }: TestimonialSectionProps) {
           <div className="academic-accent font-semibold mb-2">TESTIMONI</div>
           <h2 className="text-4xl font-bold mb-4">Kata Alumni & Orang Tua</h2>
           <p className="text-blue-100 max-w-2xl mx-auto">
-            Cerita sukses dari alumni dan kepercayaan orang tua terhadap pendidikan di SMK Negeri 1 Jakarta
+            Cerita sukses dari alumni dan kepercayaan orang tua terhadap pendidikan di SMK Negeri 1
+            Jakarta
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.slice(0, 3).map((testimonial) => (
+          {testimonials.slice(0, 3).map(testimonial => (
             <div
               key={testimonial.id}
               className="bg-white/10 backdrop-blur-lg rounded-lg p-8 border border-white/20 hover:bg-white/20 transition-all"
@@ -48,16 +49,14 @@ export function TestimonialSection({ testimonials }: TestimonialSectionProps) {
                   <div className="text-sm text-blue-200">{testimonial.role}</div>
                 </div>
               </div>
-              
+
               <div className="flex gap-1 academic-accent text-2xl mb-3">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-current" />
                 ))}
               </div>
-              
-              <p className="text-blue-100 leading-relaxed">
-                &quot;{testimonial.quote}&quot;
-              </p>
+
+              <p className="text-blue-100 leading-relaxed">&quot;{testimonial.quote}&quot;</p>
             </div>
           ))}
         </div>

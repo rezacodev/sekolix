@@ -12,7 +12,7 @@ async function getStats() {
     db.article.count({ where: { isPublished: true } }),
     db.news.count({ where: { isPublished: true } }),
     db.event.count({ where: { isPublished: true } }),
-    db.gallery.count(),
+    db.gallery.count()
   ]);
 
   return {
@@ -20,7 +20,7 @@ async function getStats() {
     articles,
     news,
     events,
-    galleries,
+    galleries
   };
 }
 
@@ -33,9 +33,6 @@ export default async function AdminDashboardPage() {
   const stats = await getStats();
 
   return (
-    <DashboardClient 
-      userName={session.user.name || session.user.email || "User"} 
-      stats={stats} 
-    />
+    <DashboardClient userName={session.user.name || session.user.email || "User"} stats={stats} />
   );
 }

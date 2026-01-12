@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Calendar, ArrowRight } from 'lucide-react';
+import Link from "next/link";
+import { Calendar, ArrowRight } from "lucide-react";
 
 interface NewsItem {
   id: string;
@@ -23,19 +23,14 @@ export default function ListBasedNews({ news, title }: ListBasedNewsProps) {
       <div className="max-w-4xl mx-auto">
         {/* Section Header */}
         <div className="mb-20">
-          <h2 className="text-5xl md:text-6xl font-light text-slate-900 mb-4">
-            {title}
-          </h2>
+          <h2 className="text-5xl md:text-6xl font-light text-slate-900 mb-4">{title}</h2>
           <div className="h-px w-24 bg-slate-900" />
         </div>
 
         {/* News List */}
         <div className="space-y-12">
-          {news.map((item) => (
-            <article
-              key={item.id}
-              className="group border-b border-slate-200 pb-12 last:border-0"
-            >
+          {news.map(item => (
+            <article key={item.id} className="group border-b border-slate-200 pb-12 last:border-0">
               <Link href={item.link} className="block">
                 {/* Meta */}
                 <div className="flex items-center gap-4 mb-4 text-sm text-slate-500">
@@ -59,9 +54,7 @@ export default function ListBasedNews({ news, title }: ListBasedNewsProps) {
 
                 {/* Read More Link */}
                 <div className="inline-flex items-center gap-2 text-slate-900 group-hover:gap-4 transition-all duration-300">
-                  <span className="text-sm uppercase tracking-wider font-medium">
-                    Read Article
-                  </span>
+                  <span className="text-sm uppercase tracking-wider font-medium">Read Article</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </Link>

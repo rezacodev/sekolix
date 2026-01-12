@@ -1,6 +1,6 @@
 /**
  * Feature-Specific Components
- * 
+ *
  * Organized by domain/module:
  * - admin: Admin dashboard specific components
  * - gallery: Gallery feature components
@@ -10,12 +10,12 @@
  */
 
 // Admin features
-export { default as ThemeSwitcher } from '../admin/ThemeSwitcher';
-export { ImageUpload } from '../admin/ImageUpload';
-export { LandingSectionsEditor } from '../admin/LandingSectionsEditor';
+export { default as ThemeSwitcher } from "../admin/ThemeSwitcher";
+export { ImageUpload } from "../admin/ImageUpload";
+export { LandingSectionsEditor } from "../admin/LandingSectionsEditor";
 
 // Gallery features
-export { default as EnhancedGallery } from '../gallery/EnhancedGallery';
+export { default as EnhancedGallery } from "../gallery/EnhancedGallery";
 
 // Media features
-export { MediaPickerDialog } from '../media/media-picker-dialog';
+export { MediaPickerDialog } from "../media/media-picker-dialog";

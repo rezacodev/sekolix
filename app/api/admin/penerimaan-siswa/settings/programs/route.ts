@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
-        { code: { contains: search, mode: "insensitive" } },
+        { code: { contains: search, mode: "insensitive" } }
       ];
     }
 
@@ -23,7 +23,12 @@ export async function GET(request: NextRequest) {
       const p = Number(page || 0);
       const skip = p * pageSize;
       const totalCount = await db.program.count({ where });
-      const items = await db.program.findMany({ where, orderBy: { name: "asc" }, skip, take: pageSize });
+      const items = await db.program.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip,
+        take: pageSize
+      });
       return NextResponse.json({ items, totalCount, page: p, pageSize });
     }
 
@@ -44,10 +49,7 @@ export async function POST(request: NextRequest) {
     const { name, code, description } = data;
 
     if (!name?.trim()) {
-      return NextResponse.json(
-        { message: "Nama program wajib diisi." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Nama program wajib diisi." }, { status: 400 });
     }
 
     await db.program.create({
@@ -55,17 +57,14 @@ export async function POST(request: NextRequest) {
         name,
         code: code || null,
         description: description || null,
-        isActive: true,
-      },
+        isActive: true
+      }
     });
 
     revalidatePath("/apply");
     revalidatePath("/admin/penerimaan-siswa/settings/programs");
 
-    return NextResponse.json(
-      { message: "Program berhasil ditambahkan" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Program berhasil ditambahkan" }, { status: 200 });
   } catch (error) {
     console.error("Error creating program:", error);
     return NextResponse.json(
@@ -81,15 +80,12 @@ export async function PUT(request: NextRequest) {
     const { programId, action } = data;
 
     if (!programId?.trim()) {
-      return NextResponse.json(
-        { message: "Program tidak ditemukan." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Program tidak ditemukan." }, { status: 400 });
     }
 
     await db.program.update({
       where: { id: programId },
-      data: { isActive: action === "activate" },
+      data: { isActive: action === "activate" }
     });
 
     revalidatePath("/apply");
@@ -122,8 +118,8 @@ export async function PATCH(request: NextRequest) {
       data: {
         name,
         code: code || null,
-        description: description || null,
-      },
+        description: description || null
+      }
     });
 
     revalidatePath("/admin/penerimaan-siswa/settings/programs");
@@ -132,6 +128,9 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: "Program diperbarui" }, { status: 200 });
   } catch (error) {
     console.error("Error updating program:", error);
-    return NextResponse.json({ message: "Terjadi kesalahan saat memperbarui program" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Terjadi kesalahan saat memperbarui program" },
+      { status: 500 }
+    );
   }
 }

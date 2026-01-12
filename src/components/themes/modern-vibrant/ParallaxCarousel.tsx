@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CarouselItem {
   id: string;
@@ -22,24 +22,24 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Auto-advance carousel
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
+      setCurrentIndex(prev => (prev + 1) % items.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [items.length]);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    setCurrentIndex(prev => (prev - 1 + items.length) % items.length);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
+    setCurrentIndex(prev => (prev + 1) % items.length);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
       <div
         className="absolute inset-0 opacity-20"
         style={{
-          transform: `translateY(${scrollY * 0.5}px)`,
+          transform: `translateY(${scrollY * 0.5}px)`
         }}
       >
         <div className="absolute inset-0 bg-linear-to-br from-cyan-500 via-purple-500 to-orange-500" />
@@ -56,12 +56,8 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Latest Highlights
-          </h2>
-          <p className="text-xl text-slate-300">
-            Stay updated with our recent activities
-          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Latest Highlights</h2>
+          <p className="text-xl text-slate-300">Stay updated with our recent activities</p>
         </div>
 
         <div className="relative">
@@ -72,8 +68,8 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
                 key={item.id}
                 className={`absolute inset-0 transition-all duration-700 ${
                   index === currentIndex
-                    ? 'opacity-100 scale-100'
-                    : 'opacity-0 scale-95 pointer-events-none'
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95 pointer-events-none"
                 }`}
               >
                 {/* Background Image with Parallax */}
@@ -81,10 +77,7 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
                   <div
                     className="relative w-full h-full transition-transform duration-700"
                     style={{
-                      transform:
-                        index === currentIndex
-                          ? 'scale(1.1)'
-                          : 'scale(1)',
+                      transform: index === currentIndex ? "scale(1.1)" : "scale(1)"
                     }}
                   >
                     <Image
@@ -143,8 +136,8 @@ export default function ParallaxCarousel({ items }: ParallaxCarouselProps) {
                 onClick={() => setCurrentIndex(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'w-12 bg-linear-to-r from-cyan-500 to-purple-500'
-                    : 'w-2 bg-white/30 hover:bg-white/50'
+                    ? "w-12 bg-linear-to-r from-cyan-500 to-purple-500"
+                    : "w-2 bg-white/30 hover:bg-white/50"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />

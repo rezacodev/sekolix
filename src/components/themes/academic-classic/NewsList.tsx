@@ -34,7 +34,7 @@ export function NewsList({
     return new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
       month: "short",
-      year: "numeric",
+      year: "numeric"
     }).format(new Date(dateString));
   };
 
@@ -44,9 +44,7 @@ export function NewsList({
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="academic-accent font-semibold mb-2 tracking-wide">BERITA & ARTIKEL</div>
-          <h2 className="text-4xl font-bold text-blue-900 mb-4">
-            {title}
-          </h2>
+          <h2 className="text-4xl font-bold text-blue-900 mb-4">{title}</h2>
           <div className="w-24 h-1 academic-accent-bg mx-auto mb-6"></div>
           {showViewAll && (
             <Link
@@ -63,7 +61,7 @@ export function NewsList({
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content - 2/3 width */}
           <div className="lg:col-span-2 space-y-6">
-            {news.slice(0, 3).map((item) => (
+            {news.slice(0, 3).map(item => (
               <Card
                 key={item.id}
                 className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white"
@@ -72,12 +70,7 @@ export function NewsList({
                   <div className="flex flex-col sm:flex-row">
                     {/* Thumbnail */}
                     <div className="relative w-full sm:w-64 h-56 shrink-0">
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={item.image} alt={item.title} fill className="object-cover" />
                       <div className="absolute top-3 left-3">
                         <Badge className="academic-accent-bg text-blue-900 hover:academic-accent-bg font-semibold">
                           {item.category}
@@ -129,7 +122,7 @@ export function NewsList({
                   className="bg-blue-900 text-white hover:bg-blue-800 px-8 py-6 text-base font-semibold"
                   asChild
                 >
-                    <Link href={viewAllLink}>
+                  <Link href={viewAllLink}>
                     Lihat Semua Berita
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
@@ -269,7 +262,9 @@ export function NewsList({
                     href="/library"
                     className="flex items-center justify-between p-3 rounded-lg hover:academic-accent-bg-light transition-colors group"
                   >
-                    <span className="text-sm font-semibold text-blue-900">Perpustakaan Digital</span>
+                    <span className="text-sm font-semibold text-blue-900">
+                      Perpustakaan Digital
+                    </span>
                     <ArrowRight className="w-4 h-4 academic-accent group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </li>

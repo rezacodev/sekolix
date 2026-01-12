@@ -6,7 +6,13 @@ import { DataTable } from "@/components/ui/data-table";
 import { createColumns, Applicant } from "./columns";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 type DialogState = {
   type: "confirm" | null;
@@ -29,7 +35,7 @@ export default function PendaftaranBaruActions() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/penerimaan-siswa/settings/years');
+        const res = await fetch("/api/admin/penerimaan-siswa/settings/years");
         if (!res.ok) {
           // fallback to fetching applicants without year filter
           await fetchApplicants();
@@ -37,29 +43,34 @@ export default function PendaftaranBaruActions() {
         }
         const data = (await res.json()) as { id: string; label: string; isActive: boolean }[];
         setYears(data || []);
-        const active = data.find((y) => y.isActive);
-        const defaultYear = active ? active.id : (data && data[0] ? data[0].id : null);
+        const active = data.find(y => y.isActive);
+        const defaultYear = active ? active.id : data && data[0] ? data[0].id : null;
         setSelectedYear(defaultYear);
         // fetch applicants after determining default year
         setIsLoading(true);
         await fetchApplicants(defaultYear);
       } catch (err) {
-        console.error('Failed to fetch years', err);
+        console.error("Failed to fetch years", err);
         await fetchApplicants();
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchApplicants = async (yearIdParam?: string | null, p?: number, ps?: number, s?: string) => {
+  const fetchApplicants = async (
+    yearIdParam?: string | null,
+    p?: number,
+    ps?: number,
+    s?: string
+  ) => {
     try {
       const url = new URL("/api/admin/penerimaan-siswa/applicant", window.location.origin);
       const yearToUse = yearIdParam ?? selectedYear;
       if (yearToUse) url.searchParams.set("yearId", yearToUse);
       // server-side pagination
-      const usePage = typeof p === 'number' ? p : pageIndex;
-      const usePageSize = typeof ps === 'number' ? ps : pageSize;
-      const useSearch = typeof s === 'string' ? s : search;
+      const usePage = typeof p === "number" ? p : pageIndex;
+      const usePageSize = typeof ps === "number" ? ps : pageSize;
+      const useSearch = typeof s === "string" ? s : search;
       url.searchParams.set("page", String(usePage ?? 0));
       url.searchParams.set("pageSize", String(usePageSize ?? 10));
       if (useSearch) url.searchParams.set("search", useSearch);
@@ -105,17 +116,17 @@ export default function PendaftaranBaruActions() {
   const handleDelete = (id: string) => {
     setDialog({
       type: "confirm",
-      id,
+      id
     });
   };
 
   const confirmDeleteApplicant = async () => {
     if (!dialog.id) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/admin/penerimaan-siswa/applicant/${dialog.id}`, {
-        method: "DELETE",
+        method: "DELETE"
       });
 
       if (response.ok) {
@@ -136,11 +147,7 @@ export default function PendaftaranBaruActions() {
 
   // Get unique programs and statuses from applicants for filter options
   const uniquePrograms = Array.from(
-    new Set(
-      applicants
-        .map((a) => a.program?.name ?? a.programChoice ?? "")
-        .filter(Boolean)
-    )
+    new Set(applicants.map(a => a.program?.name ?? a.programChoice ?? "").filter(Boolean))
   ).sort();
 
   const filterConfig = [
@@ -151,17 +158,17 @@ export default function PendaftaranBaruActions() {
         { label: "Pending", value: "pending" },
         { label: "Review", value: "review" },
         { label: "Diterima", value: "accepted" },
-        { label: "Ditolak", value: "rejected" },
-      ],
+        { label: "Ditolak", value: "rejected" }
+      ]
     },
     {
       column: "programChoice",
       title: "Program/Jurusan",
-      options: uniquePrograms.map((program) => ({
+      options: uniquePrograms.map(program => ({
         label: program,
-        value: program,
-      })),
-    },
+        value: program
+      }))
+    }
   ];
 
   return (
@@ -176,7 +183,7 @@ export default function PendaftaranBaruActions() {
           <div className="w-64">
             <Select
               value={selectedYear || undefined}
-              onValueChange={(val) => {
+              onValueChange={val => {
                 setSelectedYear(val);
                 setIsLoading(true);
                 // Call fetchApplicants with the selected value to avoid using stale state
@@ -187,8 +194,10 @@ export default function PendaftaranBaruActions() {
                 <SelectValue placeholder="Pilih tahun ajaran" />
               </SelectTrigger>
               <SelectContent>
-                {years.map((y) => (
-                  <SelectItem key={y.id} value={y.id}>{y.label}</SelectItem>
+                {years.map(y => (
+                  <SelectItem key={y.id} value={y.id}>
+                    {y.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -207,12 +216,23 @@ export default function PendaftaranBaruActions() {
           totalCount={totalCount}
           pageIndex={pageIndex}
           pageSize={pageSize}
-          onPageChange={(p) => { setPageIndex(p); void fetchApplicantsPage(p, pageSize, search); }}
-          onPageSizeChange={(ps) => { setPageSize(ps); setPageIndex(0); void fetchApplicantsPage(0, ps, search); }}
-          onSearchChange={(v) => { setSearch(v); setPageIndex(0); void fetchApplicantsPage(0, pageSize, v); }}
+          onPageChange={p => {
+            setPageIndex(p);
+            void fetchApplicantsPage(p, pageSize, search);
+          }}
+          onPageSizeChange={ps => {
+            setPageSize(ps);
+            setPageIndex(0);
+            void fetchApplicantsPage(0, ps, search);
+          }}
+          onSearchChange={v => {
+            setSearch(v);
+            setPageIndex(0);
+            void fetchApplicantsPage(0, pageSize, v);
+          }}
         />
       )}
-      
+
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={dialog.type === "confirm"}

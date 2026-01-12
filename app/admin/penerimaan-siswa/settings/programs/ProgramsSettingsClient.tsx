@@ -18,7 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuItem
 } from "@/components/ui";
 
 interface Program {
@@ -29,11 +29,7 @@ interface Program {
   isActive: boolean;
 }
 
-export function ProgramsSettingsClient({
-  initialPrograms,
-}: {
-  initialPrograms: Program[];
-}) {
+export function ProgramsSettingsClient({ initialPrograms }: { initialPrograms: Program[] }) {
   const [programs, setPrograms] = useState<Program[]>(initialPrograms);
   const [isLoading, setIsLoading] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -91,13 +87,17 @@ export function ProgramsSettingsClient({
     setIsLoading(true);
     try {
       const method = editing ? "PATCH" : "POST";
-      const body: Record<string, unknown> = { name, code: code || null, description: description || null };
+      const body: Record<string, unknown> = {
+        name,
+        code: code || null,
+        description: description || null
+      };
       if (editing) body.programId = editing.id;
 
       const res = await fetch("/api/admin/penerimaan-siswa/settings/programs", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
       });
       if (res.ok) {
         toast.success(editing ? "Program diperbarui" : "Program berhasil ditambahkan");
@@ -115,43 +115,56 @@ export function ProgramsSettingsClient({
     }
   };
 
-  const handleToggleProgram = useCallback(async (programId: string, currentStatus: boolean) => {
-    setTogglingId(programId);
-    try {
-      const response = await fetch("/api/admin/penerimaan-siswa/settings/programs", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programId, action: currentStatus ? "deactivate" : "activate" }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        toast.success(data.message);
-        await refreshPrograms();
-      } else {
-        const data = await response.json();
-        toast.error(data.message || "Gagal mengubah status program");
+  const handleToggleProgram = useCallback(
+    async (programId: string, currentStatus: boolean) => {
+      setTogglingId(programId);
+      try {
+        const response = await fetch("/api/admin/penerimaan-siswa/settings/programs", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ programId, action: currentStatus ? "deactivate" : "activate" })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          toast.success(data.message);
+          await refreshPrograms();
+        } else {
+          const data = await response.json();
+          toast.error(data.message || "Gagal mengubah status program");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Terjadi kesalahan saat mengubah status program");
+      } finally {
+        setTogglingId(null);
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat mengubah status program");
-    } finally {
-      setTogglingId(null);
-    }
-  }, [refreshPrograms]);
+    },
+    [refreshPrograms]
+  );
 
   const columns = useMemo(
     () => [
       { accessorKey: "name", header: "Nama" },
-      { accessorKey: "code", header: "Kode", cell: (info: CellContext<Program, unknown>) => (info.getValue() as string | null) ?? "-" },
-      { accessorKey: "description", header: "Deskripsi", cell: (info: CellContext<Program, unknown>) => (info.getValue() as string | null) ?? "-" },
+      {
+        accessorKey: "code",
+        header: "Kode",
+        cell: (info: CellContext<Program, unknown>) => (info.getValue() as string | null) ?? "-"
+      },
+      {
+        accessorKey: "description",
+        header: "Deskripsi",
+        cell: (info: CellContext<Program, unknown>) => (info.getValue() as string | null) ?? "-"
+      },
       {
         accessorKey: "isActive",
         header: "Status",
         cell: ({ row }: { row: { original: Program } }) => (
-          <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${row.original.isActive ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"}`}>
+          <span
+            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${row.original.isActive ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"}`}
+          >
             {row.original.isActive ? "Aktif" : "Tidak aktif"}
           </span>
-        ),
+        )
       },
       {
         id: "actions",
@@ -161,19 +174,24 @@ export function ProgramsSettingsClient({
             <div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">•••</Button>
+                  <Button variant="ghost" size="sm">
+                    •••
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onSelect={() => openEdit(row.original)}>Edit</DropdownMenuItem>
-                  <DropdownMenuItem disabled={togglingId === row.original.id} onSelect={() => handleToggleProgram(row.original.id, row.original.isActive)}>
+                  <DropdownMenuItem
+                    disabled={togglingId === row.original.id}
+                    onSelect={() => handleToggleProgram(row.original.id, row.original.isActive)}
+                  >
                     {row.original.isActive ? "Nonaktifkan" : "Aktifkan"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-        ),
-      },
+        )
+      }
     ],
     [togglingId, handleToggleProgram]
   );
@@ -198,15 +216,15 @@ export function ProgramsSettingsClient({
           totalCount={totalCount}
           pageIndex={pageIndex}
           pageSize={pageSize}
-          onPageChange={(p) => {
+          onPageChange={p => {
             setPageIndex(p);
             void refreshPrograms();
           }}
-          onPageSizeChange={(ps) => {
+          onPageSizeChange={ps => {
             setPageSize(ps);
             void refreshPrograms();
           }}
-          onSearchChange={(s) => {
+          onSearchChange={s => {
             setSearch(s);
             setPageIndex(0);
             void refreshPrograms();
@@ -221,23 +239,37 @@ export function ProgramsSettingsClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Program" : "Tambah Program"}</DialogTitle>
-            <DialogDescription>{editing ? "Perbarui detail program." : "Tambahkan program baru."}</DialogDescription>
+            <DialogDescription>
+              {editing ? "Perbarui detail program." : "Tambahkan program baru."}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block text-sm font-semibold text-foreground">
               Nama Program
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-2" required />
+              <Input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="mt-2"
+                required
+              />
             </label>
             <label className="block text-sm font-semibold text-foreground">
               Kode (opsional)
-              <Input value={code} onChange={(e) => setCode(e.target.value)} className="mt-2" />
+              <Input value={code} onChange={e => setCode(e.target.value)} className="mt-2" />
             </label>
             <label className="block text-sm font-semibold text-foreground">
               Deskripsi (opsional)
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-2" />
+              <Textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                rows={3}
+                className="mt-2"
+              />
             </label>
             <DialogFooter>
-              <Button type="submit" disabled={isLoading}>{isLoading ? "Menyimpan..." : "Simpan"}</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Menyimpan..." : "Simpan"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -1,29 +1,30 @@
-import { Article } from '@prisma/client';
-import Link from 'next/link';
-import Image from 'next/image';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Navbar } from '@/components/themes/modern-vibrant';
+import { Article } from "@prisma/client";
+import Link from "next/link";
+import Image from "next/image";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar } from "@/components/themes/modern-vibrant";
 
 async function getArticles(): Promise<Article[]> {
   try {
     const articles = await prisma.article.findMany({
       where: { isPublished: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 50,
+      orderBy: { publishedAt: "desc" },
+      take: 50
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    console.error("Error fetching articles:", error);
     return [];
   }
 }
 
 export default async function ModernVibrantArticles() {
   const articles = await getArticles();
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
   return (
     <ThemeProvider
@@ -38,13 +39,15 @@ export default async function ModernVibrantArticles() {
     >
       <div className="min-h-screen bg-linear-to-br from-gray-50 via-purple-50 to-cyan-50">
         <Navbar />
-        
+
         <main className="pt-20">
           {/* Header with unified Modern Vibrant hero */}
           <section className="bg-linear-to-r from-cyan-500 to-purple-500 text-white py-20">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-4xl font-bold mb-4">Artikel Kami</h1>
-              <p className="text-lg text-cyan-100">Inspirasi, inovasi, dan informasi untuk masa depan cerah</p>
+              <p className="text-lg text-cyan-100">
+                Inspirasi, inovasi, dan informasi untuk masa depan cerah
+              </p>
             </div>
           </section>
 
@@ -80,12 +83,12 @@ export default async function ModernVibrantArticles() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {articles.map((article: Article, index: number) => {
                     const gradients = [
-                      'from-cyan-500 to-blue-500',
-                      'from-purple-500 to-pink-500',
-                      'from-orange-500 to-red-500',
+                      "from-cyan-500 to-blue-500",
+                      "from-purple-500 to-pink-500",
+                      "from-orange-500 to-red-500"
                     ];
                     const gradient = gradients[index % gradients.length];
-                    
+
                     return (
                       <Link
                         key={article.id}
@@ -94,7 +97,9 @@ export default async function ModernVibrantArticles() {
                       >
                         {article.featuredImage && (
                           <div className="relative h-56 w-full overflow-hidden">
-                            <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`}></div>
+                            <div
+                              className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`}
+                            ></div>
                             <Image
                               src={article.featuredImage}
                               alt={article.title}
@@ -122,11 +127,15 @@ export default async function ModernVibrantArticles() {
                             {article.category && (
                               <>
                                 <span>•</span>
-                                <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-xs font-black">{article.category}</span>
+                                <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-xs font-black">
+                                  {article.category}
+                                </span>
                               </>
                             )}
                           </div>
-                          <h2 className="text-2xl font-extrabold text-gray-900 group-hover:text-cyan-600 transition-colors">{article.title}</h2>
+                          <h2 className="text-2xl font-extrabold text-gray-900 group-hover:text-cyan-600 transition-colors">
+                            {article.title}
+                          </h2>
                           {article.excerpt && (
                             <p className="mt-4 text-gray-600 leading-relaxed">{article.excerpt}</p>
                           )}

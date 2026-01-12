@@ -1,2 +1,2 @@
 // Re-export all admin hooks
-export { useBreadcrumb } from './useBreadcrumb';
+export { useBreadcrumb } from "./useBreadcrumb";

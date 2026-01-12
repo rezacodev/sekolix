@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
@@ -30,12 +30,12 @@ const statusStyles: Record<string, { bg: string; label: string }> = {
   pending: { bg: "bg-accent text-accent-foreground", label: "Pending" },
   review: { bg: "bg-muted text-muted-foreground", label: "Review" },
   accepted: { bg: "bg-success text-success-foreground", label: "Diterima" },
-  rejected: { bg: "bg-destructive text-destructive-foreground", label: "Ditolak" },
+  rejected: { bg: "bg-destructive text-destructive-foreground", label: "Ditolak" }
 };
 
 export const createColumns = ({
   onView,
-  onDelete,
+  onDelete
 }: {
   onView: (id: string) => void;
   onDelete: (id: string) => void;
@@ -53,39 +53,41 @@ export const createColumns = ({
       ) : (
         <span className="text-xs text-muted-foreground">-</span>
       );
-    },
+    }
   },
   // ID column removed per UX request (not shown in table)
   {
     accessorKey: "fullName",
-    header: "Nama",
+    header: "Nama"
   },
   {
     accessorKey: "nik",
     header: "NIK",
-    size: 150,
+    size: 150
   },
   {
     accessorKey: "phone",
     header: "HP",
-    size: 150,
+    size: 150
   },
   {
     accessorKey: "programChoice",
     header: "Program",
-    cell: ({ row }) =>
-      row.original.program?.name ??
-      (row.original.programChoice ?? "-"),
+    cell: ({ row }) => row.original.program?.name ?? row.original.programChoice ?? "-",
     filterFn: (row, id, value) => {
-      const programName = (row.original.program?.name ?? row.original.programChoice ?? "").toLowerCase();
+      const programName = (
+        row.original.program?.name ??
+        row.original.programChoice ??
+        ""
+      ).toLowerCase();
       if (Array.isArray(value)) {
-        return value.some((v) => programName.includes(String(v).toLowerCase()));
+        return value.some(v => programName.includes(String(v).toLowerCase()));
       }
       if (typeof value === "string" && value.length > 0) {
         return programName.includes(value.toLowerCase());
       }
       return true;
-    },
+    }
   },
   {
     accessorKey: "status",
@@ -95,9 +97,7 @@ export const createColumns = ({
       const status = row.getValue("status") as string;
       const style = statusStyles[status];
       return (
-        <Badge className={style?.bg || "bg-muted text-foreground"}>
-          {style?.label || status}
-        </Badge>
+        <Badge className={style?.bg || "bg-muted text-foreground"}>{style?.label || status}</Badge>
       );
     },
     filterFn: (row, id, value) => {
@@ -109,7 +109,7 @@ export const createColumns = ({
         return cellValue === value;
       }
       return true;
-    },
+    }
   },
   {
     accessorKey: "createdAt",
@@ -119,9 +119,9 @@ export const createColumns = ({
       const date = row.getValue("createdAt") as Date;
       return new Date(date).toLocaleString("id-ID", {
         dateStyle: "medium" as const,
-        timeStyle: "short" as const,
+        timeStyle: "short" as const
       });
-    },
+    }
   },
   {
     id: "actions",
@@ -140,19 +140,14 @@ export const createColumns = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onView(applicant.id)}>
-              Lihat detail
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onView(applicant.id)}>Lihat detail</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(applicant.id)}
-              className="text-red-600"
-            >
+            <DropdownMenuItem onClick={() => onDelete(applicant.id)} className="text-red-600">
               Hapus
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
-    },
-  },
+    }
+  }
 ];

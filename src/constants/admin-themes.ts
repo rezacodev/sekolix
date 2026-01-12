@@ -40,8 +40,8 @@ export const ADMIN_THEMES: AdminTheme[] = [
       "sidebar-accent": "#e0f2fe",
       "sidebar-accent-foreground": "#0f172a",
       "sidebar-border": "#e2e8f0",
-      "sidebar-ring": "#2563eb",
-    },
+      "sidebar-ring": "#2563eb"
+    }
   },
   {
     id: "modern-light",
@@ -75,8 +75,8 @@ export const ADMIN_THEMES: AdminTheme[] = [
       "sidebar-accent": "#fef3c7",
       "sidebar-accent-foreground": "#92400e",
       "sidebar-border": "#dbeafe",
-      "sidebar-ring": "#0ea5e9",
-    },
+      "sidebar-ring": "#0ea5e9"
+    }
   },
   {
     id: "minimalist-light",
@@ -110,8 +110,8 @@ export const ADMIN_THEMES: AdminTheme[] = [
       "sidebar-accent": "#e5e7eb",
       "sidebar-accent-foreground": "#0f172a",
       "sidebar-border": "#e5e7eb",
-      "sidebar-ring": "#d1d5db",
-    },
+      "sidebar-ring": "#d1d5db"
+    }
   },
   {
     id: "midnight-emerald",
@@ -145,8 +145,8 @@ export const ADMIN_THEMES: AdminTheme[] = [
       "sidebar-accent": "#1e3f35",
       "sidebar-accent-foreground": "#10b981",
       "sidebar-border": "#1f2937",
-      "sidebar-ring": "#10b981",
-    },
+      "sidebar-ring": "#10b981"
+    }
   },
   {
     id: "violet-night",
@@ -180,7 +180,7 @@ export const ADMIN_THEMES: AdminTheme[] = [
       "sidebar-accent": "#2e1a3f",
       "sidebar-accent-foreground": "#8b5cf6",
       "sidebar-border": "#2d2a3a",
-      "sidebar-ring": "#8b5cf6",
-    },
-  },
+      "sidebar-ring": "#8b5cf6"
+    }
+  }
 ];

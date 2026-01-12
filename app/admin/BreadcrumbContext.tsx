@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
 
 type BreadcrumbItem = {
   label: string;
@@ -21,16 +21,15 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     setBreadcrumbsState(newBreadcrumbs);
   }, []);
 
-  const value = useMemo(() => ({
-    breadcrumbs,
-    setBreadcrumbs,
-  }), [breadcrumbs, setBreadcrumbs]);
-
-  return (
-    <BreadcrumbContext.Provider value={value}>
-      {children}
-    </BreadcrumbContext.Provider>
+  const value = useMemo(
+    () => ({
+      breadcrumbs,
+      setBreadcrumbs
+    }),
+    [breadcrumbs, setBreadcrumbs]
   );
+
+  return <BreadcrumbContext.Provider value={value}>{children}</BreadcrumbContext.Provider>;
 }
 
 export function useBreadcrumb() {

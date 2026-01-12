@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Calendar, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Calendar, ArrowRight } from "lucide-react";
 
 interface CalendarEvent {
   id: string;
@@ -26,7 +26,7 @@ const categoryStyles = {
   sports: { bg: "bg-green-500", text: "text-green-500", label: "Sports" },
   cultural: { bg: "bg-purple-500", text: "text-purple-500", label: "Cultural" },
   holiday: { bg: "bg-red-500", text: "text-red-500", label: "Holiday" },
-  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" },
+  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" }
 };
 
 export function MinimalEvents({
@@ -41,7 +41,7 @@ export function MinimalEvents({
       day: "numeric",
       month: "short",
       year: "numeric",
-      weekday: "short",
+      weekday: "short"
     });
 
     const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, part) => {
@@ -55,7 +55,7 @@ export function MinimalEvents({
       day: parts.day || date.getDate().toString(),
       month: parts.month || date.toLocaleDateString("id-ID", { month: "short" }),
       year: parts.year || date.getFullYear().toString(),
-      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" }),
+      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" })
     };
   };
 
@@ -73,12 +73,8 @@ export function MinimalEvents({
             <Calendar className="h-4 w-4" />
             Events
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {title}
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
-            {subtitle}
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{title}</h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">{subtitle}</p>
           <a
             href={viewAllLink}
             className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium"
@@ -90,7 +86,7 @@ export function MinimalEvents({
 
         {/* Events List */}
         <div className="space-y-6">
-          {sortedEvents.map((event) => {
+          {sortedEvents.map(event => {
             const dateInfo = formatDate(event.date);
             const categoryStyle = categoryStyles[event.category];
 
@@ -127,9 +123,7 @@ export function MinimalEvents({
 
                         {/* Description */}
                         {event.description && (
-                          <p className="text-gray-600 text-sm mb-4">
-                            {event.description}
-                          </p>
+                          <p className="text-gray-600 text-sm mb-4">{event.description}</p>
                         )}
 
                         {/* Time & Location */}

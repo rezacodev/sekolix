@@ -17,18 +17,15 @@ export async function GET() {
 
     const validations = await db.applicantValidation.findMany({
       include: {
-        applicant: true,
+        applicant: true
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 100
     });
 
     return NextResponse.json(validations);
   } catch (error) {
     console.error("Error fetching validations:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch validations" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch validations" }, { status: 500 });
   }
 }

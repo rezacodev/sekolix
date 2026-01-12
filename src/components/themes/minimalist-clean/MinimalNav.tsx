@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
 
 interface NavLink {
   label: string;
@@ -28,7 +28,7 @@ export default function MinimalNav({ logo, links }: MinimalNavProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {links.map((link) => (
+            {links.map(link => (
               <a
                 key={link.href}
                 href={link.href}
@@ -53,7 +53,7 @@ export default function MinimalNav({ logo, links }: MinimalNavProps) {
       {/* Mobile Menu */}
       <div
         className={`md:hidden fixed inset-0 top-[73px] bg-white transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col items-center justify-center h-full gap-8">
@@ -65,7 +65,7 @@ export default function MinimalNav({ logo, links }: MinimalNavProps) {
               className="text-3xl font-light text-slate-900 hover:text-slate-600 transition-colors duration-300 opacity-0 animate-fade-in"
               style={{
                 animationDelay: `${index * 100}ms`,
-                animationFillMode: 'forwards',
+                animationFillMode: "forwards"
               }}
             >
               {link.label}

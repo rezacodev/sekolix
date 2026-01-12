@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 
 interface BentoItem {
   id: string;
@@ -9,7 +9,7 @@ interface BentoItem {
   description: string;
   imageUrl: string;
   link: string;
-  size: 'small' | 'medium' | 'large';
+  size: "small" | "medium" | "large";
   color: string;
 }
 
@@ -20,13 +20,13 @@ interface BentoGridProps {
 export default function BentoGrid({ items }: BentoGridProps) {
   const getSizeClass = (size: string) => {
     switch (size) {
-      case 'large':
-        return 'md:col-span-2 md:row-span-2';
-      case 'medium':
-        return 'md:col-span-2 md:row-span-1';
-      case 'small':
+      case "large":
+        return "md:col-span-2 md:row-span-2";
+      case "medium":
+        return "md:col-span-2 md:row-span-1";
+      case "small":
       default:
-        return 'md:col-span-1 md:row-span-1';
+        return "md:col-span-1 md:row-span-1";
     }
   };
 
@@ -34,16 +34,12 @@ export default function BentoGrid({ items }: BentoGridProps) {
     <section className="py-20 px-4 bg-linear-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Explore Our School
-          </h2>
-          <p className="text-xl text-slate-600">
-            Discover what makes us unique
-          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Explore Our School</h2>
+          <p className="text-xl text-slate-600">Discover what makes us unique</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[300px]">
-          {items.map((item) => (
+          {items.map(item => (
             <a
               key={item.id}
               href={item.link}

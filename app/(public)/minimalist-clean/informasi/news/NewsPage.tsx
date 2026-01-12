@@ -1,28 +1,29 @@
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { MinimalNavbar, MinimalFooter, ListBasedNews } from '@/components/themes/minimalist-clean';
-import { formatDate } from '@/lib/utils';
-import prisma from '@/lib/db';
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { MinimalNavbar, MinimalFooter, ListBasedNews } from "@/components/themes/minimalist-clean";
+import { formatDate } from "@/lib/utils";
+import prisma from "@/lib/db";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function MinimalistCleanNews() {
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
 
   const newsItems = await prisma.news.findMany({
     where: { isPublished: true },
-    orderBy: { publishedAt: 'desc' },
-    take: 6,
+    orderBy: { publishedAt: "desc" },
+    take: 6
   });
 
-  const newsList = newsItems.map((item) => ({
+  const newsList = newsItems.map(item => ({
     id: item.id,
     title: item.title,
-    excerpt: item.excerpt ?? '',
+    excerpt: item.excerpt ?? "",
     date: formatDate(item.publishedAt ?? item.createdAt),
-    category: item.category ?? 'Informasi',
-    link: `/informasi/news/${item.slug}`,
+    category: item.category ?? "Informasi",
+    link: `/informasi/news/${item.slug}`
   }));
 
   return (

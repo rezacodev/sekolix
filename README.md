@@ -3,6 +3,7 @@
 Sekolix adalah proyek open-source untuk membantu sekolah-sekolah di Indonesia melakukan digitalisasi dengan mudah, lengkap, terintegrasi penuh, dan murah (bahkan gratis).
 
 ## Daftar Isi
+
 - [Tentang Proyek](#tentang-proyek)
 - [Fitur Utama](#fitur-utama)
 - [Kondisi Saat Ini](#kondisi-saat-ini)
@@ -98,4 +99,3 @@ Jika butuh bantuan atau ingin kontribusi, buka isu (Issue) di repository atau hu
 
 **Last Updated**: December 19, 2025
 Catatan singkat: saat pengujian, server development berjalan. Beberapa gambar remote mungkin mengembalikan 404 — ini bukan kegagalan build.
-

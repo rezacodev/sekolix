@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Check, Eye, Monitor } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check, Eye, Monitor } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ThemeSwitcherProps {
   themes: Array<{
@@ -18,39 +18,39 @@ interface ThemeSwitcherProps {
 }
 
 const themeInfo = {
-  'academic-classic': {
-    name: 'Klasik Akademis',
-    description: 'Desain tradisional dan profesional dengan warna biru laut dan emas',
-    preview: '/academic-classic',
+  "academic-classic": {
+    name: "Klasik Akademis",
+    description: "Desain tradisional dan profesional dengan warna biru laut dan emas",
+    preview: "/academic-classic"
   },
-  'modern-vibrant': {
-    name: 'Vibran Modern',
-    description: 'Desain berwarna dan dinamis dengan gradien cerah dan animasi',
-    preview: '/modern-vibrant',
+  "modern-vibrant": {
+    name: "Vibran Modern",
+    description: "Desain berwarna dan dinamis dengan gradien cerah dan animasi",
+    preview: "/modern-vibrant"
   },
-  'minimalist-clean': {
-    name: 'Bersih Minimalis',
-    description: 'Desain sederhana dan elegan dengan palet monokrom dan interaksi halus',
-    preview: '/minimalist-clean',
-  },
+  "minimalist-clean": {
+    name: "Bersih Minimalis",
+    description: "Desain sederhana dan elegan dengan palet monokrom dan interaksi halus",
+    preview: "/minimalist-clean"
+  }
 };
 
 export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
   const router = useRouter();
   const [activeTheme, setActiveTheme] = useState(
-    themes.find((t) => t.isActive)?.themeId || 'academic-classic'
+    themes.find(t => t.isActive)?.themeId || "academic-classic"
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleActivateTheme = async (themeName: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/admin/website-landing/theme/active', {
-        method: 'POST',
+      const response = await fetch("/api/admin/landing-website/theme/active", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ theme: themeName }),
+        body: JSON.stringify({ theme: themeName })
       });
 
       if (response.ok) {
@@ -58,14 +58,14 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
         router.refresh();
       }
     } catch (error) {
-      console.error('Failed to activate theme:', error);
+      console.error("Failed to activate theme:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePreview = (previewUrl: string) => {
-    window.open(previewUrl, '_blank');
+    window.open(previewUrl, "_blank");
   };
 
   return (
@@ -78,15 +78,15 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {themes.map((theme) => {
+        {themes.map(theme => {
           const info = themeInfo[theme.themeId as keyof typeof themeInfo];
           const isActive = activeTheme === theme.themeId;
-          
+
           // Skip themes without info (custom themes from seed)
           if (!info) {
             return null;
           }
-          
+
           // Get colors from database
           const colors = [theme.primaryColor, theme.secondaryColor, theme.accentColor];
 
@@ -94,23 +94,24 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
             <Card
               key={theme.themeId}
               className={`relative overflow-hidden transition-all duration-300 ${
-                isActive
-                  ? 'ring-2 ring-blue-500 shadow-lg scale-105'
-                  : 'hover:shadow-md'
+                isActive ? "ring-2 ring-blue-500 shadow-lg scale-105" : "hover:shadow-md"
               }`}
             >
               {/* Landing Page Preview */}
-              <div className="h-64 bg-slate-100 relative overflow-hidden group cursor-pointer" onClick={() => handlePreview(info.preview)}>
+              <div
+                className="h-64 bg-slate-100 relative overflow-hidden group cursor-pointer"
+                onClick={() => handlePreview(info.preview)}
+              >
                 <iframe
                   src={info.preview}
                   className="absolute border-0 pointer-events-none"
-                  style={{ 
-                    width: '400%',
-                    height: '400%',
-                    transform: 'scale(0.25)',
-                    transformOrigin: 'top left',
+                  style={{
+                    width: "400%",
+                    height: "400%",
+                    transform: "scale(0.25)",
+                    transformOrigin: "top left",
                     left: 0,
-                    top: 0,
+                    top: 0
                   }}
                   title={`Preview of ${info.name}`}
                 />
@@ -150,12 +151,8 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
 
               {/* Content */}
               <div className="p-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
-                  {info.name}
-                </h3>
-                <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                  {info.description}
-                </p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{info.name}</h3>
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">{info.description}</p>
 
                 {/* Actions */}
                 <div className="flex gap-3">
@@ -173,7 +170,7 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
                       disabled={isLoading}
                       className="flex-1"
                     >
-                      {isLoading ? 'Mengaktifkan...' : 'Aktifkan'}
+                      {isLoading ? "Mengaktifkan..." : "Aktifkan"}
                     </Button>
                   )}
                 </div>
@@ -190,14 +187,12 @@ export default function ThemeSwitcher({ themes }: ThemeSwitcherProps) {
             <span className="text-white text-xl">ℹ️</span>
           </div>
           <div>
-            <h4 className="font-semibold text-slate-900 mb-2">
-              Tentang Pengalihan Tema
-            </h4>
+            <h4 className="font-semibold text-slate-900 mb-2">Tentang Pengalihan Tema</h4>
             <p className="text-slate-600 text-sm leading-relaxed">
               Tema aktif akan ditampilkan di beranda Anda. Ketika pengunjung mengakses situs Anda,
-              mereka akan melihat desain dan tata letak tema yang dipilih. Anda dapat melihat pratinjau setiap tema sebelum 
-              mengaktifkannya. Semua tema fully responsive dan dioptimalkan untuk performa. Perubahan 
-              berlaku segera setelah aktivasi.
+              mereka akan melihat desain dan tata letak tema yang dipilih. Anda dapat melihat
+              pratinjau setiap tema sebelum mengaktifkannya. Semua tema fully responsive dan
+              dioptimalkan untuk performa. Perubahan berlaku segera setelah aktivasi.
             </p>
           </div>
         </div>

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Send, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import { Send, CheckCircle } from "lucide-react";
 
 export default function CleanContactForm() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
   });
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -19,16 +19,14 @@ export default function CleanContactForm() {
     setIsSubmitted(true);
     setTimeout(() => {
       setIsSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: "", email: "", subject: "", message: "" });
     }, 3000);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     }));
   };
 
@@ -37,12 +35,8 @@ export default function CleanContactForm() {
       <div className="max-w-3xl mx-auto">
         {/* Section Header */}
         <div className="mb-20 text-center">
-          <h2 className="text-5xl md:text-6xl font-light text-slate-900 mb-4">
-            Get in Touch
-          </h2>
-          <p className="text-xl text-slate-600 font-light">
-            We&apos;d love to hear from you
-          </p>
+          <h2 className="text-5xl md:text-6xl font-light text-slate-900 mb-4">Get in Touch</h2>
+          <p className="text-xl text-slate-600 font-light">We&apos;d love to hear from you</p>
         </div>
 
         {isSubmitted ? (
@@ -50,9 +44,7 @@ export default function CleanContactForm() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-900 rounded-full mb-6">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-3xl font-light text-slate-900 mb-4">
-              Message Sent
-            </h3>
+            <h3 className="text-3xl font-light text-slate-900 mb-4">Message Sent</h3>
             <p className="text-lg text-slate-600 font-light">
               Thank you for contacting us. We&apos;ll get back to you soon.
             </p>
@@ -66,16 +58,16 @@ export default function CleanContactForm() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                onFocus={() => setFocusedField('name')}
+                onFocus={() => setFocusedField("name")}
                 onBlur={() => setFocusedField(null)}
                 required
                 className="w-full px-0 py-4 bg-transparent border-0 border-b-2 border-slate-200 focus:border-slate-900 outline-none text-lg text-slate-900 transition-all duration-300 peer"
               />
               <label
                 className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                  focusedField === 'name' || formData.name
-                    ? '-top-6 text-sm text-slate-900'
-                    : 'top-4 text-lg text-slate-400'
+                  focusedField === "name" || formData.name
+                    ? "-top-6 text-sm text-slate-900"
+                    : "top-4 text-lg text-slate-400"
                 }`}
               >
                 Your Name
@@ -89,16 +81,16 @@ export default function CleanContactForm() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                onFocus={() => setFocusedField('email')}
+                onFocus={() => setFocusedField("email")}
                 onBlur={() => setFocusedField(null)}
                 required
                 className="w-full px-0 py-4 bg-transparent border-0 border-b-2 border-slate-200 focus:border-slate-900 outline-none text-lg text-slate-900 transition-all duration-300 peer"
               />
               <label
                 className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                  focusedField === 'email' || formData.email
-                    ? '-top-6 text-sm text-slate-900'
-                    : 'top-4 text-lg text-slate-400'
+                  focusedField === "email" || formData.email
+                    ? "-top-6 text-sm text-slate-900"
+                    : "top-4 text-lg text-slate-400"
                 }`}
               >
                 Email Address
@@ -112,16 +104,16 @@ export default function CleanContactForm() {
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
-                onFocus={() => setFocusedField('subject')}
+                onFocus={() => setFocusedField("subject")}
                 onBlur={() => setFocusedField(null)}
                 required
                 className="w-full px-0 py-4 bg-transparent border-0 border-b-2 border-slate-200 focus:border-slate-900 outline-none text-lg text-slate-900 transition-all duration-300 peer"
               />
               <label
                 className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                  focusedField === 'subject' || formData.subject
-                    ? '-top-6 text-sm text-slate-900'
-                    : 'top-4 text-lg text-slate-400'
+                  focusedField === "subject" || formData.subject
+                    ? "-top-6 text-sm text-slate-900"
+                    : "top-4 text-lg text-slate-400"
                 }`}
               >
                 Subject
@@ -134,7 +126,7 @@ export default function CleanContactForm() {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                onFocus={() => setFocusedField('message')}
+                onFocus={() => setFocusedField("message")}
                 onBlur={() => setFocusedField(null)}
                 required
                 rows={6}
@@ -142,9 +134,9 @@ export default function CleanContactForm() {
               />
               <label
                 className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                  focusedField === 'message' || formData.message
-                    ? '-top-6 text-sm text-slate-900'
-                    : 'top-4 text-lg text-slate-400'
+                  focusedField === "message" || formData.message
+                    ? "-top-6 text-sm text-slate-900"
+                    : "top-4 text-lg text-slate-400"
                 }`}
               >
                 Your Message
@@ -157,9 +149,7 @@ export default function CleanContactForm() {
                 type="submit"
                 className="group w-full md:w-auto px-12 py-4 bg-slate-900 text-white hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-3 hover:gap-5"
               >
-                <span className="text-sm uppercase tracking-wider font-medium">
-                  Send Message
-                </span>
+                <span className="text-sm uppercase tracking-wider font-medium">Send Message</span>
                 <Send className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </button>
             </div>

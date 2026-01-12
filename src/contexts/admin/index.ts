@@ -1,2 +1,2 @@
 // Re-export admin contexts
-export { BreadcrumbProvider, useBreadcrumb } from './BreadcrumbContext';
+export { BreadcrumbProvider, useBreadcrumb } from "./BreadcrumbContext";

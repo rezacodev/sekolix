@@ -41,7 +41,10 @@ export function MinimalFaculty({
             <p className="text-sm text-gray-600">{subtitle}</p>
           </div>
           <div>
-            <a href={viewAllLink} className="inline-flex items-center text-sm text-primary hover:underline">
+            <a
+              href={viewAllLink}
+              className="inline-flex items-center text-sm text-primary hover:underline"
+            >
               Lihat semua <ArrowRight className="ml-2 h-4 w-4" />
             </a>
           </div>
@@ -49,7 +52,7 @@ export function MinimalFaculty({
 
         {/* Faculty Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayFaculty.map((member) => (
+          {displayFaculty.map(member => (
             <Card
               key={member.id}
               className="overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white group"
@@ -66,19 +69,13 @@ export function MinimalFaculty({
 
               {/* Info */}
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  {member.name}
-                </h3>
-                <p className="text-gray-600 font-medium text-sm mb-1">
-                  {member.position}
-                </p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
+                <p className="text-gray-600 font-medium text-sm mb-1">{member.position}</p>
                 <p className="text-gray-500 text-sm mb-4">{member.department}</p>
 
                 {/* Bio */}
                 {member.bio && (
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {member.bio}
-                  </p>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">{member.bio}</p>
                 )}
 
                 {/* Contact Info */}

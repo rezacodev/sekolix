@@ -15,14 +15,12 @@ interface LandingSettings {
 }
 
 export function LandingSettingsClient({
-  initialSettings,
+  initialSettings
 }: {
   initialSettings: LandingSettings | null;
 }) {
   const [heroTitle, setHeroTitle] = useState(initialSettings?.heroTitle ?? "");
-  const [heroDescription, setHeroDescription] = useState(
-    initialSettings?.heroDescription ?? ""
-  );
+  const [heroDescription, setHeroDescription] = useState(initialSettings?.heroDescription ?? "");
   const [isApplyFormEnabled, setIsApplyFormEnabled] = useState(
     initialSettings?.isApplyFormEnabled ?? true
   );
@@ -38,14 +36,11 @@ export function LandingSettingsClient({
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "/api/admin/penerimaan-siswa/settings/landing",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ heroTitle, heroDescription, isApplyFormEnabled }),
-        }
-      );
+      const response = await fetch("/api/admin/penerimaan-siswa/settings/landing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ heroTitle, heroDescription, isApplyFormEnabled })
+      });
 
       if (response.ok) {
         toast.success("Pengaturan landing berhasil disimpan");
@@ -66,14 +61,16 @@ export function LandingSettingsClient({
       <section className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Landing</h2>
-          <p className="text-muted-foreground">Gunakan pengaturan ini untuk mengendalikan teks hero yang tampil di halaman pendaftaran.</p>
+          <p className="text-muted-foreground">
+            Gunakan pengaturan ini untuk mengendalikan teks hero yang tampil di halaman pendaftaran.
+          </p>
         </div>
         <form onSubmit={handleSave} className="space-y-6">
           <label className="block text-sm font-semibold text-foreground">
             Judul Hero
             <Input
               value={heroTitle}
-              onChange={(e) => setHeroTitle(e.target.value)}
+              onChange={e => setHeroTitle(e.target.value)}
               className="mt-2"
               required
             />
@@ -82,7 +79,7 @@ export function LandingSettingsClient({
             Deskripsi Hero
             <Textarea
               value={heroDescription}
-              onChange={(e) => setHeroDescription(e.target.value)}
+              onChange={e => setHeroDescription(e.target.value)}
               rows={4}
               className="mt-2"
             />
@@ -92,20 +89,20 @@ export function LandingSettingsClient({
               <Checkbox
                 id="isApplyFormEnabled"
                 checked={isApplyFormEnabled}
-                onCheckedChange={(v) => setIsApplyFormEnabled(Boolean(v))}
+                onCheckedChange={v => setIsApplyFormEnabled(Boolean(v))}
               />
-              <span className="text-sm font-semibold text-foreground">Aktifkan Form Pendaftaran di Landing</span>
+              <span className="text-sm font-semibold text-foreground">
+                Aktifkan Form Pendaftaran di Landing
+              </span>
             </label>
-            <p className="mt-2 text-xs text-muted-foreground">Jika diaktifkan, form pendaftaran akan ditampilkan di halaman apply. Jika dinonaktifkan, form akan tersembunyi tapi halaman masih bisa diakses.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Jika diaktifkan, form pendaftaran akan ditampilkan di halaman apply. Jika
+              dinonaktifkan, form akan tersembunyi tapi halaman masih bisa diakses.
+            </p>
           </div>
 
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              variant="default"
-              size="default"
-            >
+            <Button type="submit" disabled={isLoading} variant="default" size="default">
               {isLoading ? "Menyimpan..." : "Simpan Pengaturan"}
             </Button>
           </div>

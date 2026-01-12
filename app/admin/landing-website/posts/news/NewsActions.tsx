@@ -1,0 +1,152 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { createColumns, News } from "./columns";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "sonner";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+
+export default function NewsActions() {
+  const router = useRouter();
+  const [news, setNews] = useState<News[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState<string>("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetchNews(pageIndex, pageSize, search);
+  }, [pageIndex, pageSize, search]);
+
+  const fetchNews = async (p = 0, ps = 10, s = "") => {
+    setIsLoading(true);
+    try {
+      const q = new URLSearchParams({ page: String(p), pageSize: String(ps) });
+      if (s) q.set("search", s);
+      const res = await fetch(`/api/admin/landing-website/news?${q.toString()}`);
+      if (!res.ok) {
+        toast.error("Gagal memuat berita");
+        setNews([]);
+        setTotalCount(0);
+        return;
+      }
+      const data = await res.json();
+      // data: { items, totalCount, page, pageSize }
+      setNews(data.items || []);
+      setTotalCount(data.totalCount ?? 0);
+      setPageIndex(data.page ?? p);
+      setPageSize(data.pageSize ?? ps);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      toast.error("Terjadi kesalahan saat memuat berita");
+      setNews([]);
+      setTotalCount(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setConfirmDelete(id);
+  };
+
+  const confirmDeleteNews = async () => {
+    if (!confirmDelete) return;
+    try {
+      const response = await fetch(`/api/admin/landing-website/news/${confirmDelete}`, {
+        method: "DELETE"
+      });
+
+      if (response.ok) {
+        toast.success("Berita berhasil dihapus");
+        void fetchNews(pageIndex, pageSize, search);
+        setConfirmDelete(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || "Gagal menghapus berita");
+      }
+    } catch (error) {
+      console.error("Error deleting news:", error);
+      toast.error("Terjadi kesalahan saat menghapus berita");
+      setConfirmDelete(null);
+    }
+  };
+
+  const handleEdit = (id: string) => {
+    router.push(`/admin/landing-website/posts/news/${id}/edit`);
+  };
+
+  const filterConfig = [
+    {
+      column: "category",
+      title: "Kategori",
+      options: [
+        { label: "Berita Sekolah", value: "School News" },
+        { label: "Prestasi", value: "Achievement" },
+        { label: "Laporan Acara", value: "Event Report" },
+        { label: "Pengumuman", value: "Announcement" }
+      ]
+    },
+    {
+      column: "isPublished",
+      title: "Status",
+      options: [
+        { label: "Dipublikasikan", value: "true" },
+        { label: "Draft", value: "false" }
+      ]
+    }
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <AdminPageHeader title="Berita" description="Kelola berita dan pengumuman sekolah" />
+        </div>
+        <Link href="/admin/landing-website/posts/news/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4 text-current" /> Tambah Berita
+          </Button>
+        </Link>
+      </div>
+      {isLoading ? (
+        <div className="text-center py-10">Memuat...</div>
+      ) : (
+        <DataTable
+          columns={createColumns({ onDelete: handleDelete, onEdit: handleEdit })}
+          data={news}
+          searchKey="title"
+          filterConfig={filterConfig}
+          serverSide
+          totalCount={totalCount}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={p => setPageIndex(p)}
+          onPageSizeChange={ps => {
+            setPageSize(ps);
+            setPageIndex(0);
+          }}
+          onSearchChange={v => {
+            setSearch(v);
+            setPageIndex(0);
+          }}
+        />
+      )}
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Hapus Berita"
+        description="Apakah Anda yakin ingin menghapus berita ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Hapus Berita"
+        onConfirm={confirmDeleteNews}
+        onCancel={() => setConfirmDelete(null)}
+      />
+    </div>
+  );
+}

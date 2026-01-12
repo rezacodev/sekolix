@@ -22,7 +22,7 @@
 }
 
 /* Dynamic Theme Classes */
-[data-theme='academic-classic'] {
+[data-theme="academic-classic"] {
   --theme-primary: var(--ac-primary);
   --theme-secondary: var(--ac-secondary);
   --theme-accent: var(--ac-accent);
@@ -30,7 +30,7 @@
   --theme-background: var(--ac-background);
 }
 
-[data-theme='modern-vibrant'] {
+[data-theme="modern-vibrant"] {
   --theme-primary: var(--mv-primary);
   --theme-secondary: var(--mv-secondary);
   --theme-accent: var(--mv-accent);
@@ -38,7 +38,7 @@
   --theme-background: var(--mv-background);
 }
 
-[data-theme='minimalist-clean'] {
+[data-theme="minimalist-clean"] {
   --theme-primary: var(--mc-primary);
   --theme-secondary: var(--mc-secondary);
   --theme-accent: var(--mc-accent);

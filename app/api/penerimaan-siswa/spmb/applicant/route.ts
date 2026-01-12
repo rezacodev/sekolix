@@ -71,8 +71,8 @@ export async function GET(request: NextRequest) {
         jumlahSaudara: true,
 
         // achievements
-        achievements: true,
-      },
+        achievements: true
+      }
     });
 
     if (!applicant) {

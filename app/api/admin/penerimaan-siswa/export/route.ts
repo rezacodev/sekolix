@@ -14,7 +14,9 @@ type ApplicantExport = {
 
 // FullApplicant type is declared later with a narrower scope; remove duplicate
 
-async function applicantsForExport(filters: { yearId?: string; status?: string; program?: string } = {}): Promise<ApplicantExport[]> {
+async function applicantsForExport(
+  filters: { yearId?: string; status?: string; program?: string } = {}
+): Promise<ApplicantExport[]> {
   const { yearId, status, program } = filters;
   const where: Prisma.ApplicantWhereInput = {};
   // normalize filters: treat common sentinel values as no-filter
@@ -50,17 +52,17 @@ async function applicantsForExport(filters: { yearId?: string; status?: string; 
   const rows = await db.applicant.findMany({
     where,
     include: { program: true, academicYear: true },
-    orderBy: { fullName: "asc" },
+    orderBy: { fullName: "asc" }
   });
 
   // Map to a narrow export shape
-  return rows.map((r) => ({
+  return rows.map(r => ({
     id: r.id,
     registrationCode: r.registrationCode ?? null,
     fullName: r.fullName ?? null,
     program: r.program ? { name: r.program.name } : null,
     academicYear: r.academicYear ? { label: r.academicYear.label } : null,
-    status: r.status ?? null,
+    status: r.status ?? null
   }));
 }
 
@@ -83,7 +85,7 @@ async function pdfBufferFromApplicants(applicants: ApplicantExport[]): Promise<B
     y: y - titleSize,
     size: titleSize,
     font,
-    color: rgb(0, 0, 0),
+    color: rgb(0, 0, 0)
   });
   y -= titleSize + 10;
 
@@ -102,9 +104,21 @@ async function pdfBufferFromApplicants(applicants: ApplicantExport[]): Promise<B
   // Rows
   for (const a of applicants) {
     x = margin;
-    const row = [a.registrationCode ?? "", a.fullName ?? "", a.program?.name ?? "", a.academicYear?.label ?? "", a.status ?? ""];
+    const row = [
+      a.registrationCode ?? "",
+      a.fullName ?? "",
+      a.program?.name ?? "",
+      a.academicYear?.label ?? "",
+      a.status ?? ""
+    ];
     for (let i = 0; i < row.length; i++) {
-      page.drawText(String(row[i]), { x, y: y - fontSize, size: fontSize, font, color: rgb(0, 0, 0) });
+      page.drawText(String(row[i]), {
+        x,
+        y: y - fontSize,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0)
+      });
       x += colWidths[i];
     }
     y -= fontSize + 6;
@@ -131,13 +145,13 @@ export async function GET(req: Request) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-      if (type === "xlsx" || type === "excel" || type === "csv") {
+    if (type === "xlsx" || type === "excel" || type === "csv") {
       // fetch full applicant records for richer export
-      const ids = applicants.map((a) => a.id);
+      const ids = applicants.map(a => a.id);
       const fullApplicants = await db.applicant.findMany({
         where: ids.length ? { id: { in: ids } } : {},
         include: { program: true, academicYear: true },
-        orderBy: { fullName: "asc" },
+        orderBy: { fullName: "asc" }
       });
 
       const columns = [
@@ -197,7 +211,7 @@ export async function GET(req: Request) {
         { header: "Jumlah Saudara", key: "jumlahSaudara" },
         { header: "Prestasi", key: "achievements" },
         { header: "Dibuat Pada", key: "createdAt" },
-        { header: "Diupdate Pada", key: "updatedAt" },
+        { header: "Diupdate Pada", key: "updatedAt" }
       ];
 
       // CSV helper
@@ -230,29 +244,34 @@ export async function GET(req: Request) {
         }
       };
 
-      type FullApplicant = Applicant & { program?: { name?: string } | null; academicYear?: { label?: string } | null };
+      type FullApplicant = Applicant & {
+        program?: { name?: string } | null;
+        academicYear?: { label?: string } | null;
+      };
       const fullTyped = fullApplicants as FullApplicant[];
       const rows: string[][] = fullTyped.map((r: FullApplicant) => {
-        return columns.map((c) => formatValue(r, c.key));
+        return columns.map(c => formatValue(r, c.key));
       });
 
       if (type === "csv") {
-        const csvLines = [columns.map((c) => c.header).join(",")].concat(rows.map((r) => r.map(escapeCsv).join(",")));
+        const csvLines = [columns.map(c => c.header).join(",")].concat(
+          rows.map(r => r.map(escapeCsv).join(","))
+        );
         const csvBuffer = Buffer.from(csvLines.join("\n"), "utf-8");
         return new Response(csvBuffer as unknown as BodyInit, {
           status: 200,
           headers: {
             "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition": `attachment; filename="siswa_diterima_${today}.csv"`,
-          },
+            "Content-Disposition": `attachment; filename="siswa_diterima_${today}.csv"`
+          }
         });
       }
 
       // XLSX generation for full data
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet("Siswa Diterima");
-      sheet.columns = columns.map((c) => ({ header: c.header, key: c.key, width: 20 }));
-      rows.forEach((r) => {
+      sheet.columns = columns.map(c => ({ header: c.header, key: c.key, width: 20 }));
+      rows.forEach(r => {
         const obj: Record<string, string> = {};
         columns.forEach((c, i) => (obj[c.key] = r[i]));
         sheet.addRow(obj);
@@ -264,8 +283,8 @@ export async function GET(req: Request) {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "Content-Disposition": `attachment; filename="siswa_diterima_${today}.xlsx"`,
-        },
+          "Content-Disposition": `attachment; filename="siswa_diterima_${today}.xlsx"`
+        }
       });
     }
 
@@ -279,8 +298,8 @@ export async function GET(req: Request) {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="siswa_diterima_${today}.pdf"`,
-        },
+          "Content-Disposition": `attachment; filename="siswa_diterima_${today}.pdf"`
+        }
       });
     } catch (pdfErr) {
       console.error("PDF generation failed, falling back to XLSX:", pdfErr);
@@ -292,16 +311,16 @@ export async function GET(req: Request) {
         { header: "Nama", key: "nama", width: 40 },
         { header: "Program", key: "program", width: 30 },
         { header: "Tahun Ajaran", key: "tahun", width: 20 },
-        { header: "Status", key: "status", width: 15 },
+        { header: "Status", key: "status", width: 15 }
       ];
 
-      applicants.forEach((a) => {
+      applicants.forEach(a => {
         sheet.addRow({
           kode: a.registrationCode ?? "",
           nama: a.fullName ?? "",
           program: a.program?.name ?? "",
           tahun: a.academicYear?.label ?? "",
-          status: a.status ?? "",
+          status: a.status ?? ""
         });
       });
 
@@ -312,8 +331,8 @@ export async function GET(req: Request) {
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "Content-Disposition": `attachment; filename="siswa_diterima_${today}_fallback.xlsx"`,
-          "X-Export-Fallback": "pdf->xlsx",
-        },
+          "X-Export-Fallback": "pdf->xlsx"
+        }
       });
     }
   } catch (err) {

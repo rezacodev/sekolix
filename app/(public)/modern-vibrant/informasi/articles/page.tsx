@@ -1,38 +1,39 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Article } from '@prisma/client';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Navbar } from '@/components/themes/modern-vibrant';
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { Article } from "@prisma/client";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar } from "@/components/themes/modern-vibrant";
 
 export const metadata: Metadata = {
-  title: 'Artikel - SMK Negeri 1 Jakarta',
-  description: 'Baca artikel pendidikan dan informasi terkini dari SMK Negeri 1 Jakarta',
+  title: "Artikel - SMK Negeri 1 Jakarta",
+  description: "Baca artikel pendidikan dan informasi terkini dari SMK Negeri 1 Jakarta"
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getArticles(): Promise<Article[]> {
   try {
     const articles = await prisma.article.findMany({
       where: { isPublished: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 50,
+      orderBy: { publishedAt: "desc" },
+      take: 50
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    console.error("Error fetching articles:", error);
     return [];
   }
 }
 
 export default async function ModernVibrantArticlesPage() {
   const articles = await getArticles();
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
   return (
     <ThemeProvider
@@ -47,12 +48,12 @@ export default async function ModernVibrantArticlesPage() {
     >
       <div className="min-h-screen bg-linear-to-br from-gray-50 via-purple-50 to-cyan-50">
         <Navbar />
-        
+
         {/* Header with Modern Vibrant Gradient Style */}
         <div className="relative overflow-hidden pt-20 pb-32">
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500 via-purple-500 to-orange-500 opacity-90"></div>
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iLjA1IiBjeD0iNDAiIGN5PSI0MCIgcj0iMzAiLz48L2c+PC9zdmc+')] opacity-30"></div>
-          
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="text-center">
               <div className="inline-block mb-6 animate-bounce">
@@ -102,12 +103,12 @@ export default async function ModernVibrantArticlesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article: Article, index: number) => {
                   const gradients = [
-                    'from-cyan-500 to-blue-500',
-                    'from-purple-500 to-pink-500',
-                    'from-orange-500 to-red-500',
+                    "from-cyan-500 to-blue-500",
+                    "from-purple-500 to-pink-500",
+                    "from-orange-500 to-red-500"
                   ];
                   const gradient = gradients[index % gradients.length];
-                  
+
                   return (
                     <Link
                       key={article.id}
@@ -116,7 +117,9 @@ export default async function ModernVibrantArticlesPage() {
                     >
                       {article.featuredImage && (
                         <div className="relative h-56 w-full overflow-hidden">
-                          <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`}></div>
+                          <div
+                            className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`}
+                          ></div>
                           <Image
                             src={article.featuredImage}
                             alt={article.title}
@@ -153,7 +156,9 @@ export default async function ModernVibrantArticlesPage() {
                             <div className="w-8 h-8 rounded-full bg-linear-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white font-bold">
                               {article.author.charAt(0)}
                             </div>
-                            <span className="font-semibold text-gray-900 text-sm">{article.author}</span>
+                            <span className="font-semibold text-gray-900 text-sm">
+                              {article.author}
+                            </span>
                           </div>
                         )}
                       </div>

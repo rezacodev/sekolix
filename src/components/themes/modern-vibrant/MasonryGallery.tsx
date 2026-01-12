@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { X, ZoomIn, Download, Share2 } from 'lucide-react';
+import { useState } from "react";
+import Image from "next/image";
+import { X, ZoomIn, Download, Share2 } from "lucide-react";
 
 interface GalleryImage {
   id: string;
   url: string;
   title: string;
   category: string;
-  height: 'short' | 'medium' | 'tall';
+  height: "short" | "medium" | "tall";
 }
 
 interface MasonryGalleryProps {
@@ -18,21 +18,20 @@ interface MasonryGalleryProps {
 
 export default function MasonryGallery({ images }: MasonryGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>("all");
 
-  const categories = ['all', ...Array.from(new Set(images.map((img) => img.category)))];
-  const filteredImages =
-    filter === 'all' ? images : images.filter((img) => img.category === filter);
+  const categories = ["all", ...Array.from(new Set(images.map(img => img.category)))];
+  const filteredImages = filter === "all" ? images : images.filter(img => img.category === filter);
 
   const getHeightClass = (height: string) => {
     switch (height) {
-      case 'short':
-        return 'h-60';
-      case 'tall':
-        return 'h-96';
-      case 'medium':
+      case "short":
+        return "h-60";
+      case "tall":
+        return "h-96";
+      case "medium":
       default:
-        return 'h-80';
+        return "h-80";
     }
   };
 
@@ -40,23 +39,19 @@ export default function MasonryGallery({ images }: MasonryGalleryProps) {
     <section className="py-20 px-4 bg-slate-900">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Gallery
-          </h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Capturing moments that matter
-          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Gallery</h2>
+          <p className="text-xl text-slate-300 mb-8">Capturing moments that matter</p>
 
           {/* Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-3">
-            {categories.map((category) => (
+            {categories.map(category => (
               <button
                 key={category}
                 onClick={() => setFilter(category)}
                 className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
                   filter === category
-                    ? 'bg-linear-to-r from-cyan-500 to-purple-500 text-white shadow-lg scale-105'
-                    : 'bg-white/10 text-white hover:bg-white/20'
+                    ? "bg-linear-to-r from-cyan-500 to-purple-500 text-white shadow-lg scale-105"
+                    : "bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -116,7 +111,10 @@ export default function MasonryGallery({ images }: MasonryGalleryProps) {
               <X className="w-6 h-6" />
             </button>
 
-            <div className="relative max-w-6xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="relative max-w-6xl max-h-[90vh] w-full"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="relative w-full h-[70vh]">
                 <Image
                   src={selectedImage.url}
@@ -130,9 +128,7 @@ export default function MasonryGallery({ images }: MasonryGalleryProps) {
                 <div className="inline-block px-4 py-2 bg-accent rounded-full text-sm text-white mb-3">
                   {selectedImage.category}
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  {selectedImage.title}
-                </h3>
+                <h3 className="text-2xl font-bold text-white mb-6">{selectedImage.title}</h3>
 
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4">

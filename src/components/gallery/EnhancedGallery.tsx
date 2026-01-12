@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
-import { X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
+import { X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Download, Share2 } from "lucide-react";
 
 interface GalleryImage {
   id: string;
@@ -14,65 +14,71 @@ interface GalleryImage {
 
 interface EnhancedGalleryProps {
   images: GalleryImage[];
-  layout?: 'masonry' | 'grid';
+  layout?: "masonry" | "grid";
   columns?: 2 | 3 | 4;
   enableLazyLoad?: boolean;
   showAlbumFilter?: boolean;
-  filterTheme?: 'modern' | 'academic' | 'minimal';
+  filterTheme?: "modern" | "academic" | "minimal";
 }
 
 export default function EnhancedGallery({
   images,
-  layout = 'masonry',
+  layout = "masonry",
   columns = 3,
   enableLazyLoad = true,
   showAlbumFilter = true,
-  filterTheme = 'modern',
+  filterTheme = "modern"
 }: EnhancedGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>("all");
   const [zoomLevel, setZoomLevel] = useState(1);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Get unique albums/categories
-  const albums = ['all', ...Array.from(new Set(images.map((img) => img.album || img.category).filter((val): val is string => Boolean(val))))];
-  
+  const albums = [
+    "all",
+    ...Array.from(
+      new Set(
+        images.map(img => img.album || img.category).filter((val): val is string => Boolean(val))
+      )
+    )
+  ];
+
   // Filter images
-  const filteredImages = filter === 'all' 
-    ? images 
-    : images.filter((img) => (img.album || img.category) === filter);
+  const filteredImages =
+    filter === "all" ? images : images.filter(img => (img.album || img.category) === filter);
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
 
   // Get filter button styles based on theme
   const getFilterButtonStyle = (isActive: boolean) => {
-    if (filterTheme === 'academic') {
+    if (filterTheme === "academic") {
       return isActive
-        ? 'bg-blue-900 text-white border-2 border-blue-900'
-        : 'bg-white text-blue-900 border-2 border-blue-200 hover:border-blue-400';
-    } else if (filterTheme === 'minimal') {
+        ? "bg-blue-900 text-white border-2 border-blue-900"
+        : "bg-white text-blue-900 border-2 border-blue-200 hover:border-blue-400";
+    } else if (filterTheme === "minimal") {
       return isActive
-        ? 'bg-slate-900 text-white'
-        : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50';
+        ? "bg-slate-900 text-white"
+        : "bg-white text-slate-900 border border-slate-300 hover:bg-slate-50";
     } else {
       // modern
       return isActive
-        ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg scale-105'
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+        ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg scale-105"
+        : "bg-gray-100 text-gray-700 hover:bg-gray-200";
     }
   };
 
   // Navigation functions defined before useEffect
   const handlePrevious = useCallback(() => {
     if (selectedIndex === null) return;
-    setSelectedIndex((prev) => (prev === 0 ? filteredImages.length - 1 : prev! - 1));
+    setSelectedIndex(prev => (prev === 0 ? filteredImages.length - 1 : prev! - 1));
     setZoomLevel(1);
   }, [selectedIndex, filteredImages.length]);
 
   const handleNext = useCallback(() => {
     if (selectedIndex === null) return;
-    setSelectedIndex((prev) => ((prev! + 1) % filteredImages.length));
+    setSelectedIndex(prev => (prev! + 1) % filteredImages.length);
     setZoomLevel(1);
   }, [selectedIndex, filteredImages.length]);
 
@@ -82,28 +88,28 @@ export default function EnhancedGallery({
       if (selectedIndex === null) return;
 
       switch (e.key) {
-        case 'Escape':
+        case "Escape":
           setSelectedIndex(null);
           setZoomLevel(1);
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           handlePrevious();
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           handleNext();
           break;
-        case '+':
-        case '=':
-          setZoomLevel((prev) => Math.min(prev + 0.2, 3));
+        case "+":
+        case "=":
+          setZoomLevel(prev => Math.min(prev + 0.2, 3));
           break;
-        case '-':
-          setZoomLevel((prev) => Math.max(prev - 0.2, 0.5));
+        case "-":
+          setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
           break;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex, filteredImages.length, handlePrevious, handleNext]);
 
   // Lazy loading with Intersection Observer
@@ -111,17 +117,17 @@ export default function EnhancedGallery({
     if (!enableLazyLoad) return;
 
     observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const imgId = entry.target.getAttribute('data-img-id');
+            const imgId = entry.target.getAttribute("data-img-id");
             if (imgId) {
-              setLoadedImages((prev) => new Set(prev).add(imgId));
+              setLoadedImages(prev => new Set(prev).add(imgId));
             }
           }
         });
       },
-      { rootMargin: '50px' }
+      { rootMargin: "50px" }
     );
 
     return () => observerRef.current?.disconnect();
@@ -132,7 +138,7 @@ export default function EnhancedGallery({
   };
 
   const getGridClass = () => {
-    if (layout === 'masonry') {
+    if (layout === "masonry") {
       return `columns-1 md:columns-${Math.min(columns, 2)} lg:columns-${columns} gap-4 space-y-4`;
     }
     return `grid grid-cols-1 md:grid-cols-${Math.min(columns, 2)} lg:grid-cols-${columns} gap-4`;
@@ -145,15 +151,17 @@ export default function EnhancedGallery({
         {showAlbumFilter && albums.length > 1 && (
           <div className="mb-8">
             <div className="flex flex-wrap justify-center gap-3">
-              {albums.map((album) => (
+              {albums.map(album => (
                 <button
                   key={album}
-                  onClick={() => setFilter(album || 'all')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
-                    getFilterButtonStyle(filter === album)
-                  }`}
+                  onClick={() => setFilter(album || "all")}
+                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${getFilterButtonStyle(
+                    filter === album
+                  )}`}
                 >
-                  {album === 'all' ? 'Semua' : (album?.charAt(0).toUpperCase() ?? '') + (album?.slice(1) ?? '')}
+                  {album === "all"
+                    ? "Semua"
+                    : (album?.charAt(0).toUpperCase() ?? "") + (album?.slice(1) ?? "")}
                 </button>
               ))}
             </div>
@@ -186,7 +194,7 @@ export default function EnhancedGallery({
           >
             {/* Close Button */}
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 setSelectedIndex(null);
                 setZoomLevel(1);
@@ -200,7 +208,7 @@ export default function EnhancedGallery({
             {filteredImages.length > 1 && (
               <>
                 <button
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handlePrevious();
                   }}
@@ -209,7 +217,7 @@ export default function EnhancedGallery({
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handleNext();
                   }}
@@ -223,9 +231,9 @@ export default function EnhancedGallery({
             {/* Zoom Controls */}
             <div className="absolute top-4 left-4 flex gap-2 z-10">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  setZoomLevel((prev) => Math.max(prev - 0.2, 0.5));
+                  setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
                 }}
                 disabled={zoomLevel <= 0.5}
                 className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors text-white disabled:opacity-50"
@@ -233,9 +241,9 @@ export default function EnhancedGallery({
                 <ZoomOut className="w-5 h-5" />
               </button>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  setZoomLevel((prev) => Math.min(prev + 0.2, 3));
+                  setZoomLevel(prev => Math.min(prev + 0.2, 3));
                 }}
                 disabled={zoomLevel >= 3}
                 className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors text-white disabled:opacity-50"
@@ -250,7 +258,7 @@ export default function EnhancedGallery({
             {/* Image Container */}
             <div
               className="relative max-w-6xl max-h-[90vh] w-full overflow-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div
                 className="relative w-full h-[70vh] transition-transform duration-200"
@@ -272,9 +280,7 @@ export default function EnhancedGallery({
                     {selectedImage.album}
                   </div>
                 )}
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  {selectedImage.title}
-                </h3>
+                <h3 className="text-2xl font-bold text-white mb-4">{selectedImage.title}</h3>
                 <p className="text-sm text-white/70 mb-6">
                   {selectedIndex! + 1} / {filteredImages.length}
                 </p>
@@ -326,7 +332,7 @@ interface GalleryItemProps {
   shouldLoad: boolean;
   observerRef: React.MutableRefObject<IntersectionObserver | null>;
   onClick: () => void;
-  layout: 'masonry' | 'grid';
+  layout: "masonry" | "grid";
 }
 
 function GalleryItem({ image, index, shouldLoad, observerRef, onClick, layout }: GalleryItemProps) {
@@ -336,7 +342,7 @@ function GalleryItem({ image, index, shouldLoad, observerRef, onClick, layout }:
   useEffect(() => {
     const currentItem = itemRef.current;
     const currentObserver = observerRef.current;
-    
+
     if (currentItem && currentObserver) {
       currentObserver.observe(currentItem);
     }
@@ -348,7 +354,7 @@ function GalleryItem({ image, index, shouldLoad, observerRef, onClick, layout }:
     };
   }, [observerRef]);
 
-  const heightClass = layout === 'masonry' ? 'h-auto' : 'aspect-square';
+  const heightClass = layout === "masonry" ? "h-auto" : "aspect-square";
 
   return (
     <div
@@ -365,7 +371,7 @@ function GalleryItem({ image, index, shouldLoad, observerRef, onClick, layout }:
             alt={image.title}
             fill
             className={`object-cover transition-all duration-700 ${
-              isLoaded ? 'scale-100 blur-0' : 'scale-105 blur-sm'
+              isLoaded ? "scale-100 blur-0" : "scale-105 blur-sm"
             } group-hover:scale-110`}
             onLoad={() => setIsLoaded(true)}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

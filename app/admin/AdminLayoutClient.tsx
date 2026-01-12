@@ -1,7 +1,7 @@
 "use client";
 
 import "./active-admin-menu.css";
-import Image from 'next/image';
+import Image from "next/image";
 
 import { useSession } from "next-auth/react";
 import type { Session } from "next-auth";
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -25,20 +25,18 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   LayoutDashboard,
-  Users,
   Settings,
   LogOut,
   Palette,
   Globe,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  Menu,
   ClipboardList,
-  Check,
+  Check
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { BreadcrumbProvider, useBreadcrumb } from "@/contexts/admin";
@@ -49,91 +47,203 @@ import { ADMIN_THEMES } from "@/constants/admin-themes";
 // Breadcrumb mapping for automatic breadcrumb generation
 const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = {
   "/admin": [{ label: "Dasbor" }],
-  "/admin/website-landing/posts": [{ label: "Konten" }],
-  "/admin/website-landing/posts/articles": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Artikel" },
+  "/admin/landing-website": [{ label: "Website Sekolah", href: "/admin/landing-website" }],
+  "/admin/landing-website/posts": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten" }
   ],
-  "/admin/website-landing/posts/articles/new": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Artikel", href: "/admin/website-landing/posts/articles" },
-    { label: "Buat Baru" },
+  "/admin/landing-website/posts/articles": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Artikel" }
   ],
-  "/admin/website-landing/posts/news": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Berita" },
+  "/admin/landing-website/posts/articles/new": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Artikel", href: "/admin/landing-website/posts/articles" },
+    { label: "Buat Baru" }
   ],
-  "/admin/website-landing/posts/news/new": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Berita", href: "/admin/website-landing/posts/news" },
-    { label: "Buat Baru" },
+  "/admin/landing-website/posts/news": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Berita" }
   ],
-  "/admin/website-landing/posts/events": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Event" },
+  "/admin/landing-website/posts/news/new": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Berita", href: "/admin/landing-website/posts/news" },
+    { label: "Buat Baru" }
   ],
-  "/admin/website-landing/posts/events/new": [
-    { label: "Konten", href: "/admin/website-landing/posts" },
-    { label: "Event", href: "/admin/website-landing/posts/events" },
-    { label: "Buat Baru" },
+  "/admin/landing-website/posts/events": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Event" }
   ],
-  "/admin/website-landing/pages": [{ label: "Halaman" }],
-  "/admin/website-landing/pages/profil": [
-    { label: "Halaman", href: "/admin/website-landing/pages" },
-    { label: "Halaman Profil" },
+  "/admin/landing-website/posts/events/new": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Konten", href: "/admin/landing-website/posts" },
+    { label: "Event", href: "/admin/landing-website/posts/events" },
+    { label: "Buat Baru" }
   ],
-  "/admin/website-landing/gallery": [{ label: "Galeri" }],
-  "/admin/website-landing/media": [{ label: "Perpustakaan Media" }],
-  "/admin/website-landing/faculty": [{ label: "Guru & Staf" }],
-  "/admin/website-landing/website-settings": [{ label: "Pengaturan Website" }],
-  "/admin/website-landing/website-settings/landing": [
-    { label: "Pengaturan Website", href: "/admin/website-landing/website-settings" },
-    { label: "Landing Page" },
+  "/admin/landing-website/pages": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Halaman" }
   ],
-  "/admin/website-landing/website-settings/theme": [
-    { label: "Pengaturan Website", href: "/admin/website-landing/website-settings" },
-    { label: "Tema" },
+  "/admin/landing-website/pages/profil": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Halaman", href: "/admin/landing-website/pages" },
+    { label: "Halaman Profil" }
+  ],
+  "/admin/landing-website/gallery": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Galeri" }
+  ],
+  "/admin/landing-website/media": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Perpustakaan Media" }
+  ],
+  "/admin/landing-website/faculty": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Guru & Staf" }
+  ],
+  "/admin/landing-website/website-settings": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Pengaturan Website" }
+  ],
+  "/admin/landing-website/website-settings/landing": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Pengaturan Website", href: "/admin/landing-website/website-settings" },
+    { label: "Landing Page" }
+  ],
+  "/admin/landing-website/website-settings/theme": [
+    { label: "Website Sekolah", href: "/admin/landing-website" },
+    { label: "Pengaturan Website", href: "/admin/landing-website/website-settings" },
+    { label: "Tema" }
   ],
   "/admin/penerimaan-siswa/pendaftaran-baru": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-    { label: "Pendaftaran Baru" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
+    { label: "Pendaftaran Baru" }
   ],
+  "/admin/penerimaan-siswa": [{ label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" }],
   "/admin/penerimaan-siswa/pembayaran": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-    { label: "Pembayaran" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
+    { label: "Pembayaran" }
   ],
   "/admin/penerimaan-siswa/siswa-diterima": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-    { label: "Siswa Diterima" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
+    { label: "Siswa Diterima" }
   ],
   "/admin/penerimaan-siswa/settings": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-    { label: "Pengaturan Penerimaan" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
+    { label: "Pengaturan Penerimaan" }
   ],
   "/admin/penerimaan-siswa/settings/registration-code": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
     { label: "Pengaturan Penerimaan", href: "/admin/penerimaan-siswa/settings" },
-    { label: "Kode Registrasi" },
+    { label: "Kode Registrasi" }
   ],
   "/admin/penerimaan-siswa/settings/programs": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
     { label: "Pengaturan Penerimaan", href: "/admin/penerimaan-siswa/settings" },
-    { label: "Program" },
+    { label: "Program" }
   ],
   "/admin/penerimaan-siswa/settings/years": [
-    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
+    { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
     { label: "Pengaturan Penerimaan", href: "/admin/penerimaan-siswa/settings" },
-    { label: "Tahun Ajaran" },
+    { label: "Tahun Ajaran" }
   ],
   "/admin/manajemen-akademik/tahun-ajaran": [
     { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
-    { label: "Tahun Ajaran" },
+    { label: "Tahun Ajaran" }
+  ],
+  "/admin/manajemen-akademik": [{ label: "Manajemen Akademik", href: "/admin/manajemen-akademik" }],
+  "/admin/manajemen-akademik/gtk": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Guru & Tenaga Kependidikan" }
+  ],
+  "/admin/manajemen-akademik/rombel": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Rombel, Pengampu & Jadwal" }
+  ],
+  "/admin/manajemen-akademik/rombel/transfer": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Rombel", href: "/admin/manajemen-akademik/rombel" },
+    { label: "Transfer Siswa" }
+  ],
+  "/admin/manajemen-akademik/kurikulum-mapel": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Kurikulum & Mata Pelajaran" }
+  ],
+  "/admin/manajemen-akademik/jadwal-pelajaran": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Jadwal Pelajaran" }
+  ],
+  "/admin/manajemen-akademik/guru-pengampu": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Guru Pengampu" }
+  ],
+  "/admin/manajemen-akademik/peserta-didik": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Peserta Didik" }
+  ],
+  "/admin/manajemen-akademik/peserta-didik/new": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Peserta Didik", href: "/admin/manajemen-akademik/peserta-didik" },
+    { label: "Tambah Peserta Didik" }
+  ],
+  "/admin/manajemen-akademik/peserta-didik/import": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Peserta Didik", href: "/admin/manajemen-akademik/peserta-didik" },
+    { label: "Import Data" }
+  ],
+  "/admin/manajemen-akademik/ruang-jam-pelajaran": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Ruang & Jam Pelajaran" }
+  ],
+  "/admin/manajemen-akademik/nilai-rapor": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Nilai & Rapor" }
+  ],
+  "/admin/manajemen-akademik/pengaturan-akademik": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Pengaturan Akademik" }
+  ],
+  "/admin/manajemen-akademik/gtk/new": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Guru & Tenaga Kependidikan", href: "/admin/manajemen-akademik/gtk" },
+    { label: "Tambah GTK" }
+  ],
+  "/admin/manajemen-akademik/gtk/import": [
+    { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
+    { label: "Guru & Tenaga Kependidikan", href: "/admin/manajemen-akademik/gtk" },
+    { label: "Import Data" }
   ],
   "/admin/manajemen-akademik/tahun-ajaran/kalender-akademik": [
     { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
     { label: "Tahun Ajaran", href: "/admin/manajemen-akademik/tahun-ajaran" },
-    { label: "Kalender Akademik" },
+    { label: "Kalender Akademik" }
   ],
+  "/admin/pengaturan": [{ label: "Pengaturan" }],
+  "/admin/pengaturan/identitas-sekolah": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Identitas Sekolah" }
+  ],
+  "/admin/pengaturan/notifikasi": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Notifikasi" }
+  ],
+  "/admin/pengaturan/integrasi-api": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Integrasi & API" }
+  ],
+  "/admin/pengaturan/backup-restore": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Backup & Restore" }
+  ],
+  "/admin/pengguna": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Manajemen Pengguna" }
+  ]
 };
 
 type SubMenu = {
@@ -160,7 +270,7 @@ const appCategories: AppCategory[] = [
     icon: LayoutDashboard,
     color: "bg-primary",
     description: "Ikhtisar sistem",
-    href: "/admin",
+    href: "/admin"
   },
   {
     id: "cms",
@@ -169,13 +279,21 @@ const appCategories: AppCategory[] = [
     color: "bg-accent",
     description: "Kelola konten website",
     subMenus: [
-      { id: "cms-posts", label: "Konten", href: "/admin/website-landing/posts" },
-      { id: "cms-pages", label: "Halaman", href: "/admin/website-landing/pages" },
-      { id: "cms-gallery", label: "Galeri", href: "/admin/website-landing/gallery" },
-      { id: "cms-media", label: "Perpustakaan Media", href: "/admin/website-landing/media" },
-      { id: "cms-faculty", label: "Guru & Staf", href: "/admin/website-landing/faculty" },
-      { id: "cms-settings", label: "Pengaturan Website", href: "/admin/website-landing/website-settings" },
-    ],
+      { id: "cms-posts", label: "Konten", href: "/admin/landing-website/posts" },
+      { id: "cms-pages", label: "Halaman", href: "/admin/landing-website/pages" },
+      { id: "cms-gallery", label: "Galeri", href: "/admin/landing-website/gallery" },
+      { id: "cms-media", label: "Perpustakaan Media", href: "/admin/landing-website/media" },
+      {
+        id: "cms-faculty",
+        label: "Guru & Tenaga Kependidikan",
+        href: "/admin/landing-website/faculty"
+      },
+      {
+        id: "cms-settings",
+        label: "Pengaturan Website",
+        href: "/admin/landing-website/website-settings"
+      }
+    ]
   },
   {
     id: "admissions",
@@ -184,11 +302,27 @@ const appCategories: AppCategory[] = [
     color: "bg-success",
     description: "Pantau proses pendaftaran",
     subMenus: [
-      { id: "admissions-registration", label: "Pendaftaran Baru", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-      { id: "admissions-payments", label: "Pembayaran", href: "/admin/penerimaan-siswa/pembayaran" },
-      { id: "admissions-validation", label: "Siswa Diterima", href: "/admin/penerimaan-siswa/siswa-diterima" },
-      { id: "admissions-settings", label: "Pengaturan Penerimaan", href: "/admin/penerimaan-siswa/settings" },
-    ],
+      {
+        id: "admissions-registration",
+        label: "Pendaftaran Baru",
+        href: "/admin/penerimaan-siswa/pendaftaran-baru"
+      },
+      {
+        id: "admissions-payments",
+        label: "Pembayaran",
+        href: "/admin/penerimaan-siswa/pembayaran"
+      },
+      {
+        id: "admissions-validation",
+        label: "Siswa Diterima",
+        href: "/admin/penerimaan-siswa/siswa-diterima"
+      },
+      {
+        id: "admissions-settings",
+        label: "Pengaturan Penerimaan",
+        href: "/admin/penerimaan-siswa/settings"
+      }
+    ]
   },
   {
     id: "akademik",
@@ -198,26 +332,34 @@ const appCategories: AppCategory[] = [
     description: "Kelola modul akademik",
     subMenus: [
       { id: "tahun-ajaran", label: "Tahun Ajaran", href: "/admin/manajemen-akademik/tahun-ajaran" },
-      { id: "data-guru", label: "Data Guru", href: "/admin/manajemen-akademik/data-guru" },
-      { id: "data-siswa", label: "Data Siswa Aktif", href: "/admin/manajemen-akademik/data-siswa-aktif" },
-      { id: "kurikulum-mapel", label: "Kurikulum & Mata Pelajaran", href: "/admin/manajemen-akademik/kurikulum-mapel" },
-      { id: "kelas-rombel", label: "Kelas & Rombel", href: "/admin/manajemen-akademik/kelas-rombel" },
-      { id: "guru-pengampu", label: "Guru Pengampu", href: "/admin/manajemen-akademik/guru-pengampu" },
-      { id: "jadwal-pelajaran", label: "Jadwal Pelajaran", href: "/admin/manajemen-akademik/jadwal-pelajaran" },
-      { id: "penilaian-nilai", label: "Penilaian & Nilai", href: "/admin/manajemen-akademik/penilaian-nilai" },
-      { id: "rapor", label: "Rapor", href: "/admin/manajemen-akademik/rapor" },
-      { id: "pengaturan-akademik", label: "Pengaturan Akademik", href: "/admin/manajemen-akademik/pengaturan-akademik" },
-    ],
-  },
-  {
-    id: "users",
-    name: "Manajemen Pengguna",
-    icon: Users,
-    color: "bg-accent",
-    description: "Kelola pengguna sistem",
-    subMenus: [
-      { id: "users-all", label: "Semua Pengguna", href: "/admin/users" },
-    ],
+      {
+        id: "data-gtk",
+        label: "Guru & Tenaga Kependidikan",
+        href: "/admin/manajemen-akademik/gtk"
+      },
+      { id: "data-siswa", label: "Peserta Didik", href: "/admin/manajemen-akademik/peserta-didik" },
+      {
+        id: "ruang-jam-pelajaran",
+        label: "Ruang & Jam Pelajaran",
+        href: "/admin/manajemen-akademik/ruang-jam-pelajaran"
+      },
+      {
+        id: "kurikulum-mapel",
+        label: "Kurikulum & Mata Pelajaran",
+        href: "/admin/manajemen-akademik/kurikulum-mapel"
+      },
+      { id: "kelas-rombel", label: "Rombel, Pengampu & Jadwal", href: "/admin/manajemen-akademik/rombel" },
+      {
+        id: "nilai-rapor",
+        label: "Nilai & Rapor",
+        href: "/admin/manajemen-akademik/nilai-rapor"
+      },
+      {
+        id: "pengaturan-akademik",
+        label: "Pengaturan Akademik",
+        href: "/admin/manajemen-akademik/pengaturan-akademik"
+      }
+    ]
   },
   {
     id: "settings",
@@ -226,9 +368,17 @@ const appCategories: AppCategory[] = [
     color: "bg-muted",
     description: "Konfigurasi sistem",
     subMenus: [
-      { id: "settings-general", label: "Umum", href: "/admin/settings" },
-    ],
-  },
+      {
+        id: "settings-identitas",
+        label: "Identitas Sekolah",
+        href: "/admin/pengaturan/identitas-sekolah"
+      },
+      { id: "settings-users", label: "Manajemen Pengguna", href: "/admin/pengguna" },
+      { id: "settings-notifikasi", label: "Notifikasi", href: "/admin/pengaturan/notifikasi" },
+      { id: "settings-integrasi", label: "Integrasi & API", href: "/admin/pengaturan/integrasi-api" },
+      { id: "settings-backup", label: "Backup & Restore", href: "/admin/pengaturan/backup-restore" }
+    ]
+  }
 ];
 
 export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -242,11 +392,11 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
 
     if (pathname.startsWith("/admin/penerimaan-siswa")) {
       menuToExpand = "admissions";
-    } else if (pathname.startsWith("/admin/website-landing")) {
+    } else if (pathname.startsWith("/admin/landing-website")) {
       menuToExpand = "cms";
-    } else if (pathname.startsWith("/admin/users")) {
-      menuToExpand = "users";
-    } else if (pathname.startsWith("/admin/settings")) {
+    } else if (pathname.startsWith("/admin/pengguna")) {
+      menuToExpand = "settings"; // Change to settings
+    } else if (pathname.startsWith("/admin/pengaturan")) {
       menuToExpand = "settings";
     } else if (pathname.startsWith("/admin/manajemen-akademik")) {
       menuToExpand = "akademik";
@@ -262,7 +412,7 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const applyAdminTheme = async (themeId: string, persist: boolean = true) => {
     if (typeof document === "undefined") return;
 
-    const theme = ADMIN_THEMES.find((t) => t.id === themeId) || ADMIN_THEMES[0];
+    const theme = ADMIN_THEMES.find(t => t.id === themeId) || ADMIN_THEMES[0];
     const root = document.documentElement;
 
     if (theme.mode === "dark") {
@@ -283,7 +433,7 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
         await fetch("/api/admin/admin-theme", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ adminTheme: theme.id }),
+          body: JSON.stringify({ adminTheme: theme.id })
         });
       } catch (error) {
         console.error("Failed to persist admin theme", error);
@@ -292,17 +442,17 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   };
 
   // Auto-expand menu when pathname changes
-   
+
   useEffect(() => {
     let menuToExpand = ""; // no default expansion
 
     if (pathname.startsWith("/admin/penerimaan-siswa")) {
       menuToExpand = "admissions";
-    } else if (pathname.startsWith("/admin/website-landing")) {
+    } else if (pathname.startsWith("/admin/landing-website")) {
       menuToExpand = "cms";
-    } else if (pathname.startsWith("/admin/users")) {
-      menuToExpand = "users";
-    } else if (pathname.startsWith("/admin/settings")) {
+    } else if (pathname.startsWith("/admin/pengguna")) {
+      menuToExpand = "settings"; // Change to settings
+    } else if (pathname.startsWith("/admin/pengaturan")) {
       menuToExpand = "settings";
     } else if (pathname.startsWith("/admin/manajemen-akademik")) {
       menuToExpand = "akademik";
@@ -327,7 +477,7 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
         if (response.ok) {
           const data = await response.json();
           const dbTheme = data?.adminTheme;
-          if (dbTheme && ADMIN_THEMES.some((t) => t.id === dbTheme)) {
+          if (dbTheme && ADMIN_THEMES.some(t => t.id === dbTheme)) {
             await applyAdminTheme(dbTheme, false);
             return;
           }
@@ -336,15 +486,15 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
         console.error("Failed to load admin theme preference", error);
       }
 
-      const storedTheme = typeof window !== "undefined" ? localStorage.getItem("admin-theme") : null;
-      if (storedTheme && ADMIN_THEMES.some((t) => t.id === storedTheme)) {
+      const storedTheme =
+        typeof window !== "undefined" ? localStorage.getItem("admin-theme") : null;
+      if (storedTheme && ADMIN_THEMES.some(t => t.id === storedTheme)) {
         await applyAdminTheme(storedTheme, false);
       } else {
         await applyAdminTheme("minimalist-light", false);
       }
     };
 
-     
     hydrateTheme();
   }, []);
 
@@ -396,7 +546,7 @@ function AdminLayoutContent({
   adminTheme,
   applyAdminTheme,
   session,
-  children,
+  children
 }: {
   pathname: string;
   expandedMenus: string[];
@@ -429,30 +579,39 @@ function AdminLayoutContent({
 
     // Handle dynamic edit routes for articles, news, and events
     if (!newBreadcrumbs) {
-      const articleEditMatch = pathname.match(/^\/admin\/website-landing\/posts\/articles\/([^/]+)\/edit$/);
+      const articleEditMatch = pathname.match(
+        /^\/admin\/landing-website\/posts\/articles\/([^/]+)\/edit$/
+      );
       if (articleEditMatch) {
         newBreadcrumbs = [
-          { label: "Konten", href: "/admin/website-landing/posts" },
-          { label: "Artikel", href: "/admin/website-landing/posts/articles" },
-          { label: "Edit Artikel" },
+          { label: "Website Sekolah", href: "/admin/landing-website" },
+          { label: "Konten", href: "/admin/landing-website/posts" },
+          { label: "Artikel", href: "/admin/landing-website/posts/articles" },
+          { label: "Edit Artikel" }
         ];
       }
 
-      const newsEditMatch = pathname.match(/^\/admin\/website-landing\/posts\/news\/([^/]+)\/edit$/);
+      const newsEditMatch = pathname.match(
+        /^\/admin\/landing-website\/posts\/news\/([^/]+)\/edit$/
+      );
       if (newsEditMatch) {
         newBreadcrumbs = [
-          { label: "Konten", href: "/admin/website-landing/posts" },
-          { label: "Berita", href: "/admin/website-landing/posts/news" },
-          { label: "Edit Berita" },
+          { label: "Website Sekolah", href: "/admin/landing-website" },
+          { label: "Konten", href: "/admin/landing-website/posts" },
+          { label: "Berita", href: "/admin/landing-website/posts/news" },
+          { label: "Edit Berita" }
         ];
       }
 
-      const eventEditMatch = pathname.match(/^\/admin\/website-landing\/posts\/events\/([^/]+)\/edit$/);
+      const eventEditMatch = pathname.match(
+        /^\/admin\/landing-website\/posts\/events\/([^/]+)\/edit$/
+      );
       if (eventEditMatch) {
         newBreadcrumbs = [
-          { label: "Konten", href: "/admin/website-landing/posts" },
-          { label: "Event", href: "/admin/website-landing/posts/events" },
-          { label: "Edit Event" },
+          { label: "Website Sekolah", href: "/admin/landing-website" },
+          { label: "Konten", href: "/admin/landing-website/posts" },
+          { label: "Event", href: "/admin/landing-website/posts/events" },
+          { label: "Edit Event" }
         ];
       }
     }
@@ -462,7 +621,9 @@ function AdminLayoutContent({
       // Check if it's different from current
       const isSame =
         breadcrumb.breadcrumbs.length === newBreadcrumbs.length &&
-        breadcrumb.breadcrumbs.every((b, i) => b.label === newBreadcrumbs![i].label && b.href === newBreadcrumbs![i].href);
+        breadcrumb.breadcrumbs.every(
+          (b, i) => b.label === newBreadcrumbs![i].label && b.href === newBreadcrumbs![i].href
+        );
       if (!isSame) {
         breadcrumb.setBreadcrumbs(newBreadcrumbs);
       }
@@ -481,10 +642,11 @@ function AdminLayoutContent({
   };
 
   const toggleMenu = (appId: string) => {
-    setExpandedMenus((prev: string[]) =>
-      prev.includes(appId)
-        ? [] // Close if already open
-        : [appId] // Open only this menu, close others
+    setExpandedMenus(
+      (prev: string[]) =>
+        prev.includes(appId)
+          ? [] // Close if already open
+          : [appId] // Open only this menu, close others
     );
   };
 
@@ -497,7 +659,7 @@ function AdminLayoutContent({
   const getIconBgClass = () => {
     // Use a neutral muted background for menu icons across all themes to avoid
     // them appearing 'active' unless the menu item is actually active.
-    const theme = ADMIN_THEMES.find((t) => t.id === adminTheme);
+    const theme = ADMIN_THEMES.find(t => t.id === adminTheme);
     const darkSuffix = theme && theme.mode === "dark" ? "/30" : "/20";
     return `bg-muted${darkSuffix}`;
   };
@@ -516,11 +678,11 @@ function AdminLayoutContent({
   // For inline style fallback (for text color)
   const getActiveMenuStyle = (isActive: boolean) => {
     if (!isActive) return undefined;
-    const theme = ADMIN_THEMES.find((t) => t.id === adminTheme);
+    const theme = ADMIN_THEMES.find(t => t.id === adminTheme);
     if (theme) {
       return {
         backgroundColor: theme.cssVars["sidebar-accent"],
-        color: theme.cssVars["sidebar-accent-foreground"],
+        color: theme.cssVars["sidebar-accent-foreground"]
       } as React.CSSProperties;
     }
     return undefined;
@@ -531,16 +693,27 @@ function AdminLayoutContent({
       ?.split(" ")
       .map((n: string) => n[0])
       .join("")
-      .toUpperCase() || session?.user?.email?.[0]?.toUpperCase() || "?";
+      .toUpperCase() ||
+    session?.user?.email?.[0]?.toUpperCase() ||
+    "?";
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className={`flex flex-col border-r border-sidebar-border bg-muted/30 transition-all duration-300 ${isSidebarMinimized ? 'w-20' : 'w-72'}`}>
+      <aside
+        className={`flex flex-col border-r border-sidebar-border bg-muted/30 transition-all duration-300 ${isSidebarMinimized ? "w-20" : "w-72"}`}
+      >
         {/* Header with Logo and Toggle */}
         <div className="flex h-16 items-center justify-between border-b border-border bg-card px-4">
           {!isSidebarMinimized && (
             <div className="flex items-center gap-3">
-              <Image src="/images/logo-sekolix-transparent.png" alt="Sekolix" width={40} height={40} className="rounded-md object-contain" priority />
+              <Image
+                src="/images/logo-sekolix-transparent.png"
+                alt="Sekolix"
+                width={40}
+                height={40}
+                className="rounded-md object-contain"
+                priority
+              />
               <div>
                 <h2 className="text-xl font-bold tracking-tight">Sekolix</h2>
                 <p className="text-xs text-muted-foreground">Admin Panel</p>
@@ -553,116 +726,186 @@ function AdminLayoutContent({
             onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
             className="h-8 w-8"
           >
-            {isSidebarMinimized ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
+            <Menu className="h-4 w-4" />
           </Button>
         </div>
 
-        <ScrollArea className="px-3 py-4 bg-muted/30 h-[calc(100vh-4rem)]">
-          <nav className="flex flex-col gap-1">
-            {appCategories.map((app) => {
-              const Icon = app.icon;
-              const hasSubMenus = app.subMenus && app.subMenus.length > 0;
-              const isExpanded = expandedMenus.includes(app.id);
-              const isActive = app.href ? isActiveRoute(app.href) : false;
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full px-3 py-4 bg-muted/30">
+            <nav className="flex flex-col gap-1">
+              {appCategories.map(app => {
+                const Icon = app.icon;
+                const hasSubMenus = app.subMenus && app.subMenus.length > 0;
+                const isExpanded = expandedMenus.includes(app.id);
+                const isActive = app.href ? isActiveRoute(app.href) : false;
 
-              return (
-                <div key={app.id}>
-                  {/* Main Menu Item */}
-                  {app.href ? (
-                    <Button
-                      variant="ghost"
-                      className={`w-full justify-start gap-3 h-auto py-2.5 px-3 ${getActiveMenuClasses(isActive)} ${isSidebarMinimized ? 'justify-center' : ''}`}
-                      style={getActiveMenuStyle(isActive)}
-                      asChild
-                    >
-                      <Link
-                        href={app.href}
+                return (
+                  <div key={app.id}>
+                    {/* Main Menu Item */}
+                    {app.href ? (
+                      <Button
+                        variant="ghost"
+                        className={`w-full justify-start gap-3 h-auto py-2.5 px-3 ${getActiveMenuClasses(isActive)} ${isSidebarMinimized ? "justify-center" : ""}`}
+                        style={getActiveMenuStyle(isActive)}
+                        asChild
+                      >
+                        <Link href={app.href} title={isSidebarMinimized ? app.name : undefined}>
+                          <div
+                            className={`p-2 rounded-lg shrink-0 border border-sidebar-border ${isActive ? "bg-transparent" : getIconBgClass()}`}
+                          >
+                            <Icon
+                              className={isActive ? "h-5 w-5 text-current" : getIconTextClass()}
+                            />
+                          </div>
+                          {!isSidebarMinimized && (
+                            <>
+                              <div className="flex-1 text-left min-w-0">
+                                <span className="block text-sm font-medium">{app.name}</span>
+                                <div className="text-xs text-muted-foreground">
+                                  {app.description}
+                                </div>
+                              </div>
+                              <div className="w-4 shrink-0" />
+                            </>
+                          )}
+                        </Link>
+                      </Button>
+                    ) : hasSubMenus && isSidebarMinimized ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className={`w-full justify-center gap-3 h-auto py-2.5 px-3 ${getActiveMenuClasses(isActive)}`}
+                            style={getActiveMenuStyle(isActive)}
+                            title={app.name}
+                          >
+                            <div
+                              className={`p-2 rounded-lg shrink-0 border border-sidebar-border ${isActive ? "bg-transparent" : getIconBgClass()}`}
+                            >
+                              <Icon
+                                className={isActive ? "h-5 w-5 text-current" : getIconTextClass()}
+                              />
+                            </div>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="right" align="start" className="w-44">
+                          <DropdownMenuLabel>{app.name}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {app.subMenus!.map(sub => (
+                            <DropdownMenuItem key={sub.id} asChild>
+                              <Link href={sub.href}>{sub.label}</Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        className={`w-full justify-start gap-3 h-auto py-2.5 px-3 ${getActiveMenuClasses(isActive)} ${isSidebarMinimized ? "justify-center" : ""}`}
+                        style={getActiveMenuStyle(isActive)}
+                        onClick={() => hasSubMenus && toggleMenu(app.id)}
                         title={isSidebarMinimized ? app.name : undefined}
                       >
-                        <div className={`p-2 rounded-lg shrink-0 border border-sidebar-border ${isActive ? 'bg-transparent' : getIconBgClass()}`}>
-                          <Icon className={isActive ? 'h-5 w-5 text-current' : getIconTextClass()} />
+                        <div
+                          className={`p-2 rounded-lg shrink-0 border border-sidebar-border ${isActive ? "bg-transparent" : getIconBgClass()}`}
+                        >
+                          <Icon
+                            className={isActive ? "h-5 w-5 text-current" : getIconTextClass()}
+                          />
                         </div>
                         {!isSidebarMinimized && (
                           <>
                             <div className="flex-1 text-left min-w-0">
-                                <span 
-                                  className="block text-sm font-medium"
-                                >
-                                  {app.name}
-                                </span>
+                              <span className="block text-sm font-medium">{app.name}</span>
                               <div className="text-xs text-muted-foreground">{app.description}</div>
                             </div>
-                            <div className="w-4 shrink-0" />
+                            {hasSubMenus ? (
+                              <ChevronDown
+                                className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-180" : ""}`}
+                              />
+                            ) : (
+                              <div className="w-4 shrink-0" />
+                            )}
                           </>
                         )}
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      className={`w-full justify-start gap-3 h-auto py-2.5 px-3 ${getActiveMenuClasses(isActive)} ${isSidebarMinimized ? 'justify-center' : ''}`}
-                      style={getActiveMenuStyle(isActive)}
-                      onClick={() => hasSubMenus && toggleMenu(app.id)}
-                      title={isSidebarMinimized ? app.name : undefined}
-                    >
-                      <div className={`p-2 rounded-lg shrink-0 border border-sidebar-border ${isActive ? 'bg-transparent' : getIconBgClass()}`}>
-                        <Icon className={isActive ? 'h-5 w-5 text-current' : getIconTextClass()} />
-                      </div>
-                      {!isSidebarMinimized && (
-                        <>
-                          <div className="flex-1 text-left min-w-0">
-                            <span 
-                              className="block text-sm font-medium"
-                            >
-                              {app.name}
-                            </span>
-                            <div className="text-xs text-muted-foreground">{app.description}</div>
-                          </div>
-                          {hasSubMenus ? (
-                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-180" : ""}`} />
-                          ) : (
-                            <div className="w-4 shrink-0" />
-                          )}
-                        </>
-                      )}
-                    </Button>
-                  )}
+                      </Button>
+                    )}
 
-                  {/* Sub Menus */}
-                  {hasSubMenus && isExpanded && !isSidebarMinimized && (
-                    <div className="ml-11 mt-1 space-y-1">
-                      {app.subMenus!.map((sub) => {
-                        const isSubActive = isActiveRoute(sub.href);
-                        return (
-                          <Button
-                            key={sub.id}
-                            variant="ghost"
-                            className={`w-full justify-start text-sm h-9 ${getActiveMenuClasses(isSubActive)}`}
-                            style={getActiveMenuStyle(isSubActive)}
-                            asChild
-                          >
-                            <Link href={sub.href}>
-                              <span className="flex-1 text-left">{sub.label}</span>
-                              {sub.badge && (
-                                <span className="px-1.5 py-0.5 bg-destructive text-destructive-foreground text-xs rounded-full">
-                                  {sub.badge}
-                                </span>
-                              )}
-                            </Link>
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  )}
+                    {!isSidebarMinimized && isExpanded && (
+                      <div className="ml-11 mt-1 space-y-1">
+                        {app.subMenus?.map(sub => {
+                          const isSubActive = isActiveRoute(sub.href);
+                          return (
+                            <Button
+                              key={sub.id}
+                              variant="ghost"
+                              className={`w-full justify-start text-sm h-9 ${getActiveMenuClasses(isSubActive)}`}
+                              style={getActiveMenuStyle(isSubActive)}
+                              asChild
+                            >
+                              <Link href={sub.href}>
+                                <span className="flex-1 text-left">{sub.label}</span>
+                                {sub.badge && (
+                                  <span className="px-1.5 py-0.5 bg-destructive text-destructive-foreground text-xs rounded-full">
+                                    {sub.badge}
+                                  </span>
+                                )}
+                              </Link>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </ScrollArea>
+        </div>
+
+        {/* Sticky footer at bottom of sidebar */}
+        <div className="border-t border-border bg-card px-4 py-3">
+          {!isSidebarMinimized ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/images/logo-sekolix-transparent.png"
+                  alt="Sekolix"
+                  width={28}
+                  height={28}
+                  className="rounded-md object-contain"
+                  priority
+                />
+                <div>
+                  <div className="text-sm font-semibold">
+                    <Link
+                      href="https://github.com/rezacodev/sekolix"
+                      target="_blank"
+                      className="text-xs text-muted-foreground hover:underline"
+                    >
+                      &copy; Sekolix | Digitisasi Sekolah
+                    </Link>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Open source - Integrated - Powerfull
+                  </div>
                 </div>
-              );
-            })}
-          </nav>
-        </ScrollArea>
+              </div>
+              <div className="flex flex-col items-end"></div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <Image
+                src="/images/logo-sekolix-transparent.png"
+                alt="Sekolix"
+                width={28}
+                height={28}
+                className="rounded-md object-contain"
+                priority
+              />
+            </div>
+          )}
+        </div>
       </aside>
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Navbar */}
@@ -673,7 +916,9 @@ function AdminLayoutContent({
               <Button variant="ghost" className="gap-2 hover:bg-accent">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={session?.user?.image || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">{userInitials}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {userInitials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col items-start text-left">
                   <span className="text-sm font-medium">{session?.user?.name || "User"}</span>
@@ -724,7 +969,7 @@ function AdminLayoutContent({
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {ADMIN_THEMES.map((theme) => {
+            {ADMIN_THEMES.map(theme => {
               const isActive = adminTheme === theme.id;
               return (
                 <button
@@ -739,10 +984,12 @@ function AdminLayoutContent({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold">{theme.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{theme.mode} · {theme.description}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {theme.mode} · {theme.description}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
-                        {theme.swatches.map((color) => (
+                      {theme.swatches.map(color => (
                         <span
                           key={color}
                           className="h-4 w-4 rounded-full border"
@@ -766,7 +1013,9 @@ function AdminLayoutContent({
             })}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsThemeModalOpen(false)}>Tutup</Button>
+            <Button variant="outline" onClick={() => setIsThemeModalOpen(false)}>
+              Tutup
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

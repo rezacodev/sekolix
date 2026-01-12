@@ -13,6 +13,7 @@ interface FacultyMember {
   email?: string;
   phone?: string;
   bio?: string;
+  type?: string;
 }
 
 interface FacultyCardsProps {
@@ -21,15 +22,13 @@ interface FacultyCardsProps {
   subtitle?: string;
 }
 
-export function FacultyCards({
-  faculty,
-}: FacultyCardsProps) {
+export function FacultyCards({ faculty }: FacultyCardsProps) {
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Faculty Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {faculty.map((member) => (
+          {faculty.map(member => (
             <Card
               key={member.id}
               className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-none group"
@@ -45,21 +44,24 @@ export function FacultyCards({
                 {/* Overlay on Hover */}
                 <div className="absolute inset-0 bg-linear-to-t from-[#001f3f]/90 via-[#001f3f]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                   {member.bio && (
-                    <p className="text-white text-sm leading-relaxed line-clamp-4">
-                      {member.bio}
-                    </p>
+                    <p className="text-white text-sm leading-relaxed line-clamp-4">{member.bio}</p>
                   )}
                 </div>
               </div>
 
               {/* Info */}
               <div className="p-6 bg-white border-t-4 academic-accent-border">
-                <h3 className="text-xl font-serif font-bold text-[#001f3f] mb-1">
-                  {member.name}
-                </h3>
-                <p className="academic-accent font-semibold text-sm mb-1">
-                  {member.position}
-                </p>
+                <h3 className="text-xl font-serif font-bold text-[#001f3f] mb-1">{member.name}</h3>
+                <p className="academic-accent font-semibold text-sm mb-1">{member.position}</p>
+                {member.type && (
+                  <p className="text-sm text-gray-500 mb-2">
+                    {member.type === "TEACHER"
+                      ? "Guru"
+                      : member.type === "STAFF"
+                        ? "Tenaga Kependidikan"
+                        : member.type}
+                  </p>
+                )}
                 <p className="text-gray-600 text-sm mb-4">{member.department}</p>
 
                 {/* Contact Info */}

@@ -29,8 +29,8 @@ async function createAcademicYear(formData: FormData) {
       label,
       startDate,
       endDate,
-      isActive: false,
-    },
+      isActive: false
+    }
   });
 
   revalidatePath("/admin/penerimaan-siswa/tahun-ajaran");
@@ -46,12 +46,12 @@ async function activateAcademicYear(formData: FormData) {
   await db.$transaction([
     db.tahunAjaran.updateMany({
       where: {},
-      data: { isActive: false },
+      data: { isActive: false }
     }),
     db.tahunAjaran.update({
       where: { id: yearId },
-      data: { isActive: true },
-    }),
+      data: { isActive: true }
+    })
   ]);
 
   revalidatePath("/apply");
@@ -60,7 +60,7 @@ async function activateAcademicYear(formData: FormData) {
 
 export default async function AcademicYearsPage() {
   const years = await db.tahunAjaran.findMany({
-    orderBy: { startDate: "desc" },
+    orderBy: { startDate: "desc" }
   });
 
   return (
@@ -68,7 +68,9 @@ export default async function AcademicYearsPage() {
       <header className="space-y-2">
         <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">Penerimaan Siswa</p>
         <h1 className="text-3xl font-semibold text-foreground">Tahun Ajaran</h1>
-        <p className="text-sm text-muted-foreground">Kelola tahun ajaran aktif untuk landing page dan formulir.</p>
+        <p className="text-sm text-muted-foreground">
+          Kelola tahun ajaran aktif untuk landing page dan formulir.
+        </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -95,17 +97,25 @@ export default async function AcademicYearsPage() {
                     </td>
                   </tr>
                 ) : (
-                  years.map((year) => (
+                  years.map(year => (
                     <tr key={year.id} className="text-foreground">
                       <td className="px-4 py-3 font-semibold text-foreground">{year.label}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {year.startDate ? new Date(year.startDate).toLocaleDateString("id-ID", { dateStyle: "medium" }) : "-"}
-                        {year.endDate ? ` — ${new Date(year.endDate).toLocaleDateString("id-ID", { dateStyle: "medium" })}` : ""}
+                        {year.startDate
+                          ? new Date(year.startDate).toLocaleDateString("id-ID", {
+                              dateStyle: "medium"
+                            })
+                          : "-"}
+                        {year.endDate
+                          ? ` — ${new Date(year.endDate).toLocaleDateString("id-ID", { dateStyle: "medium" })}`
+                          : ""}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                            year.isActive ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
+                            year.isActive
+                              ? "bg-success text-success-foreground"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {year.isActive ? "Aktif" : "Tidak aktif"}
@@ -113,7 +123,10 @@ export default async function AcademicYearsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {!year.isActive && (
-                          <form action={activateAcademicYear} className="text-sm font-semibold text-success">
+                          <form
+                            action={activateAcademicYear}
+                            className="text-sm font-semibold text-success"
+                          >
                             <input type="hidden" name="yearId" value={year.id} />
                             <button type="submit">Jadikan aktif</button>
                           </form>

@@ -1,9 +1,10 @@
 /* Modern Vibrant Theme Styles */
 
 /* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
-html, body {
+html,
+body {
   max-width: 100vw;
   overflow-x: hidden;
   margin: 0;
@@ -12,7 +13,7 @@ html, body {
 }
 
 body {
-  font-family: var(--theme-body-font, 'Poppins', sans-serif);
+  font-family: var(--theme-body-font, "Poppins", sans-serif);
   color: var(--theme-text, #0f172a);
   overflow-x: hidden;
   width: 100%;
@@ -28,19 +29,35 @@ section {
 
 /* Gradient Backgrounds */
 .gradient-primary {
-  background: linear-gradient(135deg, var(--theme-primary, #06b6d4) 0%, var(--theme-accent, #3b82f6) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary, #06b6d4) 0%,
+    var(--theme-accent, #3b82f6) 100%
+  );
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, var(--theme-secondary, #f97316) 0%, var(--theme-accent, #a855f7) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary, #f97316) 0%,
+    var(--theme-accent, #a855f7) 100%
+  );
 }
 
 .gradient-purple {
-  background: linear-gradient(135deg, var(--theme-accent, #a855f7) 0%, var(--theme-secondary, #f97316) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent, #a855f7) 0%,
+    var(--theme-secondary, #f97316) 100%
+  );
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--theme-primary, #06b6d4) 0%, var(--theme-accent, #a855f7) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary, #06b6d4) 0%,
+    var(--theme-accent, #a855f7) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -48,8 +65,9 @@ section {
 
 /* Hero Animation */
 .hero-modern {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.95) 0%, rgba(168, 85, 247, 0.95) 100%),
-              url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&q=80');
+  background:
+    linear-gradient(135deg, rgba(6, 182, 212, 0.95) 0%, rgba(168, 85, 247, 0.95) 100%),
+    url("https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&q=80");
   background-size: cover;
   background-position: center;
   position: relative;
@@ -102,8 +120,13 @@ section {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-30px) rotate(180deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+  }
 }
 
 /* Card Styles */
@@ -128,7 +151,7 @@ section {
 }
 
 .btn-glow::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -137,7 +160,9 @@ section {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition:
+    width 0.6s,
+    height 0.6s;
 }
 
 .btn-glow:hover::before {
@@ -156,8 +181,13 @@ section {
 }
 
 @keyframes iconFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
 /* Navbar Glassmorphism */
@@ -215,14 +245,18 @@ section {
 }
 
 .gradient-border::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 20px;
   padding: 3px;
   background: linear-gradient(135deg, #06b6d4, #a855f7, #f97316);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
@@ -233,7 +267,8 @@ section {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -301,7 +336,7 @@ section {
   .masonry {
     column-count: 2;
   }
-  
+
   .stat-number {
     font-size: 2.5rem;
   }
@@ -311,7 +346,7 @@ section {
   .masonry {
     column-count: 1;
   }
-  
+
   .stat-number {
     font-size: 2rem;
   }
@@ -319,11 +354,7 @@ section {
 
 /* Footer Styles */
 .modern-vibrant-footer {
-  background: linear-gradient(135deg, 
-    #0f172a 0%, 
-    var(--theme-accent, #a855f7) 50%, 
-    #0f172a 100%
-  );
+  background: linear-gradient(135deg, #0f172a 0%, var(--theme-accent, #a855f7) 50%, #0f172a 100%);
 }
 
 .modern-vibrant-footer-bg-1 {
@@ -335,8 +366,9 @@ section {
 }
 
 .modern-vibrant-footer-title {
-  background: linear-gradient(135deg, 
-    var(--theme-primary, #06b6d4) 0%, 
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary, #06b6d4) 0%,
     var(--theme-accent, #a855f7) 100%
   );
   -webkit-background-clip: text;

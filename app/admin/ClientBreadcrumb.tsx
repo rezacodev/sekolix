@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useBreadcrumb } from '@/contexts/admin';
+import { useEffect } from "react";
+import { useBreadcrumb } from "@/contexts/admin";
 
 type BreadcrumbItem = {
   label: string;

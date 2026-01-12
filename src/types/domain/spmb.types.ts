@@ -2,7 +2,7 @@
  * SPMB (Student Admission) types
  */
 
-export type ApplicantStatus = 'pending' | 'verified' | 'rejected' | 'approved';
+export type ApplicantStatus = "pending" | "verified" | "rejected" | "approved";
 
 export interface Applicant {
   id: string;
@@ -14,7 +14,7 @@ export interface Applicant {
   schoolOrigin: string;
   program: string;
   status: ApplicantStatus;
-  paymentStatus: 'pending' | 'verified' | 'rejected';
+  paymentStatus: "pending" | "verified" | "rejected";
   registrationDate: Date;
   updatedAt: Date;
 }
@@ -35,7 +35,7 @@ export interface UpdateApplicantInput {
   schoolOrigin?: string;
   program?: string;
   status?: ApplicantStatus;
-  paymentStatus?: 'pending' | 'verified' | 'rejected';
+  paymentStatus?: "pending" | "verified" | "rejected";
 }
 
 export interface SPMBProgram {

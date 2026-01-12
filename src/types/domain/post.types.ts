@@ -2,7 +2,7 @@
  * Post types (Articles, News, Events)
  */
 
-export type PostType = 'article' | 'news' | 'event';
+export type PostType = "article" | "news" | "event";
 
 export interface Post {
   id: string;
@@ -19,16 +19,16 @@ export interface Post {
 }
 
 export interface Article extends Post {
-  type: 'article';
+  type: "article";
   category?: string;
 }
 
 export interface News extends Post {
-  type: 'news';
+  type: "news";
 }
 
 export interface Event extends Post {
-  type: 'event';
+  type: "event";
   startDate?: Date;
   endDate?: Date;
   location?: string;

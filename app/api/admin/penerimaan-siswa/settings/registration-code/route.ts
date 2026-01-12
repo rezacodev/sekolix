@@ -10,27 +10,21 @@ export async function GET(request: NextRequest) {
     const yearId = searchParams.get("yearId");
 
     if (!yearId) {
-      return NextResponse.json(
-        { message: "Parameter yearId diperlukan" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Parameter yearId diperlukan" }, { status: 400 });
     }
 
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
       // Create default settings for this year
       const year = await db.tahunAjaran.findUnique({
-        where: { id: yearId },
+        where: { id: yearId }
       });
 
       if (!year) {
-        return NextResponse.json(
-          { message: "Tahun ajaran tidak ditemukan" },
-          { status: 404 }
-        );
+        return NextResponse.json({ message: "Tahun ajaran tidak ditemukan" }, { status: 404 });
       }
 
       settings = await db.admissionRegistrationCodeSetting.create({
@@ -40,8 +34,8 @@ export async function GET(request: NextRequest) {
           suffix: "",
           padLength: 4,
           includeYearCode: true,
-          nextNumber: 1,
-        },
+          nextNumber: 1
+        }
       });
     }
 
@@ -62,26 +56,20 @@ export async function POST(request: NextRequest) {
     const { yearId, prefix, suffix, padLength, includeYearCode, resetCounter } = data;
 
     if (!yearId) {
-      return NextResponse.json(
-        { message: "Parameter yearId diperlukan" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Parameter yearId diperlukan" }, { status: 400 });
     }
 
     // Verify academic year exists
     const year = await db.tahunAjaran.findUnique({
-      where: { id: yearId },
+      where: { id: yearId }
     });
 
     if (!year) {
-      return NextResponse.json(
-        { message: "Tahun ajaran tidak ditemukan" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Tahun ajaran tidak ditemukan" }, { status: 404 });
     }
 
     let settings = await db.admissionRegistrationCodeSetting.findUnique({
-      where: { tahunAjaranId: yearId },
+      where: { tahunAjaranId: yearId }
     });
 
     if (!settings) {
@@ -92,8 +80,8 @@ export async function POST(request: NextRequest) {
           suffix: suffix ?? "",
           padLength: padLength ?? 4,
           includeYearCode: includeYearCode ?? true,
-          nextNumber: 1,
-        },
+          nextNumber: 1
+        }
       });
     } else {
       const updateData: Partial<{
@@ -112,16 +100,16 @@ export async function POST(request: NextRequest) {
 
       settings = await db.admissionRegistrationCodeSetting.update({
         where: { tahunAjaranId: yearId },
-        data: updateData,
+        data: updateData
       });
     }
 
     revalidatePath("/admin/penerimaan-siswa/settings/years");
 
     return NextResponse.json(
-      { 
+      {
         message: "Pengaturan kode registrasi berhasil disimpan",
-        data: settings 
+        data: settings
       },
       { status: 200 }
     );

@@ -9,15 +9,13 @@ const applicantUpdateSchema = z
   .object({
     status: z.enum(["pending", "review", "accepted", "rejected"]).optional(),
     notes: z.string().max(1000).nullable().optional(),
-    handledBy: z.string().max(100).nullable().optional(),
+    handledBy: z.string().max(100).nullable().optional()
   })
-  .refine((data) => Object.keys(data).length > 0, "Minimal satu field harus diubah");
+  .refine(data => Object.keys(data).length > 0, "Minimal satu field harus diubah");
 
 const allowedRoles: UserRole[] = ["ADMIN", "EDITOR"];
 
-type ApplicantRouteContext =
-  | { params: { id: string } }
-  | { params: Promise<{ id: string }> };
+type ApplicantRouteContext = { params: { id: string } } | { params: Promise<{ id: string }> };
 
 export async function PATCH(request: NextRequest, context: ApplicantRouteContext) {
   try {
@@ -32,7 +30,7 @@ export async function PATCH(request: NextRequest, context: ApplicantRouteContext
     const payload = applicantUpdateSchema.parse(await request.json());
 
     const applicant = await db.applicant.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!applicant) {
@@ -41,8 +39,10 @@ export async function PATCH(request: NextRequest, context: ApplicantRouteContext
 
     const updates: Record<string, unknown> = {};
     if (payload.status !== undefined) updates.status = payload.status;
-    if (Object.prototype.hasOwnProperty.call(payload, "notes")) updates.notes = payload.notes ?? null;
-    if (Object.prototype.hasOwnProperty.call(payload, "handledBy")) updates.handledBy = payload.handledBy ?? null;
+    if (Object.prototype.hasOwnProperty.call(payload, "notes"))
+      updates.notes = payload.notes ?? null;
+    if (Object.prototype.hasOwnProperty.call(payload, "handledBy"))
+      updates.handledBy = payload.handledBy ?? null;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ message: "Tidak ada perubahan" }, { status: 400 });
@@ -50,14 +50,14 @@ export async function PATCH(request: NextRequest, context: ApplicantRouteContext
 
     const updatedApplicant = await db.applicant.update({
       where: { id },
-      data: updates,
+      data: updates
     });
 
     return NextResponse.json({ status: "ok", applicant: updatedApplicant });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: error.issues.map((err) => err.message).join("; ") },
+        { message: error.issues.map(err => err.message).join("; ") },
         { status: 400 }
       );
     }
@@ -79,7 +79,7 @@ export async function DELETE(request: NextRequest, context: ApplicantRouteContex
     }
 
     const applicant = await db.applicant.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!applicant) {
@@ -95,7 +95,7 @@ export async function DELETE(request: NextRequest, context: ApplicantRouteContex
     }
 
     await db.applicant.delete({
-      where: { id },
+      where: { id }
     });
 
     return NextResponse.json({ status: "ok", message: "Calon berhasil dihapus" });
@@ -104,4 +104,3 @@ export async function DELETE(request: NextRequest, context: ApplicantRouteContex
     return NextResponse.json({ message: "Tidak dapat menghapus calon" }, { status: 500 });
   }
 }
-

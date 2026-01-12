@@ -1,34 +1,36 @@
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { MinimalNavbar, MinimalFooter } from '@/components/themes/minimalist-clean';
-import { formatDate } from '@/lib/utils';
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { MinimalNavbar, MinimalFooter } from "@/components/themes/minimalist-clean";
+import { formatDate } from "@/lib/utils";
 
 const sampleEvents = [
   {
-    title: 'Career Day & Company Talks',
-    date: '2026-01-20',
-    location: 'Aula SMKN 1',
-    description: 'Mitra industri berbagi jalur karier, membuka peluang magang, dan rekrutmen cepat.',
+    title: "Career Day & Company Talks",
+    date: "2026-01-20",
+    location: "Aula SMKN 1",
+    description: "Mitra industri berbagi jalur karier, membuka peluang magang, dan rekrutmen cepat."
   },
   {
-    title: 'Workshop UI/UX Fundamentals',
-    date: '2026-02-05',
-    location: 'Design Lab',
-    description: 'Pelatihan praktik desain antarmuka dan prototyping dengan studi kasus aplikasi publik.',
+    title: "Workshop UI/UX Fundamentals",
+    date: "2026-02-05",
+    location: "Design Lab",
+    description:
+      "Pelatihan praktik desain antarmuka dan prototyping dengan studi kasus aplikasi publik."
   },
   {
-    title: 'Automation & IoT Showcase',
-    date: '2026-03-02',
-    location: 'Teknopark',
-    description: 'Demo proyek otomasi, sensor, dan dashboard produksi dari siswa kelas XI-XII.',
-  },
+    title: "Automation & IoT Showcase",
+    date: "2026-03-02",
+    location: "Teknopark",
+    description: "Demo proyek otomasi, sensor, dan dashboard produksi dari siswa kelas XI-XII."
+  }
 ];
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function MinimalistCleanEvents() {
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
 
   return (
     <ThemeProvider {...themeConfig}>
@@ -40,12 +42,18 @@ export default async function MinimalistCleanEvents() {
             <div className="space-y-3">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-500">Agenda</p>
               <h1 className="text-4xl font-light">Agenda & Kegiatan</h1>
-              <p className="text-slate-600 max-w-2xl">Jadwal kegiatan siswa: pelatihan keterampilan, kolaborasi industri, dan pameran karya.</p>
+              <p className="text-slate-600 max-w-2xl">
+                Jadwal kegiatan siswa: pelatihan keterampilan, kolaborasi industri, dan pameran
+                karya.
+              </p>
             </div>
 
             <div className="space-y-4">
-              {sampleEvents.map((event) => (
-                <div key={event.title} className="border border-slate-200 rounded-2xl p-6 bg-slate-50">
+              {sampleEvents.map(event => (
+                <div
+                  key={event.title}
+                  className="border border-slate-200 rounded-2xl p-6 bg-slate-50"
+                >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="space-y-2">
                       <h3 className="text-2xl font-light">{event.title}</h3>

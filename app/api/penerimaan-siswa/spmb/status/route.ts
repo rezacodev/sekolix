@@ -4,7 +4,7 @@ import db from "@/lib/db";
 
 const statusSchema = z.object({
   nik: z.string().regex(/^[0-9]{16}$/, "NIK harus terdiri dari 16 digit"),
-  phone: z.string().regex(/^[0-9]{10,15}$/, "Nomor HP harus berupa angka 10-15 digit"),
+  phone: z.string().regex(/^[0-9]{10,15}$/, "Nomor HP harus berupa angka 10-15 digit")
 });
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           status: "rateLimited",
-          message: "Terlalu banyak permintaan. Coba lagi nanti.",
+          message: "Terlalu banyak permintaan. Coba lagi nanti."
         },
         { status: 429 }
       );
@@ -60,15 +60,15 @@ export async function POST(request: NextRequest) {
         program: {
           select: {
             id: true,
-            name: true,
-          },
+            name: true
+          }
         },
         academicYear: {
           select: {
             id: true,
             label: true,
-            registrationFee: true,
-          },
+            registrationFee: true
+          }
         },
         payments: {
           select: {
@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
             amount: true,
             status: true,
             proofUrl: true,
-            createdAt: true,
+            createdAt: true
           },
-          orderBy: { createdAt: "desc" },
-        },
-      },
+          orderBy: { createdAt: "desc" }
+        }
+      }
     });
 
     if (!applicant || applicant.phone !== payload.phone) {
@@ -116,13 +116,13 @@ export async function POST(request: NextRequest) {
         registrationFee,
         totalPaid,
         remaining: Math.max(0, registrationFee - totalPaid),
-        payments,
-      },
+        payments
+      }
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { status: "error", message: error.issues.map((item) => item.message).join("; ") },
+        { status: "error", message: error.issues.map(item => item.message).join("; ") },
         { status: 400 }
       );
     }

@@ -1,16 +1,16 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { Article } from '@prisma/client';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { sanitizeHtml } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Navbar } from '@/components/themes/modern-vibrant';
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { Article } from "@prisma/client";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar } from "@/components/themes/modern-vibrant";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface ArticlePageProps {
@@ -22,14 +22,14 @@ interface ArticlePageProps {
 async function getArticle(slug: string) {
   try {
     const article = await prisma.article.findUnique({
-      where: { 
+      where: {
         slug,
-        isPublished: true,
-      },
+        isPublished: true
+      }
     });
     return article;
   } catch (error) {
-    console.error('Error fetching article:', error);
+    console.error("Error fetching article:", error);
     return null;
   }
 }
@@ -40,14 +40,14 @@ async function getRelatedArticles(currentSlug: string, category: string | null) 
       where: {
         isPublished: true,
         slug: { not: currentSlug },
-        ...(category && { category }),
+        ...(category && { category })
       },
-      orderBy: { publishedAt: 'desc' },
-      take: 3,
+      orderBy: { publishedAt: "desc" },
+      take: 3
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching related articles:', error);
+    console.error("Error fetching related articles:", error);
     return [];
   }
 }
@@ -58,26 +58,27 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   if (!article) {
     return {
-      title: 'Artikel Tidak Ditemukan',
+      title: "Artikel Tidak Ditemukan"
     };
   }
 
   return {
     title: `${article.title} - SMK Negeri 1 Jakarta`,
     description: article.excerpt || article.metaDescription,
-    keywords: article.tags?.join(', '),
+    keywords: article.tags?.join(", "),
     openGraph: {
       title: article.title,
-      description: article.excerpt || article.metaDescription || '',
-      images: article.featuredImage ? [article.featuredImage] : [],
-    },
+      description: article.excerpt || article.metaDescription || "",
+      images: article.featuredImage ? [article.featuredImage] : []
+    }
   };
 }
 
 export default async function ModernVibrantArticleDetailPage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = await getArticle(slug);
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
   if (!article) {
     notFound();
@@ -102,7 +103,7 @@ export default async function ModernVibrantArticleDetailPage({ params }: Article
         {/* Modern Vibrant Header */}
         <div className="relative overflow-hidden pt-8 pb-16">
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500 via-purple-500 to-orange-500 opacity-10"></div>
-          
+
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <Link
               href="/informasi/articles"
@@ -171,22 +172,24 @@ export default async function ModernVibrantArticleDetailPage({ params }: Article
 
             <div
               className="prose prose-xl max-w-none prose-headings:text-gray-900 prose-headings:font-black prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-transparent prose-a:bg-clip-text prose-a:bg-linear-to-r prose-a:from-cyan-600 prose-a:to-purple-600 prose-strong:text-gray-900 prose-img:rounded-2xl prose-img:shadow-lg"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content || '') }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content || "") }}
             />
 
             {/* Tags - Modern Style */}
             {article.tags && article.tags.length > 0 && (
               <div className="mt-16 pt-8 border-t-2 border-gray-200">
-                <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-wider">Tags</h3>
+                <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-wider">
+                  Tags
+                </h3>
                 <div className="flex flex-wrap gap-3">
                   {article.tags.map((tag: string, index: number) => {
                     const gradients = [
-                      'from-cyan-500 to-blue-500',
-                      'from-purple-500 to-pink-500',
-                      'from-orange-500 to-red-500',
+                      "from-cyan-500 to-blue-500",
+                      "from-purple-500 to-pink-500",
+                      "from-orange-500 to-red-500"
                     ];
                     const gradient = gradients[index % gradients.length];
-                    
+
                     return (
                       <span
                         key={tag}
@@ -208,9 +211,9 @@ export default async function ModernVibrantArticleDetailPage({ params }: Article
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedArticles.map((relatedArticle: Article, index: number) => {
                   const gradients = [
-                    'from-cyan-500 to-blue-500',
-                    'from-purple-500 to-pink-500',
-                    'from-orange-500 to-red-500',
+                    "from-cyan-500 to-blue-500",
+                    "from-purple-500 to-pink-500",
+                    "from-orange-500 to-red-500"
                   ];
                   const gradient = gradients[index % gradients.length];
 
@@ -222,7 +225,9 @@ export default async function ModernVibrantArticleDetailPage({ params }: Article
                     >
                       {relatedArticle.featuredImage && (
                         <div className="relative h-40 w-full overflow-hidden">
-                          <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-70`}></div>
+                          <div
+                            className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-70`}
+                          ></div>
                           <Image
                             src={relatedArticle.featuredImage}
                             alt={relatedArticle.title}

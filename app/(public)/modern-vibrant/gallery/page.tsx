@@ -1,13 +1,13 @@
-import { db } from '@/lib/db';
-import EnhancedGallery from '@/components/gallery/EnhancedGallery';
-import { notFound } from 'next/navigation';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { Navbar, VibrantFooter } from '@/components/themes/modern-vibrant';
+import { db } from "@/lib/db";
+import EnhancedGallery from "@/components/gallery/EnhancedGallery";
+import { notFound } from "next/navigation";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { Navbar, VibrantFooter } from "@/components/themes/modern-vibrant";
 
 export const metadata = {
-  title: 'Gallery',
-  description: 'Explore our photo collection',
+  title: "Gallery",
+  description: "Explore our photo collection"
 };
 
 async function getGalleryImages() {
@@ -16,28 +16,29 @@ async function getGalleryImages() {
       include: {
         album: {
           select: {
-            name: true,
-          },
-        },
+            name: true
+          }
+        }
       },
-      orderBy: { order: 'asc' },
+      orderBy: { order: "asc" }
     });
 
-    return images.map((img) => ({
+    return images.map(img => ({
       id: img.id,
       url: img.image,
       title: img.title,
-      album: img.album?.name || undefined,
+      album: img.album?.name || undefined
     }));
   } catch (error) {
-    console.error('Failed to fetch gallery:', error);
+    console.error("Failed to fetch gallery:", error);
     return [];
   }
 }
 
 export default async function ModernVibrantGalleryPage() {
   const images = await getGalleryImages();
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
   if (!images || images.length === 0) {
     notFound();
@@ -56,7 +57,7 @@ export default async function ModernVibrantGalleryPage() {
     >
       <div className="min-h-screen">
         <Navbar />
-        
+
         <main className="pt-20">
           {/* Hero Section */}
           <section className="bg-linear-to-r from-cyan-500 to-purple-500 text-white py-24">
@@ -78,7 +79,7 @@ export default async function ModernVibrantGalleryPage() {
             filterTheme="modern"
           />
         </main>
-        
+
         <VibrantFooter
           schoolName="SMK Negeri 1 Jakarta"
           address="Jl. Pendidikan No. 1, Jakarta 12345"
@@ -88,7 +89,7 @@ export default async function ModernVibrantGalleryPage() {
             facebook: "https://facebook.com/smkn1jakarta",
             instagram: "https://instagram.com/smkn1jakarta",
             twitter: "https://twitter.com/smkn1jakarta",
-            youtube: "https://youtube.com/smkn1jakarta",
+            youtube: "https://youtube.com/smkn1jakarta"
           }}
         />
       </div>

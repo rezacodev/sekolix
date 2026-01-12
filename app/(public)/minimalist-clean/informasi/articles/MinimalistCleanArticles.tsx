@@ -1,29 +1,30 @@
-import { Article } from '@prisma/client';
-import Link from 'next/link';
-import Image from 'next/image';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { MinimalNavbar } from '@/components/themes/minimalist-clean';
+import { Article } from "@prisma/client";
+import Link from "next/link";
+import Image from "next/image";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { MinimalNavbar } from "@/components/themes/minimalist-clean";
 
 async function getArticles(): Promise<Article[]> {
   try {
     const articles = await prisma.article.findMany({
       where: { isPublished: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 50,
+      orderBy: { publishedAt: "desc" },
+      take: 50
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    console.error("Error fetching articles:", error);
     return [];
   }
 }
 
 export default async function MinimalistCleanArticles() {
   const articles = await getArticles();
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
 
   return (
     <ThemeProvider
@@ -38,12 +39,14 @@ export default async function MinimalistCleanArticles() {
     >
       <div className="min-h-screen bg-white">
         <MinimalNavbar />
-        
+
         {/* Minimalist Header */}
         <div className="border-b border-neutral-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div className="max-w-3xl">
-              <p className="text-sm font-bold tracking-widest text-neutral-500 mb-4 uppercase">Artikel</p>
+              <p className="text-sm font-bold tracking-widest text-neutral-500 mb-4 uppercase">
+                Artikel
+              </p>
               <h1 className="text-6xl md:text-7xl font-black mb-6 tracking-tight text-neutral-900 leading-none">
                 Koleksi Tulisan
               </h1>
@@ -105,7 +108,7 @@ export default async function MinimalistCleanArticles() {
                           </div>
                         </div>
                       )}
-                      
+
                       {/* Content */}
                       <div className={article.featuredImage ? "md:col-span-3" : "md:col-span-5"}>
                         <div className="flex items-center gap-4 mb-4">
@@ -126,22 +129,24 @@ export default async function MinimalistCleanArticles() {
                             </>
                           )}
                         </div>
-                        
+
                         <h2 className="text-3xl md:text-4xl font-black mb-4 text-neutral-900 tracking-tight group-hover:underline decoration-2 underline-offset-4 transition-all">
                           {article.title}
                         </h2>
-                        
+
                         <p className="text-neutral-600 text-lg leading-relaxed mb-6 line-clamp-3">
                           {article.excerpt}
                         </p>
-                        
+
                         {article.author && (
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-white font-bold text-sm">
                               {article.author.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="text-sm font-bold text-neutral-900">{article.author}</div>
+                              <div className="text-sm font-bold text-neutral-900">
+                                {article.author}
+                              </div>
                               <div className="text-xs text-neutral-500 font-medium">Penulis</div>
                             </div>
                           </div>

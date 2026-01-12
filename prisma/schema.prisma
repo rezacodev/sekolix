@@ -26,6 +26,7 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  staff   Staff[]
 
   @@map("users")
 }
@@ -277,6 +278,95 @@ model Applicant {
   @@index([academicYearId])
 }
 
+// Peserta didik (siswa aktif) - separate table but similar to Applicant
+model PesertaDidik {
+  id               String    @id @default(cuid())
+  registrationCode String?   @unique
+  nik              String    @unique
+  phone            String
+  fullName         String
+  email            String?
+  schoolOrigin     String?
+  programChoice    String?
+  programId        String?
+  entryYearId      String?
+  status           ApplicantStatus @default(pending)
+  submissionData   Json?
+  notes            String?
+  handledBy        String?
+  profileCompleted Boolean   @default(false)
+
+  // Personal Data
+  gender         String?
+  nisn           String?
+  noKK           String?
+  placeOfBirth   String?
+  dateOfBirth    DateTime?
+  nationality    String?
+  religion       String?
+  motherTongue   String?
+  address        String?
+  village        String?
+  district       String?
+  city           String?
+  province       String?
+  postalCode     String?
+
+  // Father Data
+  fatherName     String?
+  fatherNik      String?
+  fatherBirthYear Int?
+  fatherEducation String?
+  fatherOccupation String?
+  fatherIncome   String?
+
+  // Mother Data
+  motherName     String?
+  motherNik      String?
+  motherBirthYear Int?
+  motherEducation String?
+  motherOccupation String?
+  motherIncome   String?
+
+  // Guardian Data
+  guardianName   String?
+  guardianNik    String?
+  guardianBirthYear Int?
+  guardianEducation String?
+  guardianOccupation String?
+  guardianIncome String?
+
+  // Contact Data
+  mobile         String?
+
+  // Student Details
+  livesWith      String?
+  weight         Float?
+  height         Float?
+  distanceToSchool Float?
+  transportationMode String?
+  anakKe         Int?
+  jumlahSaudara  Int?
+
+  // Achievements
+  achievements   String?
+
+  deleted_at     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  program        Program?        @relation(fields: [programId], references: [id])
+  entryYear      TahunAjaran?    @relation(fields: [entryYearId], references: [id])
+  rombels        Rombel[]
+  grades         Grade[]
+  reportCards    ReportCard[]
+  examResults    ExamResult[]
+  transfers      Transfer[]
+  @@index([programId])
+  @@index([entryYearId])
+  @@map("peserta_didik")
+}
+
 model ApplicantPayment {
   id           String     @id @default(cuid())
   applicantId  String
@@ -332,15 +422,18 @@ model AdmissionRegistrationCodeSetting {
 }
 
 model Program {
-  id          String      @id @default(cuid())
-  name        String
-  code        String?
-  description String?
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String         @id @default(cuid())
+  name         String
+  code         String?
+  description  String?
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
-  applicants  Applicant[]
+  applicants   Applicant[]
+  pesertaDidik PesertaDidik[]
+  rombels      Rombel[]
+  subjects     SubjectProgram[]
 
   @@map("programs")
 }
@@ -353,12 +446,18 @@ model TahunAjaran {
   endDate    DateTime?
   isActive   Boolean    @default(false)
   registrationFee Int    @default(0)
+  deleted_at DateTime?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
   applicants                        Applicant[]
+  pesertaDidik                      PesertaDidik[]
+  rombels                           Rombel[]
   registrationCodeSetting           AdmissionRegistrationCodeSetting?
   academicEvents                    AcademicEvent[]
+  reportCards                       ReportCard[]
+  transferBatchesFrom               TransferBatch[] @relation("TransferFromYear")
+  transferBatchesTo                 TransferBatch[] @relation("TransferToYear")
 
   @@map("tahun_ajaran")
   @@index([isActive])
@@ -382,22 +481,83 @@ model AcademicEvent {
 }
 
 // Faculty Management
-model Faculty {
-  id         String   @id @default(cuid())
-  name       String
-  position   String   // Jabatan: Kepala Sekolah, Guru, etc.
-  department String?  // Jurusan/Bidang: TKJ, Multimedia, etc.
-  image      String?  // Photo URL
-  email      String?
-  phone      String?
-  bio        String?  @db.Text
-  order      Int      @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+// NOTE: `Faculty` model removed — use `Staff` model instead (unified table)
 
-  @@map("landing_faculty")
+// Unified staff table used for both landing faculty and akademik data-guru
+enum StaffRole {
+  TEACHER
+  STAFF
+  OTHER
 }
+
+model Staff {
+  id        String    @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  role      StaffRole @default(TEACHER)
+  // Employment & Identity
+  nip         String?   @unique
+  niy         String?
+  nuptk       String?
+  nik         String?
+  statusKepegawaian String?   // PNS, Non-PNS
+  nrg         String?   // Nomor Registrasi Guru
+  masaKerja   Int?      // total years/months as integer (unit agreed by app)
+  mkg         Int?      // Masa Kerja Guru (MKG)
+
+  // Personal Data
+  position    String?
+  department  String?
+  placeOfBirth String?
+  dateOfBirth DateTime?
+  gender      String?
+  religion    String?
+  maritalStatus String?
+  address     String?
+  city        String?
+  province    String?
+  postalCode  String?
+
+  // Contact
+  photo       String?
+  image       String?   @map("image")
+  email       String?   @unique
+  phone       String?
+
+  // Education & Competency
+  educationHistory Json? // structured array: [{level: "S1", major: "...", year: 20xx}, ...]
+  academicDegree   String?
+  educatorCertification Json? // details about certification(s)
+  trainingHistory  Json?
+
+  // Assignment / PTK details
+  subjects         Json? // array or JSON listing subjects taught
+  workloadHours    Int?  // teaching hours per week
+  extraDuties      Json? // additional roles/tasks
+  gtkPosition      String? // role: Kepala Sekolah, Guru Kelas, etc.
+  jenisPTK         String? // Kepala Sekolah, Guru, Tenaga Kependidikan
+  jabatanPTK       String? // Guru IPA, Guru Bahasa, dll
+
+  // Allowances & Family
+  professionalAllowanceStatus String? // e.g., valid/invalid
+  familyInfo       Json?
+
+  bio            String?   @db.Text
+  order          Int      @default(0)
+  isVisible      Boolean   @default(true)
+  isActive       Boolean   @default(true)
+  deleted_at     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  teacherSubjects TeacherSubject[]
+
+  @@map("gtk")
+  @@index([userId])
+}
+
+// NOTE: `Teacher` model removed — data should be migrated into `Staff` with role TEACHER
 
 // Theme Configuration
 model ThemeConfig {
@@ -457,4 +617,521 @@ model Media {
   updatedAt   DateTime @updatedAt
 
   @@map("landing_media")
+}
+
+// School identity / site identity used by admin settings
+model SchoolIdentity {
+  id             String   @id @default(cuid())
+  name           String
+  shortName      String?
+  schoolLevel    SchoolLevel @default(SD)
+  npsn           String?
+  address        String?
+  postalCode     String?
+  phone          String?
+  email          String?
+  website        String?
+  logoUrl        String?
+  logoDarkUrl    String?
+  faviconUrl     String?
+  coverImageUrl  String?
+  headmaster     String?
+  headmasterNIP  String?
+  accreditation  String?
+  establishedYear Int?
+  timezone       String?  @default("Asia/Jakarta")
+  language       String?  @default("id")
+  metaDescription String?
+  socialLinks    Json?
+  defaultTheme   String?
+  settings       Json?
+  isPublic       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("landing_school_identity")
+}
+
+// Academic Models
+enum Level {
+  SD
+  SMP
+  SMA
+  SMK
+}
+
+enum SchoolLevel {
+  SD
+  MI
+  SMP
+  MTS
+  SMA
+  MA
+  SMK
+}
+
+model Curriculum {
+  id          BigInt     @id @default(autoincrement())
+  code        String?    @unique
+  name        String
+  description String?
+  subjects    SubjectCurriculum[]
+  deleted_at  DateTime?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  @@map("curriculums")
+}
+
+model Subject {
+  id            BigInt      @id @default(autoincrement())
+  code          String?     @unique
+  name          String
+  is_practice   Boolean     @default(false)
+  deleted_at    DateTime?
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+
+  curriculums   SubjectCurriculum[]
+  classes       SubjectClass[]
+  programs      SubjectProgram[]
+  teacherSubjects TeacherSubject[]
+  assessments     Assessment[]
+  onlineClasses   OnlineClass[]
+  questionBanks   QuestionBank[]
+  exams           Exam[]
+
+  @@map("subjects")
+}
+
+// Junction table for Subject-Curriculum many-to-many relationship
+model SubjectCurriculum {
+  id            BigInt     @id @default(autoincrement())
+  subject_id    BigInt
+  curriculum_id BigInt
+  deleted_at    DateTime?
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  subject       Subject    @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+
+  @@unique([subject_id, curriculum_id])
+  @@map("subject_curriculums")
+}
+
+// Junction table for Subject-Class many-to-many relationship
+model SubjectClass {
+  id         BigInt   @id @default(autoincrement())
+  subject_id BigInt
+  class_id   BigInt
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subject    Subject  @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  class      Class    @relation(fields: [class_id], references: [id], onDelete: Cascade)
+
+  @@unique([subject_id, class_id])
+  @@map("subject_classes")
+}
+
+// Junction table for Subject-Program many-to-many relationship
+model SubjectProgram {
+  id         BigInt   @id @default(autoincrement())
+  subject_id BigInt
+  program_id String
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subject    Subject  @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  program    Program  @relation(fields: [program_id], references: [id], onDelete: Cascade)
+
+  @@unique([subject_id, program_id])
+  @@map("subject_programs")
+}
+
+// Kelas (tingkat/jenjang: 1-6 untuk SD, 1-3 untuk SMP, dst)
+model Class {
+  id         BigInt      @id @default(autoincrement())
+  name       String      // Nomor kelas: "1", "2", "3", dst
+  deleted_at DateTime?
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  rombels        Rombel[]
+  subjects       SubjectClass[]
+  teacherSubjects TeacherSubject[]
+  classSchedules ClassSchedule[]
+  onlineClasses  OnlineClass[]
+  transfersFrom  Transfer[] @relation("TransferFromClass")
+  transfersTo    Transfer[] @relation("TransferToClass")
+
+  @@map("classes")
+}
+
+// Rombel (rombongan belajar)
+model Rombel {
+  id         BigInt      @id @default(autoincrement())
+  class_id   BigInt
+  program_id String
+  tahunAjaranId String?
+  name       String      // Nama rombel (contoh: X IPA 1, XI IPS 2)
+  capacity   Int?        // Kapasitas maksimal
+  student_count Int      @default(0)
+  deleted_at DateTime?
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  class      Class       @relation(fields: [class_id], references: [id])
+  program    Program     @relation(fields: [program_id], references: [id])
+  tahunAjaran TahunAjaran? @relation(fields: [tahunAjaranId], references: [id])
+  students   PesertaDidik[]
+  transfersFrom Transfer[] @relation("TransferFromGroup")
+  transfersTo   Transfer[] @relation("TransferToGroup")
+  teacherSubjects TeacherSubject[]
+  schedules       ClassSchedule[]
+
+  @@map("class_groups")
+}
+
+// Relasi guru ↔ mata pelajaran ↔ kelas
+model TeacherSubject {
+  id         BigInt   @id @default(autoincrement())
+  teacher_id String?
+  subject_id BigInt
+  class_id   BigInt
+  rombel_id  BigInt?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  teacher    Staff?   @relation(fields: [teacher_id], references: [id])
+  subject    Subject  @relation(fields: [subject_id], references: [id])
+  class      Class    @relation(fields: [class_id], references: [id])
+  rombel     Rombel?  @relation(fields: [rombel_id], references: [id])
+  schedules  ClassSchedule[]
+
+  @@unique([teacher_id, subject_id, class_id])
+  @@unique([teacher_id, subject_id, rombel_id])
+  @@map("teacher_subjects")
+}
+
+// Room / Ruang / Kelas / Lab Management
+enum RoomType {
+  CLASSROOM // Ruang Kelas
+  LABORATORY // Laboratorium
+  LIBRARY // Perpustakaan
+  SPORTS_HALL // Aula Olahraga
+  AUDITORIUM // Auditorium
+  OFFICE // Ruang Kantor
+  OTHER // Lainnya
+}
+
+model Room {
+  id          BigInt    @id @default(autoincrement())
+  code        String?   @unique // Kode ruangan, e.g., R-101, LAB-IPA-1
+  name        String    // Nama ruangan
+  type        RoomType  @default(CLASSROOM)
+  floor       String?   // Lantai
+  building    String?   // Gedung
+  capacity    Int?      // Kapasitas
+  facilities  String?   @db.Text // Fasilitas yang tersedia (JSON atau text)
+  description String?   @db.Text
+  is_active   Boolean   @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("rooms")
+}
+
+// Lesson Time / Jam Pelajaran Management
+model LessonTime {
+  id          BigInt    @id @default(autoincrement())
+  day         DayOfWeek // Hari
+  session     Int       // Jam ke-berapa (1, 2, 3, dst)
+  start_time  String    // Format HH:mm (e.g., "07:30")
+  end_time    String    // Format HH:mm (e.g., "08:15")
+  is_break    Boolean   @default(false) // Apakah ini waktu istirahat
+  break_label String?   // Label istirahat (e.g., "Istirahat 1", "Istirahat Sholat")
+  is_active   Boolean   @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("lesson_times")
+}
+
+// Jadwal pelajaran mingguan
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model ClassSchedule {
+  id                  BigInt        @id @default(autoincrement())
+  class_id            BigInt
+  rombel_id           BigInt?
+  teacher_subject_id  BigInt
+  day                 DayOfWeek
+  period              Int?          // Jam ke-1 sampai ke-12
+  start_time          DateTime?     // Time only, date ignored (optional, bisa pakai period atau start/end time)
+  end_time            DateTime?     // Time only, date ignored (optional)
+  room                String?
+  deleted_at          DateTime?
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  class               Class         @relation(fields: [class_id], references: [id])
+  rombel              Rombel?       @relation(fields: [rombel_id], references: [id])
+  teacherSubject      TeacherSubject @relation(fields: [teacher_subject_id], references: [id])
+
+  @@map("class_schedules")
+}
+
+// Penilaian & nilai
+enum AssessmentType {
+  TUGAS
+  UTS
+  UAS
+  PRAKTIK
+  ULANGAN_HARIAN
+}
+
+model Assessment {
+  id         BigInt         @id @default(autoincrement())
+  subject_id BigInt
+  title      String
+  type       AssessmentType
+  weight     Int            @default(1) // Bobot penilaian
+  max_score  Decimal?       @default(100)
+  deleted_at DateTime?
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+
+  subject    Subject        @relation(fields: [subject_id], references: [id])
+  grades     Grade[]
+
+  @@map("assessments")
+}
+
+model Grade {
+  id            BigInt   @id @default(autoincrement())
+  student_id    String
+  assessment_id BigInt
+  score         Decimal
+  notes         String?
+  deleted_at    DateTime?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  student      PesertaDidik @relation(fields: [student_id], references: [id])
+  assessment   Assessment   @relation(fields: [assessment_id], references: [id])
+
+  @@unique([student_id, assessment_id])
+  @@map("grades")
+}
+
+// Rapor
+enum Semester {
+  GANJIL
+  GENAP
+}
+
+model ReportCard {
+  id               BigInt   @id @default(autoincrement())
+  student_id       String
+  academic_year_id String
+  semester         Semester
+  average_score    Decimal?
+  notes            String?
+  deleted_at       DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  student       PesertaDidik @relation(fields: [student_id], references: [id])
+  academic_year TahunAjaran  @relation(fields: [academic_year_id], references: [id])
+
+  @@unique([student_id, academic_year_id, semester])
+  @@map("report_cards")
+}
+
+// E-Learning
+model OnlineClass {
+  id            BigInt   @id @default(autoincrement())
+  class_id      BigInt
+  subject_id    BigInt
+  title         String
+  description   String?
+  deleted_at    DateTime?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  class         Class           @relation(fields: [class_id], references: [id])
+  subject       Subject         @relation(fields: [subject_id], references: [id])
+  materials     LearningMaterial[]
+  assignments   Assignment[]
+
+  @@map("online_classes")
+}
+
+enum MaterialType {
+  VIDEO
+  PDF
+  IMAGE
+  LINK
+  DOCUMENT
+}
+
+model LearningMaterial {
+  id               BigInt       @id @default(autoincrement())
+  online_class_id  BigInt
+  title            String
+  content          String?      @db.Text // URL or embedded content
+  type             MaterialType
+  order            Int          @default(0)
+  is_mandatory     Boolean      @default(true)
+  deleted_at       DateTime?
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  online_class     OnlineClass  @relation(fields: [online_class_id], references: [id])
+
+  @@map("learning_materials")
+}
+
+model Assignment {
+  id               BigInt   @id @default(autoincrement())
+  online_class_id  BigInt
+  title            String
+  description      String?  @db.Text
+  due_date         DateTime
+  max_score        Decimal? @default(100)
+  deleted_at       DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  online_class     OnlineClass @relation(fields: [online_class_id], references: [id])
+
+  @@map("assignments")
+}
+
+// CBT / CAT
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+model QuestionBank {
+  id         BigInt       @id @default(autoincrement())
+  subject_id BigInt
+  question   String       @db.Text
+  type       QuestionType
+  options    Json?        // For multiple choice options
+  answer     String       @db.Text // Correct answer
+  difficulty String?      // EASY, MEDIUM, HARD
+  deleted_at DateTime?
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+
+  subject    Subject      @relation(fields: [subject_id], references: [id])
+
+  @@map("question_banks")
+}
+
+model Exam {
+  id         BigInt   @id @default(autoincrement())
+  subject_id BigInt
+  title      String
+  description String? @db.Text
+  duration   Int      // Duration in minutes
+  total_questions Int @default(0)
+  passing_score Decimal?
+  is_active Boolean  @default(true)
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subject     Subject      @relation(fields: [subject_id], references: [id])
+  examResults ExamResult[]
+
+  @@map("exams")
+}
+
+model ExamResult {
+  id         BigInt   @id @default(autoincrement())
+  exam_id    BigInt
+  student_id String
+  score      Decimal
+  answers    Json?    // Student answers
+  started_at DateTime?
+  finished_at DateTime?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  exam        Exam          @relation(fields: [exam_id], references: [id])
+  student     PesertaDidik  @relation(fields: [student_id], references: [id])
+
+  @@unique([exam_id, student_id])
+  @@map("exam_results")
+}
+
+// Transfer System for Student Class Advancement
+model TransferBatch {
+  id          String   @id @default(cuid())
+  name        String   // "Transfer 2024/2025 → 2025/2026"
+  fromYearId  String
+  toYearId    String
+  status      TransferStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fromYear    TahunAjaran @relation("TransferFromYear", fields: [fromYearId], references: [id])
+  toYear      TahunAjaran @relation("TransferToYear", fields: [toYearId], references: [id])
+  transfers   Transfer[]
+
+  @@map("transfer_batches")
+}
+
+model Transfer {
+  id            String   @id @default(cuid())
+  batchId       String
+  studentId     String
+  fromClassId   BigInt?  // nullable jika siswa baru
+  toClassId     BigInt
+  fromGroupId   BigInt?  // nullable jika belum assign rombel
+  toGroupId     BigInt?
+  status        TransferStatus @default(PENDING)
+  notes         String?
+  executedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  batch         TransferBatch @relation(fields: [batchId], references: [id])
+  student       PesertaDidik  @relation(fields: [studentId], references: [id])
+  fromClass     Class?        @relation("TransferFromClass", fields: [fromClassId], references: [id])
+  toClass       Class         @relation("TransferToClass", fields: [toClassId], references: [id])
+  fromGroup     Rombel?       @relation("TransferFromGroup", fields: [fromGroupId], references: [id])
+  toGroup       Rombel?       @relation("TransferToGroup", fields: [toGroupId], references: [id])
+
+  @@map("transfers")
+}
+
+enum TransferStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  FAILED
 }

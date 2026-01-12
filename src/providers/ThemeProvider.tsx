@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Fetch theme configuration from API
     const fetchTheme = async () => {
       try {
-        const response = await fetch("/api/admin/website-landing/theme");
+        const response = await fetch("/api/admin/landing-website/theme");
         if (response.ok) {
           const data = await response.json();
           setTheme(data);
@@ -36,7 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const updateTheme = async (newTheme: ThemeConfig) => {
     try {
-      const response = await fetch("/api/admin/website-landing/theme", {
+      const response = await fetch("/api/admin/landing-website/theme", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTheme)

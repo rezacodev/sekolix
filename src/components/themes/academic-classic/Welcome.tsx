@@ -12,16 +12,18 @@ export function Welcome() {
           {/* Text Content */}
           <div>
             <div className="academic-accent font-semibold mb-2">SELAMAT DATANG</div>
-            <h2 className="text-4xl font-bold text-blue-900 mb-6">
-              SMK Negeri 1 Jakarta
-            </h2>
+            <h2 className="text-4xl font-bold text-blue-900 mb-6">SMK Negeri 1 Jakarta</h2>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              SMK Negeri 1 Jakarta merupakan institusi pendidikan kejuruan terkemuka yang telah berdiri sejak tahun 1985. Dengan komitmen penuh terhadap keunggulan akademik dan pembentukan karakter, kami telah menghasilkan ribuan lulusan yang sukses berkarir di berbagai industri.
+              SMK Negeri 1 Jakarta merupakan institusi pendidikan kejuruan terkemuka yang telah
+              berdiri sejak tahun 1985. Dengan komitmen penuh terhadap keunggulan akademik dan
+              pembentukan karakter, kami telah menghasilkan ribuan lulusan yang sukses berkarir di
+              berbagai industri.
             </p>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              Didukung oleh fasilitas modern, kurikulum yang relevan dengan kebutuhan industri, dan tenaga pendidik profesional, kami siap membimbing siswa menuju masa depan gemilang.
+              Didukung oleh fasilitas modern, kurikulum yang relevan dengan kebutuhan industri, dan
+              tenaga pendidik profesional, kami siap membimbing siswa menuju masa depan gemilang.
             </p>
-            
+
             {/* Achievement Badges */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="flex items-center gap-3">
@@ -43,7 +45,7 @@ export function Welcome() {
                 </div>
               </div>
             </div>
-            
+
             <Link href="#profil" className="btn-primary-ac">
               Profil Lengkap
             </Link>
@@ -59,7 +61,7 @@ export function Welcome() {
                 className="object-cover"
               />
             </div>
-            
+
             {/* Floating Badge */}
             <div className="absolute -bottom-6 -left-6 academic-accent-bg text-blue-900 p-6 rounded-lg shadow-xl">
               <div className="text-3xl font-bold">38+</div>

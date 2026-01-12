@@ -6,7 +6,7 @@ export interface Media {
   id: string;
   url: string;
   publicId: string;
-  resourceType: 'image' | 'video' | 'raw';
+  resourceType: "image" | "video" | "raw";
   fileName: string;
   fileSize: number;
   mimeType: string;
@@ -26,7 +26,7 @@ export interface MediaUploadResponse {
 export interface CreateMediaInput {
   url: string;
   publicId: string;
-  resourceType: 'image' | 'video' | 'raw';
+  resourceType: "image" | "video" | "raw";
   fileName: string;
   fileSize: number;
   mimeType: string;

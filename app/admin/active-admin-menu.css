@@ -2,5 +2,7 @@
 .active-admin-menu {
   background-color: var(--sidebar-accent) !important;
   color: var(--sidebar-accent-foreground) !important;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }

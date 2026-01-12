@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
-import { useBreadcrumb } from '@/contexts/admin';
+import Link from "next/link";
+import { ChevronRight, Home } from "lucide-react";
+import { useBreadcrumb } from "@/contexts/admin";
 
 export function BreadcrumbDisplay() {
   const breadcrumb = useBreadcrumb();
@@ -28,7 +28,11 @@ export function BreadcrumbDisplay() {
                   {item.label}
                 </Link>
               ) : (
-                <span className={index === breadcrumb.breadcrumbs.length - 1 ? "text-foreground font-medium" : ""}>
+                <span
+                  className={
+                    index === breadcrumb.breadcrumbs.length - 1 ? "text-foreground font-medium" : ""
+                  }
+                >
                   {item.label}
                 </span>
               )}

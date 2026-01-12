@@ -1,23 +1,25 @@
-import { Navbar, FacultySection, VibrantFooter } from '@/components/themes/modern-vibrant';
+import { Navbar, FacultySection, VibrantFooter } from "@/components/themes/modern-vibrant";
 import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import prisma from "@/lib/db";
+import type { Staff } from "@prisma/client";
 
 // Force dynamic rendering to always fetch fresh theme data
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function FacultyPage() {
   // Fetch theme configuration
-  const themeConfig = await getThemeConfigById('modern-vibrant') || getDefaultThemeConfig('modern-vibrant');
+  const themeConfig =
+    (await getThemeConfigById("modern-vibrant")) || getDefaultThemeConfig("modern-vibrant");
 
-  // Fetch faculty from database
-  const faculty = await prisma.faculty.findMany({
-    where: { isActive: true },
-    orderBy: { order: 'asc' },
+  // Fetch staff (teachers/staff) from database
+  const staff = await prisma.staff.findMany({
+    where: { isActive: true, isVisible: true, role: { in: ["TEACHER", "STAFF"] } },
+    orderBy: { order: "asc" }
   });
 
-  const safeFaculty = (faculty.length > 0 ? faculty : [
+  const fallback = [
     {
       id: "1",
       name: "Dr. Sarah Johnson",
@@ -26,7 +28,7 @@ export default async function FacultyPage() {
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop",
       email: "s.johnson@school.edu",
       phone: "+62 123 456 7891",
-      bio: "With over 20 years of experience in education, Dr. Johnson leads our institution with vision and dedication.",
+      bio: "With over 20 years of experience in education, Dr. Johnson leads our institution with vision and dedication."
     },
     {
       id: "2",
@@ -36,7 +38,7 @@ export default async function FacultyPage() {
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop",
       email: "m.chen@school.edu",
       phone: "+62 123 456 7892",
-      bio: "Award-winning educator specializing in physics and mathematics with numerous published research papers.",
+      bio: "Award-winning educator specializing in physics and mathematics with numerous published research papers."
     },
     {
       id: "3",
@@ -46,7 +48,7 @@ export default async function FacultyPage() {
       image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop",
       email: "e.rodriguez@school.edu",
       phone: "+62 123 456 7893",
-      bio: "Passionate about literature and creative writing, inspiring students to explore the world of words.",
+      bio: "Passionate about literature and creative writing, inspiring students to explore the world of words."
     },
     {
       id: "4",
@@ -56,28 +58,34 @@ export default async function FacultyPage() {
       image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=500&fit=crop",
       email: "d.williams@school.edu",
       phone: "+62 123 456 7894",
-      bio: "Making mathematics accessible and fun through innovative teaching methods and real-world applications.",
-    },
-  ]).map((member) => ({
-    ...member,
+      bio: "Making mathematics accessible and fun through innovative teaching methods and real-world applications."
+    }
+  ];
+
+  const source = staff.length > 0 ? staff : (fallback as unknown as Staff[]);
+  const safeFaculty = (source as Array<Staff | (typeof fallback)[number]>).map(member => ({
+    id: member.id,
+    name: member.name,
+    position: member.position ?? (member as Staff).role ?? "",
     department: member.department ?? "",
-    image: member.image ?? "",
-    email: member.email ?? undefined,
-    phone: member.phone ?? undefined,
-    bio: member.bio ?? undefined,
+    image: (member as Staff).image ?? (member as Staff).photo ?? "",
+    email: (member as Staff).email ?? undefined,
+    phone: (member as Staff).phone ?? undefined,
+    bio: (member as Staff).bio ?? undefined,
+    type: (member as Staff).role ?? undefined
   }));
 
   const footerData = {
-    schoolName: 'Modern High School',
-    address: '456 Innovation Street, Tech City, TC 54321',
-    phone: '+1 (555) 987-6543',
-    email: 'info@modernhighschool.edu',
+    schoolName: "Modern High School",
+    address: "456 Innovation Street, Tech City, TC 54321",
+    phone: "+1 (555) 987-6543",
+    email: "info@modernhighschool.edu",
     socialMedia: {
-      facebook: 'https://facebook.com/modernhighschool',
-      instagram: 'https://instagram.com/modernhighschool',
-      twitter: 'https://twitter.com/modernhighsch',
-      youtube: 'https://youtube.com/@modernhighschool',
-    },
+      facebook: "https://facebook.com/modernhighschool",
+      instagram: "https://instagram.com/modernhighschool",
+      twitter: "https://twitter.com/modernhighsch",
+      youtube: "https://youtube.com/@modernhighschool"
+    }
   };
 
   return (
@@ -111,13 +119,13 @@ export default async function FacultyPage() {
               </div>
             </div>
           </div>
-        
-        {/* Content */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <FacultySection faculty={safeFaculty} />
-          </div>
-        </section>
+
+          {/* Content */}
+          <section className="py-20 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <FacultySection faculty={safeFaculty} />
+            </div>
+          </section>
         </div>
         <VibrantFooter {...footerData} />
       </main>

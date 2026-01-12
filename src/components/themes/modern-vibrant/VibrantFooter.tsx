@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
 
 interface FooterProps {
   schoolName: string;
@@ -18,7 +18,7 @@ export default function VibrantFooter({
   address,
   phone,
   email,
-  socialMedia,
+  socialMedia
 }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
@@ -34,9 +34,7 @@ export default function VibrantFooter({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* About Section */}
           <div>
-            <h3 className="text-2xl font-bold mb-6 modern-vibrant-footer-title">
-              {schoolName}
-            </h3>
+            <h3 className="text-2xl font-bold mb-6 modern-vibrant-footer-title">{schoolName}</h3>
             <p className="text-slate-300 leading-relaxed mb-6">
               Empowering minds, shaping futures. Join us in our journey of excellence in education.
             </p>
@@ -89,19 +87,24 @@ export default function VibrantFooter({
           <div>
             <h4 className="text-lg font-bold mb-6">Tautan Cepat</h4>
             <ul className="space-y-3">
-              {['Tentang Kami', 'Penerimaan', 'Program', 'Guru & Staf', 'Berita & Kegiatan', 'Kontak'].map(
-                (link) => (
-                  <li key={link}>
-                    <a
-                      href={`/${link.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="text-slate-300 hover:text-cyan-400 transition-colors duration-300 flex items-center gap-2 group"
-                    >
-                      <span className="w-0 h-0.5 bg-cyan-400 group-hover:w-4 transition-all duration-300" />
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
+              {[
+                "Tentang Kami",
+                "Penerimaan",
+                "Program",
+                "Guru & Staf",
+                "Berita & Kegiatan",
+                "Kontak"
+              ].map(link => (
+                <li key={link}>
+                  <a
+                    href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="text-slate-300 hover:text-cyan-400 transition-colors duration-300 flex items-center gap-2 group"
+                  >
+                    <span className="w-0 h-0.5 bg-cyan-400 group-hover:w-4 transition-all duration-300" />
+                    {link}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -110,16 +113,16 @@ export default function VibrantFooter({
             <h4 className="text-lg font-bold mb-6">Sumber Daya</h4>
             <ul className="space-y-3">
               {[
-                'Kalender Akademik',
-                'Portal Siswa',
-                'Portal Orang Tua',
-                'Perpustakaan',
-                'Bimbingan Karir',
-                'Alumni',
-              ].map((link) => (
+                "Kalender Akademik",
+                "Portal Siswa",
+                "Portal Orang Tua",
+                "Perpustakaan",
+                "Bimbingan Karir",
+                "Alumni"
+              ].map(link => (
                 <li key={link}>
                   <a
-                    href={`/${link.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
                     className="text-slate-300 hover:text-purple-400 transition-colors duration-300 flex items-center gap-2 group"
                   >
                     <span className="w-0 h-0.5 bg-purple-400 group-hover:w-4 transition-all duration-300" />

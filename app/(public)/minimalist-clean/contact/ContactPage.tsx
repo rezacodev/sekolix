@@ -1,18 +1,23 @@
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { MinimalNavbar, MinimalFooter, CleanContactForm } from '@/components/themes/minimalist-clean';
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import {
+  MinimalNavbar,
+  MinimalFooter,
+  CleanContactForm
+} from "@/components/themes/minimalist-clean";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const contactInfo = [
-  { label: 'Telepon', value: '(021) 4567-8910' },
-  { label: 'Email', value: 'info@smkn1jakarta.sch.id' },
-  { label: 'Alamat', value: 'Jl. Pendidikan No. 45, Jakarta Pusat' },
+  { label: "Telepon", value: "(021) 4567-8910" },
+  { label: "Email", value: "info@smkn1jakarta.sch.id" },
+  { label: "Alamat", value: "Jl. Pendidikan No. 45, Jakarta Pusat" }
 ];
 
 export default async function MinimalistCleanContact() {
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
 
   return (
     <ThemeProvider {...themeConfig}>
@@ -24,12 +29,18 @@ export default async function MinimalistCleanContact() {
             <div className="space-y-3">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-500">Kontak</p>
               <h1 className="text-4xl font-light">Mari Terhubung</h1>
-              <p className="text-slate-600 max-w-2xl">Pertanyaan tentang pendaftaran, kerjasama industri, atau kunjungan sekolah dapat disampaikan melalui formulir berikut.</p>
+              <p className="text-slate-600 max-w-2xl">
+                Pertanyaan tentang pendaftaran, kerjasama industri, atau kunjungan sekolah dapat
+                disampaikan melalui formulir berikut.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              {contactInfo.map((item) => (
-                <div key={item.label} className="border border-slate-200 rounded-2xl p-5 bg-slate-50">
+              {contactInfo.map(item => (
+                <div
+                  key={item.label}
+                  className="border border-slate-200 rounded-2xl p-5 bg-slate-50"
+                >
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-500">{item.label}</p>
                   <p className="mt-2 text-lg text-slate-900 font-semibold">{item.value}</p>
                 </div>

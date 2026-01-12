@@ -44,38 +44,44 @@ export function LoginStatusForm() {
   } | null>(null);
 
   const handleChange = (field: keyof FormState) => (event: ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    setForm(prev => ({ ...prev, [field]: event.target.value }));
   };
 
-  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFeedback(null);
-    setLoading(true);
-    setApplicant(null);
-    setBilling(null);
-    setShowProfileForm(false);
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setFeedback(null);
+      setLoading(true);
+      setApplicant(null);
+      setBilling(null);
+      setShowProfileForm(false);
 
-    try {
-      const res = await fetch("/api/penerimaan-siswa/spmb/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const payload = await res.json();
-      if (!res.ok) {
-        setFeedback({ type: "error", message: payload.message ?? "Status tidak dapat diperiksa." });
-      } else {
-        setApplicant(payload.applicant ?? null);
-        setBilling(payload.billing ?? null);
-        setFeedback({ type: "success", message: "Status ditemukan." });
+      try {
+        const res = await fetch("/api/penerimaan-siswa/spmb/status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form)
+        });
+        const payload = await res.json();
+        if (!res.ok) {
+          setFeedback({
+            type: "error",
+            message: payload.message ?? "Status tidak dapat diperiksa."
+          });
+        } else {
+          setApplicant(payload.applicant ?? null);
+          setBilling(payload.billing ?? null);
+          setFeedback({ type: "success", message: "Status ditemukan." });
+        }
+      } catch (err) {
+        console.error(err);
+        setFeedback({ type: "error", message: "Tidak dapat terhubung ke server." });
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-      setFeedback({ type: "error", message: "Tidak dapat terhubung ke server." });
-    } finally {
-      setLoading(false);
-    }
-  }, [form]);
+    },
+    [form]
+  );
 
   if (showProfileForm && applicant) {
     return (
@@ -90,7 +96,9 @@ export function LoginStatusForm() {
           <div className="mb-4 pb-4 border-b border-slate-200">
             <p className="text-sm text-slate-600">Melengkapi data untuk:</p>
             <p className="text-lg font-semibold text-slate-900">{applicant.fullName}</p>
-            <p className="text-xs text-slate-500">{applicant.nik} · {applicant.phone}</p>
+            <p className="text-xs text-slate-500">
+              {applicant.nik} · {applicant.phone}
+            </p>
           </div>
           <ProfileCompletionForm applicantId={applicant.id} />
         </div>
@@ -99,9 +107,14 @@ export function LoginStatusForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-lg">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-lg"
+    >
       {feedback && (
-        <p className={`text-sm ${feedback.type === "success" ? "text-emerald-600" : "text-rose-600"}`}>
+        <p
+          className={`text-sm ${feedback.type === "success" ? "text-emerald-600" : "text-rose-600"}`}
+        >
           {feedback.message}
         </p>
       )}
@@ -147,19 +160,23 @@ export function LoginStatusForm() {
             <div className="space-y-4">
               <div className="text-sm text-slate-700">
                 <p className="text-base font-semibold text-slate-900">{applicant.fullName}</p>
-                <p className="text-xs text-slate-500">{applicant.nik} · {applicant.phone}</p>
+                <p className="text-xs text-slate-500">
+                  {applicant.nik} · {applicant.phone}
+                </p>
                 <p className="mt-3 text-sm">
                   Status: <strong className="capitalize">{applicant.status}</strong>
                 </p>
                 <p className="text-sm">
-                  Program: <strong>{applicant.program?.name ?? applicant.programChoice ?? "-"}</strong>
+                  Program:{" "}
+                  <strong>{applicant.program?.name ?? applicant.programChoice ?? "-"}</strong>
                 </p>
                 <p className="text-sm">
                   Tahun ajaran: <strong>{applicant.academicYear?.label ?? "-"}</strong>
                 </p>
-                {applicant.notes && <p className="text-xs text-slate-500">Catatan: {applicant.notes}</p>}
+                {applicant.notes && (
+                  <p className="text-xs text-slate-500">Catatan: {applicant.notes}</p>
+                )}
               </div>
-              
             </div>
 
             <div>
@@ -167,20 +184,33 @@ export function LoginStatusForm() {
                 <div className="rounded-md border border-slate-100 bg-white p-3 text-sm">
                   <p className="font-semibold">Informasi Pembayaran</p>
                   {billing.registrationFee === 0 ? (
-                    <p className="text-sm text-emerald-600">Pendaftaran gratis (tidak ada biaya).</p>
+                    <p className="text-sm text-emerald-600">
+                      Pendaftaran gratis (tidak ada biaya).
+                    </p>
                   ) : (
                     <div className="mt-2">
-                      <p>Biaya pendaftaran: <strong>Rp{billing.registrationFee.toLocaleString()}</strong></p>
-                      <p>Telah dibayar: <strong>Rp{billing.totalPaid.toLocaleString()}</strong></p>
-                      <p>Sisa: <strong>Rp{billing.remaining.toLocaleString()}</strong></p>
+                      <p>
+                        Biaya pendaftaran:{" "}
+                        <strong>Rp{billing.registrationFee.toLocaleString()}</strong>
+                      </p>
+                      <p>
+                        Telah dibayar: <strong>Rp{billing.totalPaid.toLocaleString()}</strong>
+                      </p>
+                      <p>
+                        Sisa: <strong>Rp{billing.remaining.toLocaleString()}</strong>
+                      </p>
                       {billing.payments.length > 0 && (
                         <details className="mt-2 text-xs">
                           <summary className="cursor-pointer">Riwayat pembayaran</summary>
                           <ul className="mt-2 space-y-1">
                             {billing.payments.map((p: PaymentDto) => (
                               <li key={p.id} className="flex justify-between">
-                                <span>{p.method} — Rp{Number(p.amount).toLocaleString()}</span>
-                                <span className="text-slate-500">{new Date(p.createdAt).toLocaleDateString()}</span>
+                                <span>
+                                  {p.method} — Rp{Number(p.amount).toLocaleString()}
+                                </span>
+                                <span className="text-slate-500">
+                                  {new Date(p.createdAt).toLocaleDateString()}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -208,4 +238,3 @@ export function LoginStatusForm() {
     </form>
   );
 }
-

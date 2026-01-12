@@ -10,29 +10,27 @@ export default function AboutSection() {
       title: "Visi yang Jelas",
       description:
         "Menjadi sekolah terdepan yang menghasilkan lulusan kompeten dan siap bersaing di era digital",
-      gradient: "from-cyan-400 to-blue-500",
+      gradient: "from-cyan-400 to-blue-500"
     },
     {
       icon: Users,
       title: "Tenaga Pengajar Profesional",
       description:
         "Guru berpengalaman dan tersertifikasi yang siap membimbing siswa meraih prestasi",
-      gradient: "from-purple-400 to-pink-500",
+      gradient: "from-purple-400 to-pink-500"
     },
     {
       icon: Award,
       title: "Fasilitas Modern",
-      description:
-        "Laboratorium, workshop, dan ruang kelas dilengkapi teknologi terkini",
-      gradient: "from-orange-400 to-red-500",
+      description: "Laboratorium, workshop, dan ruang kelas dilengkapi teknologi terkini",
+      gradient: "from-orange-400 to-red-500"
     },
     {
       icon: Lightbulb,
       title: "Kurikulum Adaptif",
-      description:
-        "Pembelajaran yang mengikuti perkembangan industri dan kebutuhan pasar kerja",
-      gradient: "from-cyan-400 to-purple-500",
-    },
+      description: "Pembelajaran yang mengikuti perkembangan industri dan kebutuhan pasar kerja",
+      gradient: "from-cyan-400 to-purple-500"
+    }
   ];
 
   return (
@@ -59,16 +57,15 @@ export default function AboutSection() {
             </h2>
 
             <p className="text-gray-600 text-lg leading-relaxed mb-6">
-              Sejak didirikan, kami berkomitmen untuk memberikan pendidikan
-              berkualitas tinggi yang menggabungkan teori dan praktik. Dengan
-              motto &ldquo;Future Ready School&rdquo;, kami mempersiapkan siswa untuk
-              menghadapi tantangan dunia kerja modern.
+              Sejak didirikan, kami berkomitmen untuk memberikan pendidikan berkualitas tinggi yang
+              menggabungkan teori dan praktik. Dengan motto &ldquo;Future Ready School&rdquo;, kami
+              mempersiapkan siswa untuk menghadapi tantangan dunia kerja modern.
             </p>
 
             <p className="text-gray-600 text-lg leading-relaxed mb-8">
-              Kami fokus pada pengembangan karakter, keterampilan teknis, dan
-              soft skills yang dibutuhkan industri. Lulusan kami tidak hanya
-              siap bekerja, tapi juga siap menjadi pemimpin masa depan.
+              Kami fokus pada pengembangan karakter, keterampilan teknis, dan soft skills yang
+              dibutuhkan industri. Lulusan kami tidak hanya siap bekerja, tapi juga siap menjadi
+              pemimpin masa depan.
             </p>
 
             {/* CTA Buttons */}
@@ -95,12 +92,8 @@ export default function AboutSection() {
                 >
                   <feature.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>

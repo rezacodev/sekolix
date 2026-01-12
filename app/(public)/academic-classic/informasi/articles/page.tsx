@@ -1,38 +1,39 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Article } from '@prisma/client';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Navbar, Footer, TopBar } from '@/components/themes/academic-classic';
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { Article } from "@prisma/client";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar, Footer, TopBar } from "@/components/themes/academic-classic";
 
 export const metadata: Metadata = {
-  title: 'Artikel - SMK Negeri 1 Jakarta',
-  description: 'Baca artikel pendidikan dan informasi terkini dari SMK Negeri 1 Jakarta',
+  title: "Artikel - SMK Negeri 1 Jakarta",
+  description: "Baca artikel pendidikan dan informasi terkini dari SMK Negeri 1 Jakarta"
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getArticles(): Promise<Article[]> {
   try {
     const articles = await prisma.article.findMany({
       where: { isPublished: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 50,
+      orderBy: { publishedAt: "desc" },
+      take: 50
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    console.error("Error fetching articles:", error);
     return [];
   }
 }
 
 export default async function AcademicClassicArticlesPage() {
   const articles = await getArticles();
-  const themeConfig = await getThemeConfigById('academic-classic') || getDefaultThemeConfig('academic-classic');
+  const themeConfig =
+    (await getThemeConfigById("academic-classic")) || getDefaultThemeConfig("academic-classic");
 
   return (
     <ThemeProvider
@@ -48,7 +49,7 @@ export default async function AcademicClassicArticlesPage() {
       <div className="min-h-screen bg-gray-50">
         <TopBar />
         <Navbar />
-        
+
         {/* Header with Classic Academic Style */}
         <div className="bg-linear-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnptMCAzMGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAzIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
@@ -59,11 +60,10 @@ export default async function AcademicClassicArticlesPage() {
                   📚 Knowledge Hub
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">
-                Artikel & Publikasi
-              </h1>
+              <h1 className="text-5xl md:text-6xl font-bold mb-6">Artikel & Publikasi</h1>
               <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-                Kumpulan artikel pendidikan, penelitian, dan informasi terkini dari SMK Negeri 1 Jakarta
+                Kumpulan artikel pendidikan, penelitian, dan informasi terkini dari SMK Negeri 1
+                Jakarta
               </p>
             </div>
           </div>

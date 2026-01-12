@@ -1,7 +1,7 @@
-import { getActiveThemeId } from '@/lib/utils';
-import AcademicClassicProfilPage from '../academic-classic/profil/page';
+import { getActiveThemeId } from "@/lib/utils";
+import AcademicClassicProfilPage from "../academic-classic/profil/page";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ProfilPage() {

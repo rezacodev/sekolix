@@ -2,7 +2,14 @@
 
 /* Global */
 body {
-  font-family: var(--theme-body-font, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-family: var(
+    --theme-body-font,
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
+  );
   color: var(--theme-primary, #171717);
   background: var(--theme-secondary, #ffffff);
   line-height: 1.7;
@@ -10,7 +17,8 @@ body {
   max-width: 100vw;
 }
 
-html, body {
+html,
+body {
   max-width: 100vw;
   overflow-x: hidden;
   margin: 0;
@@ -25,8 +33,13 @@ section {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--theme-heading-font, 'Inter', sans-serif);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--theme-heading-font, "Inter", sans-serif);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -69,7 +82,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .underline-effect::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
@@ -85,7 +98,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hover Underline for Flex Elements (Dropdown Buttons) */
 .hover-underline-minimal span::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
@@ -169,7 +182,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .img-overlay::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0);
@@ -232,7 +245,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .list-minimal li::before {
-  content: '—';
+  content: "—";
   position: absolute;
   left: 0;
   color: var(--theme-accent, #3b82f6);

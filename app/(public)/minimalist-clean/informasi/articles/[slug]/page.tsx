@@ -1,16 +1,16 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { Article } from '@prisma/client';
-import prisma from '@/lib/db';
-import { formatDate } from '@/lib/utils';
-import { sanitizeHtml } from '@/lib/utils';
-import { getThemeConfigById, getDefaultThemeConfig } from '@/lib/utils';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { MinimalNavbar } from '@/components/themes/minimalist-clean';
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { Article } from "@prisma/client";
+import prisma from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/utils";
+import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { MinimalNavbar } from "@/components/themes/minimalist-clean";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface ArticlePageProps {
@@ -22,14 +22,14 @@ interface ArticlePageProps {
 async function getArticle(slug: string) {
   try {
     const article = await prisma.article.findUnique({
-      where: { 
+      where: {
         slug,
-        isPublished: true,
-      },
+        isPublished: true
+      }
     });
     return article;
   } catch (error) {
-    console.error('Error fetching article:', error);
+    console.error("Error fetching article:", error);
     return null;
   }
 }
@@ -40,14 +40,14 @@ async function getRelatedArticles(currentSlug: string, category: string | null) 
       where: {
         isPublished: true,
         slug: { not: currentSlug },
-        ...(category && { category }),
+        ...(category && { category })
       },
-      orderBy: { publishedAt: 'desc' },
-      take: 3,
+      orderBy: { publishedAt: "desc" },
+      take: 3
     });
     return articles;
   } catch (error) {
-    console.error('Error fetching related articles:', error);
+    console.error("Error fetching related articles:", error);
     return [];
   }
 }
@@ -58,26 +58,27 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   if (!article) {
     return {
-      title: 'Artikel Tidak Ditemukan',
+      title: "Artikel Tidak Ditemukan"
     };
   }
 
   return {
     title: `${article.title} - SMK Negeri 1 Jakarta`,
     description: article.excerpt || article.metaDescription,
-    keywords: article.tags?.join(', '),
+    keywords: article.tags?.join(", "),
     openGraph: {
       title: article.title,
-      description: article.excerpt || article.metaDescription || '',
-      images: article.featuredImage ? [article.featuredImage] : [],
-    },
+      description: article.excerpt || article.metaDescription || "",
+      images: article.featuredImage ? [article.featuredImage] : []
+    }
   };
 }
 
 export default async function MinimalistCleanArticleDetailPage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = await getArticle(slug);
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
 
   if (!article) {
     notFound();
@@ -173,13 +174,15 @@ export default async function MinimalistCleanArticleDetailPage({ params }: Artic
 
           <div
             className="prose prose-xl max-w-none prose-headings:text-neutral-900 prose-headings:font-black prose-headings:tracking-tight prose-p:text-neutral-700 prose-p:leading-relaxed prose-a:text-neutral-900 prose-a:underline prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:decoration-4 prose-strong:text-neutral-900 prose-strong:font-black prose-img:border prose-img:border-neutral-200"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content || '') }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content || "") }}
           />
 
           {/* Tags - Minimalist Style */}
           {article.tags && article.tags.length > 0 && (
             <div className="mt-16 pt-12 border-t border-neutral-200">
-              <h3 className="text-xs font-bold tracking-widest text-neutral-500 mb-6 uppercase">Tags</h3>
+              <h3 className="text-xs font-bold tracking-widest text-neutral-500 mb-6 uppercase">
+                Tags
+              </h3>
               <div className="flex flex-wrap gap-3">
                 {article.tags.map((tag: string) => (
                   <span
@@ -198,7 +201,9 @@ export default async function MinimalistCleanArticleDetailPage({ params }: Artic
         {relatedArticles.length > 0 && (
           <div className="border-t border-neutral-200 bg-neutral-50">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-              <h2 className="text-3xl font-black text-neutral-900 mb-12 tracking-tight">Artikel Lainnya</h2>
+              <h2 className="text-3xl font-black text-neutral-900 mb-12 tracking-tight">
+                Artikel Lainnya
+              </h2>
               <div className="space-y-12">
                 {relatedArticles.map((relatedArticle: Article) => (
                   <Link
@@ -219,7 +224,9 @@ export default async function MinimalistCleanArticleDetailPage({ params }: Artic
                           </div>
                         </div>
                       )}
-                      <div className={relatedArticle.featuredImage ? "md:col-span-2" : "md:col-span-3"}>
+                      <div
+                        className={relatedArticle.featuredImage ? "md:col-span-2" : "md:col-span-3"}
+                      >
                         <h3 className="text-2xl font-black text-neutral-900 mb-3 tracking-tight group-hover:underline decoration-2 underline-offset-4">
                           {relatedArticle.title}
                         </h3>

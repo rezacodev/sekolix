@@ -1,9 +1,10 @@
 /* Academic Classic Theme Styles */
 
 /* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
 
-html, body {
+html,
+body {
   max-width: 100vw;
   overflow-x: hidden;
   margin: 0;
@@ -12,7 +13,7 @@ html, body {
 }
 
 body {
-  font-family: var(--theme-body-font, 'Inter', sans-serif);
+  font-family: var(--theme-body-font, "Inter", sans-serif);
   color: var(--theme-text, #1f2937);
   line-height: 1.6;
   overflow-x: hidden;
@@ -27,16 +28,22 @@ section {
   display: block;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--theme-heading-font, 'Playfair Display', serif);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--theme-heading-font, "Playfair Display", serif);
   font-weight: 700;
   line-height: 1.2;
 }
 
 /* Hero Background */
 .hero-bg {
-  background: linear-gradient(135deg, var(--theme-primary, #1e3a8a) 95%, var(--theme-primary, #1e3a8a) 85%),
-              url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&q=80');
+  background:
+    linear-gradient(135deg, var(--theme-primary, #1e3a8a) 95%, var(--theme-primary, #1e3a8a) 85%),
+    url("https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&q=80");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -44,7 +51,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Statistics Card */
 .stat-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .stat-card:hover {
@@ -54,7 +63,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* News Card */
 .news-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .news-card:hover {
@@ -64,7 +75,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Timeline */
 .timeline-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;

@@ -9,7 +9,7 @@ const stats: Stat[] = [
   { value: "1,234", label: "Siswa Aktif" },
   { value: "87", label: "Tenaga Pendidik" },
   { value: "5", label: "Jurusan" },
-  { value: "95%", label: "Tingkat Kelulusan" },
+  { value: "95%", label: "Tingkat Kelulusan" }
 ];
 
 export function Stats() {
@@ -22,12 +22,8 @@ export function Stats() {
               key={index}
               className="stat-card bg-white border border-gray-200 rounded-lg p-8 text-center shadow-md"
             >
-              <div className="text-4xl font-bold text-blue-900 mb-2">
-                {stat.value}
-              </div>
-              <div className="text-gray-600 font-medium">
-                {stat.label}
-              </div>
+              <div className="text-4xl font-bold text-blue-900 mb-2">{stat.value}</div>
+              <div className="text-gray-600 font-medium">{stat.label}</div>
             </div>
           ))}
         </div>

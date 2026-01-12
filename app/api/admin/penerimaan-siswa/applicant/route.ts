@@ -30,10 +30,7 @@ export async function GET(request: NextRequest) {
     }
     if (program) {
       // match either related program name or programChoice field
-      whereClause.OR = [
-        { program: { is: { name: program } } },
-        { programChoice: program },
-      ];
+      whereClause.OR = [{ program: { is: { name: program } } }, { programChoice: program }];
     }
     if (status) {
       // applicant status is stored in `status` field
@@ -51,26 +48,27 @@ export async function GET(request: NextRequest) {
         include: { program: true, academicYear: true },
         orderBy: { createdAt: "desc" },
         skip,
-        take: pageSize,
+        take: pageSize
       });
 
       // enrich as before
       const enriched = await Promise.all(
-        applicants.map(async (a) => {
+        applicants.map(async a => {
           const sum = await db.applicantPayment.aggregate({
             where: { applicantId: a.id },
-            _sum: { amount: true },
+            _sum: { amount: true }
           });
 
           const lastPayment = await db.applicantPayment.findFirst({
             where: { applicantId: a.id },
             orderBy: { createdAt: "desc" },
-            take: 1,
+            take: 1
           });
 
           const totalPaid = sum._sum.amount ?? 0;
           const registrationFee =
-            (a.academicYear && (a.academicYear as { registrationFee?: number }).registrationFee) ?? 0;
+            (a.academicYear && (a.academicYear as { registrationFee?: number }).registrationFee) ??
+            0;
 
           let billingStatus = "Belum Bayar";
           if (registrationFee > 0 && totalPaid >= registrationFee) {
@@ -86,7 +84,7 @@ export async function GET(request: NextRequest) {
             lastPaymentDate: lastPayment?.createdAt ?? null,
             totalPaid,
             registrationFee,
-            billingStatus,
+            billingStatus
           };
         })
       );
@@ -98,20 +96,20 @@ export async function GET(request: NextRequest) {
       where: whereClause,
       include: { program: true, academicYear: true },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 100
     });
 
     const enriched = await Promise.all(
-      applicants.map(async (a) => {
+      applicants.map(async a => {
         const sum = await db.applicantPayment.aggregate({
           where: { applicantId: a.id },
-          _sum: { amount: true },
+          _sum: { amount: true }
         });
 
         const lastPayment = await db.applicantPayment.findFirst({
           where: { applicantId: a.id },
           orderBy: { createdAt: "desc" },
-          take: 1,
+          take: 1
         });
 
         const totalPaid = sum._sum.amount ?? 0;
@@ -132,7 +130,7 @@ export async function GET(request: NextRequest) {
           lastPaymentDate: lastPayment?.createdAt ?? null,
           totalPaid,
           registrationFee,
-          billingStatus,
+          billingStatus
         };
       })
     );
@@ -140,9 +138,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(enriched);
   } catch (error) {
     console.error("Error fetching applicants:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch applicants" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch applicants" }, { status: 500 });
   }
 }

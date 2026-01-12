@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin } from "lucide-react";
 
 interface CalendarEvent {
   id: string;
@@ -26,7 +26,7 @@ const categoryStyles = {
   sports: { bg: "bg-green-500", text: "text-green-500", label: "Sports" },
   cultural: { bg: "bg-purple-500", text: "text-purple-500", label: "Cultural" },
   holiday: { bg: "bg-red-500", text: "text-red-500", label: "Holiday" },
-  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" },
+  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" }
 };
 
 export function AcademicCalendar({
@@ -41,7 +41,7 @@ export function AcademicCalendar({
       day: "numeric",
       month: "short",
       year: "numeric",
-      weekday: "short",
+      weekday: "short"
     });
 
     const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, part) => {
@@ -55,7 +55,7 @@ export function AcademicCalendar({
       day: parts.day || date.getDate().toString(),
       month: parts.month || date.toLocaleDateString("id-ID", { month: "short" }),
       year: parts.year || date.getFullYear().toString(),
-      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" }),
+      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" })
     };
   };
 
@@ -70,7 +70,10 @@ export function AcademicCalendar({
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
-            <div className="flex items-center gap-2 px-4 py-1 academic-accent-bg-light rounded-full academic-accent-border" style={{borderWidth: '1px'}}>
+            <div
+              className="flex items-center gap-2 px-4 py-1 academic-accent-bg-light rounded-full academic-accent-border"
+              style={{ borderWidth: "1px" }}
+            >
               <div className="w-2 h-2 academic-accent-bg rounded-full" />
               <span className="text-[#001f3f] font-serif text-sm uppercase tracking-wider">
                 Events & Calendar
@@ -80,9 +83,7 @@ export function AcademicCalendar({
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-[#001f3f] mb-4">
             {title}
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
-            {subtitle}
-          </p>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">{subtitle}</p>
           <div className="flex justify-center mb-6">
             <a
               href={viewAllLink}
@@ -90,7 +91,12 @@ export function AcademicCalendar({
             >
               View All Events
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </a>
           </div>
@@ -99,7 +105,7 @@ export function AcademicCalendar({
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedEvents.map((event) => {
+          {sortedEvents.map(event => {
             const dateInfo = formatDate(event.date);
             const categoryStyle = categoryStyles[event.category];
 
@@ -116,9 +122,7 @@ export function AcademicCalendar({
                       <div className="academic-accent text-xs font-semibold uppercase tracking-wider">
                         {dateInfo.month}
                       </div>
-                      <div className="text-white text-3xl font-bold font-serif">
-                        {dateInfo.day}
-                      </div>
+                      <div className="text-white text-3xl font-bold font-serif">{dateInfo.day}</div>
                       <div className="text-gray-300 text-xs">{dateInfo.year}</div>
                       <div className="academic-accent text-xs font-semibold mt-1">
                         {dateInfo.weekday}
@@ -130,9 +134,7 @@ export function AcademicCalendar({
                   <div className="flex-1 p-5">
                     {/* Category Badge */}
                     <div className="mb-3">
-                      <Badge
-                        className={`${categoryStyle.bg} text-white text-xs`}
-                      >
+                      <Badge className={`${categoryStyle.bg} text-white text-xs`}>
                         {categoryStyle.label}
                       </Badge>
                     </div>
@@ -144,9 +146,7 @@ export function AcademicCalendar({
 
                     {/* Description */}
                     {event.description && (
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {event.description}
-                      </p>
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
                     )}
 
                     {/* Time & Location */}
@@ -168,7 +168,9 @@ export function AcademicCalendar({
                 </div>
 
                 {/* Bottom Accent Line */}
-                <div className={`h-1 ${categoryStyle.bg} transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300`} />
+                <div
+                  className={`h-1 ${categoryStyle.bg} transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}
+                />
               </Card>
             );
           })}

@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +52,7 @@ export function MediaPickerDialog({
   onOpenChange,
   onSelect,
   selectedId,
-  title = "Pilih gambar",
+  title = "Pilih gambar"
 }: MediaPickerDialogProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -62,7 +62,10 @@ export function MediaPickerDialog({
   const [error, setError] = useState<string | null>(null);
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(selectedId || null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadForm, setUploadForm] = useState<{ name: string; description: string }>({ name: "", description: "" });
+  const [uploadForm, setUploadForm] = useState<{ name: string; description: string }>({
+    name: "",
+    description: ""
+  });
 
   useEffect(() => {
     if (open) {
@@ -79,12 +82,12 @@ export function MediaPickerDialog({
   const fetchMedia = async (query: string = "") => {
     try {
       setIsLoading(true);
-      const url = new URL("/api/admin/website-landing/media", window.location.origin);
+      const url = new URL("/api/admin/landing-website/media", window.location.origin);
       if (query) url.searchParams.set("search", query);
       const res = await fetch(url.toString());
       if (res.ok) {
         const data: MediaItem[] = await res.json();
-        const imagesOnly = data.filter((item) => item.type === "image");
+        const imagesOnly = data.filter(item => item.type === "image");
         setMediaItems(imagesOnly);
       } else {
         setError("Gagal memuat media.");
@@ -130,9 +133,9 @@ export function MediaPickerDialog({
       formData.append("title", uploadForm.name || selectedFile.name);
       if (uploadForm.description) formData.append("description", uploadForm.description);
 
-      const res = await fetch("/api/admin/website-landing/media", {
+      const res = await fetch("/api/admin/landing-website/media", {
         method: "POST",
-        body: formData,
+        body: formData
       });
 
       if (!res.ok) {
@@ -157,7 +160,7 @@ export function MediaPickerDialog({
   };
 
   const handleSelect = () => {
-    const media = mediaItems.find((item) => item.id === selectedMediaId);
+    const media = mediaItems.find(item => item.id === selectedMediaId);
     if (media) {
       onSelect(media);
       onOpenChange(false);
@@ -167,7 +170,7 @@ export function MediaPickerDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={(next) => {
+      onOpenChange={next => {
         if (!next) {
           setError(null);
           setSelectedFile(null);
@@ -179,7 +182,9 @@ export function MediaPickerDialog({
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Pilih gambar dari perpustakaan atau unggah baru (maks 1 MB).</DialogDescription>
+          <DialogDescription>
+            Pilih gambar dari perpustakaan atau unggah baru (maks 1 MB).
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
@@ -188,8 +193,8 @@ export function MediaPickerDialog({
               <Input
                 placeholder="Cari judul atau deskripsi..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === "Enter") fetchMedia(e.currentTarget.value);
                 }}
               />
@@ -205,7 +210,11 @@ export function MediaPickerDialog({
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
                 <Upload className="mr-2 h-4 w-4" /> Upload
               </Button>
             </div>
@@ -222,7 +231,7 @@ export function MediaPickerDialog({
           ) : (
             <ScrollArea className="h-80 rounded-md border p-3">
               <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                {mediaItems.map((item) => {
+                {mediaItems.map(item => {
                   const isSelected = item.id === selectedMediaId;
                   return (
                     <button
@@ -254,10 +263,15 @@ export function MediaPickerDialog({
                         </div>
                       </div>
                       <div className="p-3 space-y-1">
-                        <p className="text-sm font-medium line-clamp-1" title={item.title || undefined}>
+                        <p
+                          className="text-sm font-medium line-clamp-1"
+                          title={item.title || undefined}
+                        >
                           {item.title || "Tanpa judul"}
                         </p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{item.description || "Tanpa deskripsi"}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {item.description || "Tanpa deskripsi"}
+                        </p>
                         <p className="text-xs text-muted-foreground">{formatBytes(item.size)}</p>
                       </div>
                     </button>
@@ -275,7 +289,7 @@ export function MediaPickerDialog({
                   <label className="text-sm font-medium">Nama</label>
                   <Input
                     value={uploadForm.name}
-                    onChange={(e) => setUploadForm((prev) => ({ ...prev, name: e.target.value }))}
+                    onChange={e => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Nama file"
                   />
                 </div>
@@ -283,13 +297,21 @@ export function MediaPickerDialog({
                   <label className="text-sm font-medium">Deskripsi (opsional)</label>
                   <Textarea
                     value={uploadForm.description}
-                    onChange={(e) => setUploadForm((prev) => ({ ...prev, description: e.target.value }))}
+                    onChange={e =>
+                      setUploadForm(prev => ({ ...prev, description: e.target.value }))
+                    }
                     placeholder="Deskripsi singkat"
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => { setSelectedFile(null); setUploadForm({ name: "", description: "" }); }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedFile(null);
+                    setUploadForm({ name: "", description: "" });
+                  }}
+                >
                   Batal
                 </Button>
                 <Button onClick={uploadFile} disabled={isUploading}>

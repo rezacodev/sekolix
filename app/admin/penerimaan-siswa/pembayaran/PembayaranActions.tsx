@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { DataTable } from "@/components/ui/data-table";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
@@ -11,11 +18,17 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { formatRupiah } from "@/lib/utils/currency";
 
@@ -47,15 +60,17 @@ export default function PembayaranActions() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalApplicant, setModalApplicant] = useState<ApplicantWithBilling | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyPayments, setHistoryPayments] = useState<{
-    id: string;
-    applicantId: string;
-    method?: string | null;
-    amount: number;
-    proofUrl?: string | null;
-    notes?: string | null;
-    createdAt: string;
-  }[]>([]);
+  const [historyPayments, setHistoryPayments] = useState<
+    {
+      id: string;
+      applicantId: string;
+      method?: string | null;
+      amount: number;
+      proofUrl?: string | null;
+      notes?: string | null;
+      createdAt: string;
+    }[]
+  >([]);
   const [amount, setAmount] = useState<number | "">("");
   const [method, setMethod] = useState("manual");
   const [proofUrl, setProofUrl] = useState("");
@@ -108,8 +123,8 @@ export default function PembayaranActions() {
         }
         const data = (await res.json()) as { id: string; label: string; isActive: boolean }[];
         setYears(data || []);
-        const active = data.find((y) => y.isActive);
-        const defaultYear = active ? active.id : (data && data[0] ? data[0].id : null);
+        const active = data.find(y => y.isActive);
+        const defaultYear = active ? active.id : data && data[0] ? data[0].id : null;
         setSelectedYear(defaultYear);
         setIsLoading(true);
         await fetchApplicants(defaultYear, 0, pageSize, "");
@@ -134,8 +149,8 @@ export default function PembayaranActions() {
     setModalApplicant(app);
     setHistoryOpen(true);
     try {
-      const u = new URL('/api/admin/penerimaan-siswa/payments', window.location.origin);
-      u.searchParams.set('applicantId', app.id);
+      const u = new URL("/api/admin/penerimaan-siswa/payments", window.location.origin);
+      u.searchParams.set("applicantId", app.id);
       const res = await fetch(u.toString());
       if (res.ok) {
         const data = await res.json();
@@ -144,7 +159,7 @@ export default function PembayaranActions() {
         setHistoryPayments([]);
       }
     } catch (err) {
-      console.error('Failed to fetch history', err);
+      console.error("Failed to fetch history", err);
       setHistoryPayments([]);
     }
   };
@@ -166,7 +181,12 @@ export default function PembayaranActions() {
       const res = await fetch("/api/admin/penerimaan-siswa/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicantId: modalApplicant.id, amount: Number(amount), method, proofUrl }),
+        body: JSON.stringify({
+          applicantId: modalApplicant.id,
+          amount: Number(amount),
+          method,
+          proofUrl
+        })
       });
       if (res.ok) {
         toast.success("Pembayaran berhasil dicatat");
@@ -188,7 +208,7 @@ export default function PembayaranActions() {
   const uniquePrograms = Array.from(
     new Set(
       items
-        .map((a) => a.program?.name ?? (a as { programChoice?: string }).programChoice ?? "")
+        .map(a => a.program?.name ?? (a as { programChoice?: string }).programChoice ?? "")
         .filter(Boolean)
     )
   ).sort();
@@ -200,14 +220,14 @@ export default function PembayaranActions() {
       options: [
         { label: "Belum Bayar", value: "Belum Bayar" },
         { label: "Partial", value: "Partial" },
-        { label: "Lunas", value: "Lunas" },
-      ],
+        { label: "Lunas", value: "Lunas" }
+      ]
     },
     {
       column: "programChoice",
       title: "Program/Jurusan",
-      options: uniquePrograms.map((p) => ({ label: p, value: p })),
-    },
+      options: uniquePrograms.map(p => ({ label: p, value: p }))
+    }
   ];
 
   const columns: ColumnDef<ApplicantWithBilling>[] = [
@@ -217,11 +237,13 @@ export default function PembayaranActions() {
       cell: ({ row }) => {
         const code = row.original.registrationCode ?? null;
         return code ? (
-          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">{code}</code>
+          <code className="rounded bg-muted px-2 py-1 font-mono text-xs font-semibold text-foreground">
+            {code}
+          </code>
         ) : (
           <span className="text-xs text-muted-foreground">-</span>
         );
-      },
+      }
     },
     {
       accessorKey: "fullName",
@@ -236,17 +258,17 @@ export default function PembayaranActions() {
             {r.fullName}
           </a>
         );
-      },
+      }
     },
     {
       accessorKey: "program",
       header: "Program",
-      cell: ({ row }) => (row.original.program?.name ?? "-"),
+      cell: ({ row }) => row.original.program?.name ?? "-"
     },
     {
       accessorKey: "academicYear",
       header: "Tahun Ajaran",
-      cell: ({ row }) => (row.original.academicYear?.label ?? "-"),
+      cell: ({ row }) => row.original.academicYear?.label ?? "-"
     },
     {
       accessorKey: "registrationFee",
@@ -257,10 +279,12 @@ export default function PembayaranActions() {
         return (
           <div>
             <div>{formatRupiah(rf)}</div>
-            <div className="text-xs text-muted-foreground">{date ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(date) : "-"}</div>
+            <div className="text-xs text-muted-foreground">
+              {date ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(date) : "-"}
+            </div>
           </div>
         );
-      },
+      }
     },
     {
       accessorKey: "totalPaid",
@@ -271,14 +295,18 @@ export default function PembayaranActions() {
         return (
           <div>
             <div>{formatRupiah(tp)}</div>
-            <div className="text-xs text-muted-foreground">{pdate ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(pdate) : "-"}</div>
+            <div className="text-xs text-muted-foreground">
+              {pdate
+                ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(pdate)
+                : "-"}
+            </div>
           </div>
         );
-      },
+      }
     },
     {
       accessorKey: "billingStatus",
-      header: "Status",
+      header: "Status"
     },
     {
       id: "actions",
@@ -296,22 +324,28 @@ export default function PembayaranActions() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
               {a.billingStatus !== "Lunas" && (
-                <DropdownMenuItem onClick={() => openPaymentModal(a)}>Catat Pembayaran</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openPaymentModal(a)}>
+                  Catat Pembayaran
+                </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => openHistoryModal(a)}>Lihat Riwayat Pembayaran</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openHistoryModal(a)}>
+                Lihat Riwayat Pembayaran
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
             </DropdownMenuContent>
           </DropdownMenu>
         );
-      },
-    },
+      }
+    }
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Tagihan & Pembayaran</h1>
-        <p className="text-muted-foreground">Daftar semua calon pendaftar beserta status pembayaran mereka.</p>
+        <p className="text-muted-foreground">
+          Daftar semua calon pendaftar beserta status pembayaran mereka.
+        </p>
       </div>
       {isLoading ? (
         <div className="text-center py-10">Memuat...</div>
@@ -323,7 +357,7 @@ export default function PembayaranActions() {
               <div className="w-64">
                 <Select
                   value={selectedYear || undefined}
-                  onValueChange={(val) => {
+                  onValueChange={val => {
                     setSelectedYear(val);
                     setIsLoading(true);
                     void fetchApplicants(val);
@@ -333,9 +367,11 @@ export default function PembayaranActions() {
                     <SelectValue placeholder="Pilih tahun ajaran" />
                   </SelectTrigger>
                   <SelectContent>
-                      {years.map((y) => (
-                        <SelectItem key={y.id} value={y.id}>{y.label}</SelectItem>
-                      ))}
+                    {years.map(y => (
+                      <SelectItem key={y.id} value={y.id}>
+                        {y.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -351,34 +387,46 @@ export default function PembayaranActions() {
             totalCount={totalCount}
             pageIndex={pageIndex}
             pageSize={pageSize}
-            onPageChange={(p) => void fetchApplicants(selectedYear, p, pageSize, search)}
-            onPageSizeChange={(ps) => void fetchApplicants(selectedYear, 0, ps, search)}
-            onSearchChange={(s) => {
+            onPageChange={p => void fetchApplicants(selectedYear, p, pageSize, search)}
+            onPageSizeChange={ps => void fetchApplicants(selectedYear, 0, ps, search)}
+            onSearchChange={s => {
               setSearch(s);
               void fetchApplicants(selectedYear, 0, pageSize, s);
             }}
           />
 
           {/* Payment Dialog */}
-          <Dialog open={modalOpen} onOpenChange={(open) => setModalOpen(open)}>
+          <Dialog open={modalOpen} onOpenChange={open => setModalOpen(open)}>
             <DialogContent>
-                <DialogHeader>
+              <DialogHeader>
                 <DialogTitle>Catat Pembayaran</DialogTitle>
                 <DialogDescription>
                   {modalApplicant ? (
                     <div>
-                      <div className="font-medium">{modalApplicant.registrationCode ?? "-"} — {modalApplicant.fullName}</div>
-                      <div className="text-sm text-muted-foreground">{modalApplicant.program?.name ?? "-"}</div>
+                      <div className="font-medium">
+                        {modalApplicant.registrationCode ?? "-"} — {modalApplicant.fullName}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {modalApplicant.program?.name ?? "-"}
+                      </div>
                     </div>
-                  ) : ""}
+                  ) : (
+                    ""
+                  )}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={submitPayment} className="space-y-4">
                 <label className="block text-sm font-semibold text-foreground">
-                  Jumlah (sisa: {modalApplicant ? formatRupiah((modalApplicant.registrationFee || 0) - (modalApplicant.totalPaid || 0)) : "-"})
+                  Jumlah (sisa:{" "}
+                  {modalApplicant
+                    ? formatRupiah(
+                        (modalApplicant.registrationFee || 0) - (modalApplicant.totalPaid || 0)
+                      )
+                    : "-"}
+                  )
                   <Input
                     value={amount === "" ? "" : String(amount)}
-                    onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
+                    onChange={e => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
                     className="mt-2"
                     type="number"
                     required
@@ -386,26 +434,38 @@ export default function PembayaranActions() {
                 </label>
                 <label className="block text-sm font-semibold text-foreground">
                   Metode
-                  <Input value={method} onChange={(e) => setMethod(e.target.value)} className="mt-2" />
+                  <Input
+                    value={method}
+                    onChange={e => setMethod(e.target.value)}
+                    className="mt-2"
+                  />
                 </label>
                 <label className="block text-sm font-semibold text-foreground">
                   URL Bukti (opsional)
-                  <Input value={proofUrl} onChange={(e) => setProofUrl(e.target.value)} className="mt-2" />
+                  <Input
+                    value={proofUrl}
+                    onChange={e => setProofUrl(e.target.value)}
+                    className="mt-2"
+                  />
                 </label>
                 <DialogFooter>
-                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Menyimpan..." : "Simpan Pembayaran"}</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Menyimpan..." : "Simpan Pembayaran"}
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
 
           {/* History Dialog */}
-          <Dialog open={historyOpen} onOpenChange={(open) => setHistoryOpen(open)}>
+          <Dialog open={historyOpen} onOpenChange={open => setHistoryOpen(open)}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Riwayat Pembayaran</DialogTitle>
                 <DialogDescription>
-                  {modalApplicant ? `${modalApplicant.registrationCode ?? "-"} — ${modalApplicant.fullName}` : ""}
+                  {modalApplicant
+                    ? `${modalApplicant.registrationCode ?? "-"} — ${modalApplicant.fullName}`
+                    : ""}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
@@ -414,7 +474,7 @@ export default function PembayaranActions() {
                 ) : (
                   <div className="flow-root">
                     <ul className="divide-y">
-                      {historyPayments.map((p) => (
+                      {historyPayments.map(p => (
                         <li key={p.id} className="py-2 flex justify-between">
                           <div>
                             <div className="font-medium">{p.method}</div>
@@ -422,7 +482,12 @@ export default function PembayaranActions() {
                           </div>
                           <div className="text-right">
                             <div>{formatRupiah(p.amount)}</div>
-                            <div className="text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(p.createdAt).toLocaleString("id-ID", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                              })}
+                            </div>
                           </div>
                         </li>
                       ))}

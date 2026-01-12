@@ -31,7 +31,7 @@ const createDefaultState = (programId: string, academicYearId: string): FormStat
   email: "",
   schoolOrigin: "",
   programId,
-  academicYearId,
+  academicYearId
 });
 
 export function ApplyForm({ programs, activeYear }: ApplyFormProps) {
@@ -43,11 +43,11 @@ export function ApplyForm({ programs, activeYear }: ApplyFormProps) {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (field: keyof FormState) => (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof FormState) =>
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setForm(prev => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,19 +61,22 @@ export function ApplyForm({ programs, activeYear }: ApplyFormProps) {
         body: JSON.stringify({
           ...form,
           academicYearId: form.academicYearId || undefined,
-          programChoice: programs.find((program) => program.id === form.programId)?.name ?? null,
-        }),
+          programChoice: programs.find(program => program.id === form.programId)?.name ?? null
+        })
       });
 
       const payload = await response.json();
 
       if (!response.ok) {
-        setFeedback({ type: "error", message: payload.message ?? "Terjadi kesalahan saat mengirim data." });
+        setFeedback({
+          type: "error",
+          message: payload.message ?? "Terjadi kesalahan saat mengirim data."
+        });
       } else {
-        setFeedback({ 
-          type: "success", 
+        setFeedback({
+          type: "success",
           message: payload.message,
-          registrationCode: payload.registrationCode,
+          registrationCode: payload.registrationCode
         });
         setForm(createDefaultState(initialProgramId, initialAcademicYearId));
       }
@@ -123,7 +126,9 @@ export function ApplyForm({ programs, activeYear }: ApplyFormProps) {
         {activeYear ? (
           <span>Tahun ajaran aktif: {activeYear.label}</span>
         ) : (
-          <span className="text-rose-700">Belum ada tahun ajaran aktif. Data akan dicatat setelah admin mengaktifkannya.</span>
+          <span className="text-rose-700">
+            Belum ada tahun ajaran aktif. Data akan dicatat setelah admin mengaktifkannya.
+          </span>
         )}
       </div>
 
@@ -200,7 +205,7 @@ export function ApplyForm({ programs, activeYear }: ApplyFormProps) {
             <option value="" disabled>
               Pilih program
             </option>
-            {programs.map((program) => (
+            {programs.map(program => (
               <option key={program.id} value={program.id}>
                 {program.name}
               </option>

@@ -5,11 +5,13 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata = {
   title: "Profil - SMK Negeri 1 Jakarta",
-  description: "Profil lengkap SMK Negeri 1 Jakarta - Sejarah, Visi Misi, Struktur Organisasi, Fasilitas, dan Program Keahlian",
+  description:
+    "Profil lengkap SMK Negeri 1 Jakarta - Sejarah, Visi Misi, Struktur Organisasi, Fasilitas, dan Program Keahlian"
 };
 
 export default async function ProfilPage() {
-  const themeConfig = await getThemeConfigById('academic-classic') || getDefaultThemeConfig('academic-classic');
+  const themeConfig =
+    (await getThemeConfigById("academic-classic")) || getDefaultThemeConfig("academic-classic");
 
   return (
     <ThemeProvider
@@ -25,15 +27,17 @@ export default async function ProfilPage() {
       <main className="min-h-screen bg-gray-50 overflow-x-hidden w-full pt-40">
         <TopBar />
         <Navbar />
-        
+
         {/* Hero Section */}
         <section className="bg-linear-to-b from-blue-900 to-blue-800 text-white py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl font-bold mb-4">Profil Sekolah</h1>
-            <p className="text-xl text-blue-100 mb-8">Mengenal lebih jauh tentang SMK Negeri 1 Jakarta</p>
+            <p className="text-xl text-blue-100 mb-8">
+              Mengenal lebih jauh tentang SMK Negeri 1 Jakarta
+            </p>
             <p className="text-blue-100 max-w-2xl mx-auto">
-              Institusi pendidikan kejuruan terkemuka yang berkomitmen menghasilkan lulusan berkualitas, 
-              berkarakter, dan siap bersaing di era global.
+              Institusi pendidikan kejuruan terkemuka yang berkomitmen menghasilkan lulusan
+              berkualitas, berkarakter, dan siap bersaing di era global.
             </p>
           </div>
         </section>
@@ -67,7 +71,7 @@ export default async function ProfilPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Profile Cards */}
             <h2 className="text-3xl font-bold text-blue-900 mb-10">Jelajahi Profil Sekolah</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Sejarah */}
               <Link href="/profil/sejarah">
@@ -78,8 +82,8 @@ export default async function ProfilPage() {
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 mb-4">
-                      Telusuri perjalanan panjang SMK Negeri 1 Jakarta sejak pendiriannya tahun 1985 hingga menjadi institusi 
-                      pendidikan kejuruan terkemuka.
+                      Telusuri perjalanan panjang SMK Negeri 1 Jakarta sejak pendiriannya tahun 1985
+                      hingga menjadi institusi pendidikan kejuruan terkemuka.
                     </p>
                     <div className="text-blue-900 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                       Baca Selengkapnya →
@@ -97,8 +101,8 @@ export default async function ProfilPage() {
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 mb-4">
-                      Pelajari visi, misi, dan nilai-nilai inti yang menjadi panduan dalam mengarahkan pendidikan 
-                      berkualitas dan pembangunan karakter siswa.
+                      Pelajari visi, misi, dan nilai-nilai inti yang menjadi panduan dalam
+                      mengarahkan pendidikan berkualitas dan pembangunan karakter siswa.
                     </p>
                     <div className="text-blue-900 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                       Baca Selengkapnya →
@@ -116,8 +120,8 @@ export default async function ProfilPage() {
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 mb-4">
-                      Ketahui susunan organisasi, kepemimpinan, dan pimpinan yang membawa sekolah menuju visi dan misi 
-                      yang telah ditetapkan.
+                      Ketahui susunan organisasi, kepemimpinan, dan pimpinan yang membawa sekolah
+                      menuju visi dan misi yang telah ditetapkan.
                     </p>
                     <div className="text-blue-900 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                       Baca Selengkapnya →
@@ -135,8 +139,8 @@ export default async function ProfilPage() {
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 mb-4">
-                      Jelajahi fasilitas lengkap dan modern yang mendukung pembelajaran berkualitas, termasuk 
-                      workshop, lab, dan sarana penunjang.
+                      Jelajahi fasilitas lengkap dan modern yang mendukung pembelajaran berkualitas,
+                      termasuk workshop, lab, dan sarana penunjang.
                     </p>
                     <div className="text-blue-900 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                       Baca Selengkapnya →
@@ -154,8 +158,9 @@ export default async function ProfilPage() {
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 mb-4">
-                      Temukan 4 program keahlian utama dengan sertifikasi internasional: Teknik Otomotif, Teknik Listrik, 
-                      Teknik Permesinan, dan Teknik Elektronika yang siap mempersiapkan karir cemerlang Anda.
+                      Temukan 4 program keahlian utama dengan sertifikasi internasional: Teknik
+                      Otomotif, Teknik Listrik, Teknik Permesinan, dan Teknik Elektronika yang siap
+                      mempersiapkan karir cemerlang Anda.
                     </p>
                     <div className="text-blue-900 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                       Baca Selengkapnya →
@@ -172,14 +177,20 @@ export default async function ProfilPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold mb-4">Tertarik untuk Bergabung?</h2>
             <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-              Dapatkan pendidikan kejuruan berkualitas tinggi dengan fasilitas modern dan lulusan yang diterima di industri. 
-              Hubungi kami sekarang untuk informasi pendaftaran.
+              Dapatkan pendidikan kejuruan berkualitas tinggi dengan fasilitas modern dan lulusan
+              yang diterima di industri. Hubungi kami sekarang untuk informasi pendaftaran.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:021123456789" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+              <a
+                href="tel:021123456789"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+              >
                 Hubungi Kami
               </a>
-              <Link href="/profil/program-keahlian" className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-3 rounded-lg font-semibold transition-colors">
+              <Link
+                href="/profil/program-keahlian"
+                className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-3 rounded-lg font-semibold transition-colors"
+              >
                 Lihat Program
               </Link>
             </div>
@@ -195,7 +206,8 @@ export default async function ProfilPage() {
                 <div className="text-4xl font-bold text-blue-900 mb-2">A</div>
                 <h3 className="font-bold text-blue-900 mb-2">Akreditasi A</h3>
                 <p className="text-sm text-gray-700">
-                  Akreditasi A dari BAN-S/M menunjukkan standar kualitas pendidikan yang tinggi dan konsisten.
+                  Akreditasi A dari BAN-S/M menunjukkan standar kualitas pendidikan yang tinggi dan
+                  konsisten.
                 </p>
               </div>
 
@@ -203,7 +215,8 @@ export default async function ProfilPage() {
                 <div className="text-4xl font-bold text-orange-600 mb-2">50+</div>
                 <h3 className="font-bold text-blue-900 mb-2">Kemitraan Industri</h3>
                 <p className="text-sm text-gray-700">
-                  Kerjasama strategis dengan perusahaan-perusahaan terkemuka untuk relevansi kurikulum.
+                  Kerjasama strategis dengan perusahaan-perusahaan terkemuka untuk relevansi
+                  kurikulum.
                 </p>
               </div>
 
@@ -211,7 +224,8 @@ export default async function ProfilPage() {
                 <div className="text-4xl font-bold text-blue-900 mb-2">95%</div>
                 <h3 className="font-bold text-blue-900 mb-2">Penyerapan Kerja</h3>
                 <p className="text-sm text-gray-700">
-                  Lulusan kami terserap di dunia kerja dalam waktu kurang dari 6 bulan setelah lulus.
+                  Lulusan kami terserap di dunia kerja dalam waktu kurang dari 6 bulan setelah
+                  lulus.
                 </p>
               </div>
             </div>

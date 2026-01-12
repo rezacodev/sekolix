@@ -20,7 +20,12 @@ export async function GET(request: NextRequest) {
       const p = Number(page || 0);
       const skip = p * pageSize;
       const totalCount = await db.tahunAjaran.count({ where });
-      const items = await db.tahunAjaran.findMany({ where, orderBy: { startDate: "desc" }, skip, take: pageSize });
+      const items = await db.tahunAjaran.findMany({
+        where,
+        orderBy: { startDate: "desc" },
+        skip,
+        take: pageSize
+      });
       return NextResponse.json({ items, totalCount, page: p, pageSize });
     }
 
@@ -41,27 +46,18 @@ export async function POST(request: NextRequest) {
     const { label, yearCode, startDate, endDate } = data;
 
     if (!label?.trim()) {
-      return NextResponse.json(
-        { message: "Label tahun ajaran wajib diisi." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Label tahun ajaran wajib diisi." }, { status: 400 });
     }
 
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
     if (start && Number.isNaN(start.getTime())) {
-      return NextResponse.json(
-        { message: "Tanggal mulai tidak valid." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Tanggal mulai tidak valid." }, { status: 400 });
     }
 
     if (end && Number.isNaN(end.getTime())) {
-      return NextResponse.json(
-        { message: "Tanggal selesai tidak valid." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Tanggal selesai tidak valid." }, { status: 400 });
     }
 
     await db.tahunAjaran.create({
@@ -70,17 +66,13 @@ export async function POST(request: NextRequest) {
         yearCode: yearCode || null,
         startDate: start,
         endDate: end,
-        isActive: false,
-      },
+        isActive: false
+      }
     });
-    
 
     revalidatePath("/admin/penerimaan-siswa/settings/years");
 
-    return NextResponse.json(
-      { message: "Tahun ajaran berhasil ditambahkan" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Tahun ajaran berhasil ditambahkan" }, { status: 200 });
   } catch (error) {
     console.error("Error creating academic year:", error);
     return NextResponse.json(
@@ -96,30 +88,24 @@ export async function PUT(request: NextRequest) {
     const { yearId } = data;
 
     if (!yearId?.trim()) {
-      return NextResponse.json(
-        { message: "Tahun ajaran tidak ditemukan." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Tahun ajaran tidak ditemukan." }, { status: 400 });
     }
 
     await db.$transaction([
       db.tahunAjaran.updateMany({
         where: {},
-        data: { isActive: false },
+        data: { isActive: false }
       }),
       db.tahunAjaran.update({
         where: { id: yearId },
-        data: { isActive: true },
-      }),
+        data: { isActive: true }
+      })
     ]);
 
     revalidatePath("/apply");
     revalidatePath("/admin/penerimaan-siswa/settings/years");
 
-    return NextResponse.json(
-      { message: "Tahun ajaran berhasil diaktifkan" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Tahun ajaran berhasil diaktifkan" }, { status: 200 });
   } catch (error) {
     console.error("Error activating academic year:", error);
     return NextResponse.json(
@@ -145,12 +131,13 @@ export async function PATCH(request: NextRequest) {
       label: name,
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
-      registrationFee: typeof registrationFee === "number" ? registrationFee : Number(registrationFee) || 0,
+      registrationFee:
+        typeof registrationFee === "number" ? registrationFee : Number(registrationFee) || 0
     };
 
     await db.tahunAjaran.update({
       where: { id: yearId },
-      data: payload,
+      data: payload
     });
 
     revalidatePath("/admin/penerimaan-siswa/settings/years");
@@ -158,6 +145,9 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: "Tahun ajaran diperbarui" }, { status: 200 });
   } catch (error) {
     console.error("Error updating academic year:", error);
-    return NextResponse.json({ message: "Terjadi kesalahan saat memperbarui tahun ajaran" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Terjadi kesalahan saat memperbarui tahun ajaran" },
+      { status: 500 }
+    );
   }
 }

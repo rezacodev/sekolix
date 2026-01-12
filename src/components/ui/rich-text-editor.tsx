@@ -1,6 +1,14 @@
 "use client";
 
-import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewContent, NodeViewWrapper } from "@tiptap/react";
+import { useEffect } from "react";
+import {
+  useEditor,
+  EditorContent,
+  ReactNodeViewRenderer,
+  NodeViewContent,
+  NodeViewWrapper
+} from "@tiptap/react";
+import type { AnyExtension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -16,7 +24,7 @@ import {
   Redo,
   Heading2,
   Link as LinkIcon,
-  ImageIcon,
+  ImageIcon
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -32,27 +40,35 @@ const ResizableImage = Image.extend({
       ...this.parent?.(),
       width: {
         default: "100%",
-        parseHTML: (element) => element.getAttribute("width") || "100%",
-        renderHTML: (attributes) => {
+        parseHTML: element => element.getAttribute("width") || "100%",
+        renderHTML: attributes => {
           return {
             width: attributes.width || "100%",
-            style: `width: ${attributes.width || "100%"}; height: auto;`,
+            style: `width: ${attributes.width || "100%"}; height: auto;`
           };
-        },
-      },
+        }
+      }
     };
   },
   addNodeView() {
     return ReactNodeViewRenderer(ResizableImageView);
-  },
+  }
 });
 
-function ResizableImageView({ node, updateAttributes, selected }: { node: unknown; updateAttributes: (attrs: Record<string, unknown>) => void; selected: boolean; }) {
+function ResizableImageView({
+  node,
+  updateAttributes,
+  selected
+}: {
+  node: unknown;
+  updateAttributes: (attrs: Record<string, unknown>) => void;
+  selected: boolean;
+}) {
   // Type guard for node
-  if (typeof node !== 'object' || node === null || !('attrs' in node)) {
+  if (typeof node !== "object" || node === null || !("attrs" in node)) {
     return null;
   }
-  
+
   const nodeData = node as { attrs: { width?: string; src?: string; alt?: string } };
   const widthStr = (nodeData.attrs.width as string) || "100%";
   const widthNum = parseInt(widthStr.replace("%", ""), 10) || 100;
@@ -80,17 +96,34 @@ function ResizableImageView({ node, updateAttributes, selected }: { node: unknow
   return (
     <NodeViewWrapper style={{ display: "inline-block", position: "relative", width: widthStr }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img 
-        src={nodeData.attrs.src as string || ""} 
-        alt={(nodeData.attrs.alt as string) || ""} 
-        style={{ width: "100%", height: "auto" }} 
+      <img
+        src={(nodeData.attrs.src as string) || ""}
+        alt={(nodeData.attrs.alt as string) || ""}
+        style={{ width: "100%", height: "auto" }}
       />
       {selected && (
         <>
-          <div style={{ position: "absolute", inset: 0, border: "2px solid #3b82f6", pointerEvents: "none" }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              border: "2px solid #3b82f6",
+              pointerEvents: "none"
+            }}
+          />
           <div
             onMouseDown={onDrag}
-            style={{ position: "absolute", right: -6, top: "50%", transform: "translateY(-50%)", width: 12, height: 12, background: "#3b82f6", borderRadius: "50%", cursor: "ew-resize" }}
+            style={{
+              position: "absolute",
+              right: -6,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 12,
+              height: 12,
+              background: "#3b82f6",
+              borderRadius: "50%",
+              cursor: "ew-resize"
+            }}
           />
         </>
       )}
@@ -103,22 +136,49 @@ export function RichTextEditor({
   content,
   onChange,
   placeholder = "Write something amazing...",
-  onImagePick,
+  onImagePick
 }: RichTextEditorProps) {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-primary underline",
-        },
-      }),
-      ResizableImage,
-      Placeholder.configure({
-        placeholder,
-      }),
-    ],
+    // build extensions and dedupe by name to avoid duplicate-extension warnings
+    extensions: (() => {
+      const exts: AnyExtension[] = [
+        StarterKit,
+        Link.configure({
+          openOnClick: false,
+          HTMLAttributes: {
+            class: "text-primary underline"
+          }
+        }),
+        ResizableImage,
+        Placeholder.configure({ placeholder })
+      ];
+      const seen = new Set<string>();
+      const unique: AnyExtension[] = [];
+      const getExtensionName = (ext: AnyExtension | undefined): string => {
+        if (!ext) return "";
+        if (typeof ext === "function" && (ext as unknown & { name?: string }).name)
+          return (ext as unknown & { name?: string }).name || "";
+        const maybe = ext as unknown as Record<string, unknown> | undefined;
+        if (maybe && typeof maybe.name === "string") return maybe.name as string;
+        const cfg = (maybe && (maybe.config as Record<string, unknown> | undefined)) || undefined;
+        if (cfg && typeof cfg.name === "string") return cfg.name as string;
+        return "";
+      };
+      for (const e of exts) {
+        const name = getExtensionName(e);
+        if (!name) {
+          unique.push(e);
+          continue;
+        }
+        if (seen.has(name)) {
+          console.warn(`[tiptap] Duplicate extension skipped: ${name}`);
+          continue;
+        }
+        seen.add(name);
+        unique.push(e);
+      }
+      return unique;
+    })(),
     content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
@@ -127,10 +187,23 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] max-w-none p-4",
-      },
-    },
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] max-w-none p-4"
+      }
+    }
   });
+
+  // Update editor content when `content` prop changes after initialization
+  useEffect(() => {
+    if (!editor) return;
+    try {
+      if (content === null || content === undefined) return;
+      // Use setContent to replace editor content with incoming value
+      editor.commands.setContent(content);
+    } catch (e) {
+      // ignore invalid content
+      console.warn("Failed to set editor content:", e);
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;
@@ -184,12 +257,8 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className={
-            editor.isActive("heading", { level: 2 }) ? "bg-muted" : ""
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={editor.isActive("heading", { level: 2 }) ? "bg-muted" : ""}
         >
           <Heading2 className="h-4 w-4" />
         </Button>
@@ -242,7 +311,7 @@ export function RichTextEditor({
               min={30}
               max={100}
               value={parseInt(editor.getAttributes("image").width || "100", 10) || 100}
-              onChange={(e) => {
+              onChange={e => {
                 const value = `${e.target.value}%`;
                 editor.chain().focus().updateAttributes("image", { width: value }).run();
               }}
@@ -252,7 +321,9 @@ export function RichTextEditor({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => editor.chain().focus().updateAttributes("image", { width: "100%" }).run()}
+              onClick={() =>
+                editor.chain().focus().updateAttributes("image", { width: "100%" }).run()
+              }
             >
               Reset
             </Button>

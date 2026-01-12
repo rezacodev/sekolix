@@ -11,36 +11,40 @@ import {
   ListBasedNews,
   BorderlessGallery,
   MinimalFaculty,
-  MinimalEvents,
+  MinimalEvents
 } from "@/components/themes/minimalist-clean";
 import { getThemeConfigById, getDefaultThemeConfig } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import prisma from "@/lib/db";
 
 // Force dynamic rendering to always fetch fresh theme data
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function MinimalistCleanPage() {
   // Fetch theme configuration
-  const themeConfig = await getThemeConfigById('minimalist-clean') || getDefaultThemeConfig('minimalist-clean');
-  
+  const themeConfig =
+    (await getThemeConfigById("minimalist-clean")) || getDefaultThemeConfig("minimalist-clean");
+
   // Fetch all global landing sections
   const landingSections = await prisma.landingSection.findMany({
     where: { isActive: true },
-    orderBy: { order: 'asc' },
+    orderBy: { order: "asc" }
   });
-  
-  const heroSection = landingSections.find(s => s.slug === 'hero');
+
+  const heroSection = landingSections.find(s => s.slug === "hero");
 
   // Hero data
   const heroData = {
-    title: heroSection?.title?.split(' ')[0] || "Excellence in",
-    subtitle: heroSection?.title?.split(' ').slice(1).join(' ') || "Education",
-    body: heroSection?.body ?? "SMK Negeri 1 Jakarta memberikan pendidikan kejuruan berkualitas tinggi yang mempersiapkan siswa untuk menghadapi tantangan masa depan.",
-    description: heroSection?.subtitle ||
+    title: heroSection?.title?.split(" ")[0] || "Excellence in",
+    subtitle: heroSection?.title?.split(" ").slice(1).join(" ") || "Education",
+    body:
+      heroSection?.body ??
       "SMK Negeri 1 Jakarta memberikan pendidikan kejuruan berkualitas tinggi yang mempersiapkan siswa untuk menghadapi tantangan masa depan.",
-    established: "Established 1985",
+    description:
+      heroSection?.subtitle ||
+      "SMK Negeri 1 Jakarta memberikan pendidikan kejuruan berkualitas tinggi yang mempersiapkan siswa untuk menghadapi tantangan masa depan.",
+    established: "Established 1985"
   };
 
   // Statistics data
@@ -48,24 +52,24 @@ export default async function MinimalistCleanPage() {
     {
       id: "1",
       value: 1234,
-      label: "Siswa Aktif",
+      label: "Siswa Aktif"
     },
     {
       id: "2",
       value: 87,
-      label: "Tenaga Pendidik",
+      label: "Tenaga Pendidik"
     },
     {
       id: "3",
       value: 5,
-      label: "Program Keahlian",
+      label: "Program Keahlian"
     },
     {
       id: "4",
       value: 95,
       label: "Tingkat Kelulusan",
-      suffix: "%",
-    },
+      suffix: "%"
+    }
   ];
 
   // About data
@@ -80,10 +84,9 @@ export default async function MinimalistCleanPage() {
       { text: "Terakreditasi A oleh BAN-S/M" },
       { text: "Fasilitas modern dan lengkap" },
       { text: "Kerjasama dengan 50+ industri terkemuka" },
-      { text: "Kurikulum berbasis kompetensi industri" },
+      { text: "Kurikulum berbasis kompetensi industri" }
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80"
   };
 
   // Programs data
@@ -93,36 +96,36 @@ export default async function MinimalistCleanPage() {
       number: "01",
       title: "Rekayasa Perangkat Lunak",
       description:
-        "Pelajari pengembangan aplikasi web, mobile, dan desktop dengan teknologi terkini. Kuasai berbagai bahasa pemrograman dan framework modern.",
+        "Pelajari pengembangan aplikasi web, mobile, dan desktop dengan teknologi terkini. Kuasai berbagai bahasa pemrograman dan framework modern."
     },
     {
       id: "2",
       number: "02",
       title: "Teknik Komputer & Jaringan",
       description:
-        "Spesialisasi dalam infrastruktur jaringan, keamanan siber, dan cloud computing. Persiapan untuk sertifikasi profesional internasional.",
+        "Spesialisasi dalam infrastruktur jaringan, keamanan siber, dan cloud computing. Persiapan untuk sertifikasi profesional internasional."
     },
     {
       id: "3",
       number: "03",
       title: "Desain Komunikasi Visual",
       description:
-        "Kembangkan kreativitas dalam desain grafis, UI/UX, motion graphics, dan branding. Gunakan tools profesional industri kreatif.",
+        "Kembangkan kreativitas dalam desain grafis, UI/UX, motion graphics, dan branding. Gunakan tools profesional industri kreatif."
     },
     {
       id: "4",
       number: "04",
       title: "Akuntansi & Keuangan",
       description:
-        "Pahami sistem akuntansi modern, perpajakan, dan manajemen keuangan. Persiapan untuk sertifikasi akuntan profesional.",
+        "Pahami sistem akuntansi modern, perpajakan, dan manajemen keuangan. Persiapan untuk sertifikasi akuntan profesional."
     },
     {
       id: "5",
       number: "05",
       title: "Otomatisasi Tata Kelola Perkantoran",
       description:
-        "Kuasai administrasi perkantoran modern, manajemen arsip digital, dan komunikasi bisnis profesional.",
-    },
+        "Kuasai administrasi perkantoran modern, manajemen arsip digital, dan komunikasi bisnis profesional."
+    }
   ];
 
   // Testimonials data
@@ -133,7 +136,7 @@ export default async function MinimalistCleanPage() {
         "SMK Negeri 1 Jakarta benar-benar mempersiapkan saya untuk dunia kerja. Keterampilan yang saya pelajari sangat praktis dan relevan dengan industri.",
       name: "Budi Santoso",
       role: "Alumni 2022",
-      image: "https://i.pravatar.cc/150?img=1",
+      image: "https://i.pravatar.cc/150?img=1"
     },
     {
       id: 2,
@@ -141,7 +144,7 @@ export default async function MinimalistCleanPage() {
         "Guru-guru sangat perhatian terhadap perkembangan anak. Fasilitas lengkap dan modern. Anak saya sangat senang belajar di sini.",
       name: "Ibu Siti Aminah",
       role: "Orang Tua Siswa",
-      image: "https://i.pravatar.cc/150?img=5",
+      image: "https://i.pravatar.cc/150?img=5"
     },
     {
       id: 3,
@@ -149,8 +152,8 @@ export default async function MinimalistCleanPage() {
         "Selain akademik, karakter dan soft skills juga diasah dengan baik. Sekarang saya sukses menjalankan bisnis berkat ilmu dari sini.",
       name: "Ahmad Rizki",
       role: "Alumni 2020",
-      image: "https://i.pravatar.cc/150?img=3",
-    },
+      image: "https://i.pravatar.cc/150?img=3"
+    }
   ];
 
   // Faculty data
@@ -163,7 +166,7 @@ export default async function MinimalistCleanPage() {
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop",
       email: "s.johnson@school.edu",
       phone: "+62 123 456 7891",
-      bio: "With over 20 years of experience in education, Dr. Johnson leads our institution with vision and dedication.",
+      bio: "With over 20 years of experience in education, Dr. Johnson leads our institution with vision and dedication."
     },
     {
       id: "2",
@@ -173,7 +176,7 @@ export default async function MinimalistCleanPage() {
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop",
       email: "m.chen@school.edu",
       phone: "+62 123 456 7892",
-      bio: "Award-winning educator specializing in physics and mathematics with numerous published research papers.",
+      bio: "Award-winning educator specializing in physics and mathematics with numerous published research papers."
     },
     {
       id: "3",
@@ -183,8 +186,8 @@ export default async function MinimalistCleanPage() {
       image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop",
       email: "e.rodriguez@school.edu",
       phone: "+62 123 456 7893",
-      bio: "Passionate about literature and creative writing, inspiring students to explore the world of words.",
-    },
+      bio: "Passionate about literature and creative writing, inspiring students to explore the world of words."
+    }
   ];
 
   // Events data
@@ -196,7 +199,7 @@ export default async function MinimalistCleanPage() {
       time: "All Day",
       location: "School Campus",
       category: "holiday" as const,
-      description: "School closed for winter holidays. Classes resume January 6th.",
+      description: "School closed for winter holidays. Classes resume January 6th."
     },
     {
       id: "2",
@@ -205,7 +208,7 @@ export default async function MinimalistCleanPage() {
       time: "2:00 PM - 6:00 PM",
       location: "Main Hall",
       category: "academic" as const,
-      description: "Semester progress discussion with parents and teachers.",
+      description: "Semester progress discussion with parents and teachers."
     },
     {
       id: "3",
@@ -214,8 +217,8 @@ export default async function MinimalistCleanPage() {
       time: "4:00 PM",
       location: "Sports Arena",
       category: "sports" as const,
-      description: "Championship match against rival school.",
-    },
+      description: "Championship match against rival school."
+    }
   ];
 
   // News data
@@ -223,26 +226,27 @@ export default async function MinimalistCleanPage() {
     {
       id: "1",
       title: "Siswa SMK Juara 1 Lomba Programming Nasional",
-      excerpt: "Tim programming sekolah kami berhasil meraih juara 1 dalam kompetisi nasional yang diikuti lebih dari 100 sekolah dari seluruh Indonesia.",
+      excerpt:
+        "Tim programming sekolah kami berhasil meraih juara 1 dalam kompetisi nasional yang diikuti lebih dari 100 sekolah dari seluruh Indonesia.",
       date: "15 Januari 2024",
       category: "Prestasi",
-      link: "/informasi/news/juara-lomba-programming",
+      link: "/informasi/news/juara-lomba-programming"
     },
     {
       id: "2",
       title: "Workshop UI/UX Design bersama Google Indonesia",
-      excerpt: "Ratusan siswa mengikuti workshop eksklusif tentang desain antarmuka pengguna yang diselenggarakan bersama tim profesional dari Google.",
+      excerpt:
+        "Ratusan siswa mengikuti workshop eksklusif tentang desain antarmuka pengguna yang diselenggarakan bersama tim profesional dari Google.",
       date: "10 Januari 2024",
       category: "Kegiatan",
-      link: "/informasi/news/workshop-ui-ux-google",
-    },
+      link: "/informasi/news/workshop-ui-ux-google"
+    }
   ];
 
   // CTA data
   const ctaData = {
     title: "Siap Memulai Perjalanan Anda?",
-    subtitle:
-      "Bergabunglah dengan SMK Negeri 1 Jakarta dan wujudkan potensi terbaik Anda.",
+    subtitle: "Bergabunglah dengan SMK Negeri 1 Jakarta dan wujudkan potensi terbaik Anda."
   };
 
   // Footer data
@@ -257,8 +261,8 @@ export default async function MinimalistCleanPage() {
       twitter: "https://twitter.com/smkn1jakarta",
       facebook: "https://facebook.com/smkn1jakarta",
       instagram: "https://instagram.com/smkn1jakarta",
-      youtube: "https://youtube.com/@smkn1jakarta",
-    },
+      youtube: "https://youtube.com/@smkn1jakarta"
+    }
   };
 
   return (
@@ -286,10 +290,7 @@ export default async function MinimalistCleanPage() {
         <MinimalEvents events={eventsData} />
         <ListBasedNews news={newsData} title="Latest News" />
         <BorderlessGallery images={[]} title="Gallery" viewAllLink="/gallery" />
-        <MinimalTestimonials
-          testimonials={testimonialsData}
-          title="Apa Kata Mereka"
-        />
+        <MinimalTestimonials testimonials={testimonialsData} title="Apa Kata Mereka" />
         <MinimalCTA {...ctaData} />
         <MinimalFooter {...footerData} />
       </main>

@@ -18,29 +18,26 @@ export async function POST(request: NextRequest) {
     if (existing) {
       await db.admissionLandingSetting.update({
         where: { id: existing.id },
-        data: { 
-          heroTitle, 
+        data: {
+          heroTitle,
           heroDescription,
-          isApplyFormEnabled: isApplyFormEnabled ?? existing.isApplyFormEnabled,
-        },
+          isApplyFormEnabled: isApplyFormEnabled ?? existing.isApplyFormEnabled
+        }
       });
     } else {
       await db.admissionLandingSetting.create({
-        data: { 
-          heroTitle, 
+        data: {
+          heroTitle,
           heroDescription,
-          isApplyFormEnabled: isApplyFormEnabled ?? true,
-        },
+          isApplyFormEnabled: isApplyFormEnabled ?? true
+        }
       });
     }
 
     revalidatePath("/apply");
     revalidatePath("/admin/penerimaan-siswa/settings");
 
-    return NextResponse.json(
-      { message: "Pengaturan landing berhasil disimpan" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Pengaturan landing berhasil disimpan" }, { status: 200 });
   } catch (error) {
     console.error("Error saving landing settings:", error);
     return NextResponse.json(

@@ -160,30 +160,30 @@
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
-  
+
   @media (min-width: 640px) {
     .sm\:px-6 {
       padding-left: 1.5rem !important;
       padding-right: 1.5rem !important;
     }
   }
-  
+
   @media (min-width: 1024px) {
     .lg\:px-8 {
       padding-left: 2rem !important;
       padding-right: 2rem !important;
     }
   }
-  
+
   /* Ensure container classes work properly */
   .max-w-7xl {
     max-width: 80rem !important;
   }
-  
+
   .max-w-6xl {
     max-width: 72rem !important;
   }
-  
+
   .mx-auto {
     margin-left: auto !important;
     margin-right: auto !important;

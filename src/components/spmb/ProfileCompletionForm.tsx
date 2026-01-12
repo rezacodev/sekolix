@@ -64,7 +64,14 @@ type FormData = {
   achievements: string;
 };
 
-type SectionKey = "dataPribadi" | "dataAyah" | "dataIbu" | "dataWali" | "kontak" | "dataRincian" | "prestasi";
+type SectionKey =
+  | "dataPribadi"
+  | "dataAyah"
+  | "dataIbu"
+  | "dataWali"
+  | "kontak"
+  | "dataRincian"
+  | "prestasi";
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "dataPribadi", label: "Data Pribadi" },
@@ -73,7 +80,7 @@ const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "dataWali", label: "Data Wali" },
   { key: "kontak", label: "Kontak" },
   { key: "dataRincian", label: "Data Rincian" },
-  { key: "prestasi", label: "Prestasi" },
+  { key: "prestasi", label: "Prestasi" }
 ];
 
 // Stable, top-level input components to avoid remounts which cause focus loss
@@ -84,7 +91,7 @@ function InputField({
   required = false,
   placeholder = "",
   form,
-  onChange,
+  onChange
 }: {
   label: string;
   field: keyof FormData;
@@ -94,9 +101,7 @@ function InputField({
   form: FormData;
   onChange: (
     field: keyof FormData
-  ) => (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => void;
+  ) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }) {
   return (
     <label className="block text-sm">
@@ -122,7 +127,7 @@ function SelectField({
   options,
   required = false,
   form,
-  onChange,
+  onChange
 }: {
   label: string;
   field: keyof FormData;
@@ -131,9 +136,7 @@ function SelectField({
   form: FormData;
   onChange: (
     field: keyof FormData
-  ) => (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => void;
+  ) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }) {
   return (
     <label className="block text-sm">
@@ -148,7 +151,7 @@ function SelectField({
         className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none"
       >
         <option value="">-- Pilih --</option>
-        {options.map((opt) => (
+        {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
@@ -205,11 +208,13 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
     transportationMode: "",
     anak_ke: "",
     jumlahSaudara: "",
-    achievements: "",
+    achievements: ""
   });
 
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(
+    null
+  );
 
   // autosave removed; saving happens when user clicks the Save buttons
 
@@ -218,13 +223,15 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
     let mounted = true;
     async function load() {
       try {
-        const res = await fetch(`/api/penerimaan-siswa/spmb/applicant?applicantId=${encodeURIComponent(applicantId)}`);
+        const res = await fetch(
+          `/api/penerimaan-siswa/spmb/applicant?applicantId=${encodeURIComponent(applicantId)}`
+        );
         if (!res.ok) return;
         const payload = await res.json();
         if (!mounted) return;
         const a = payload.applicant;
         if (a) {
-          setForm((prev) => ({
+          setForm(prev => ({
             ...prev,
             fullName: prev.fullName || (a.fullName ?? "") || "",
             gender: prev.gender || (a.gender ?? "") || "",
@@ -232,7 +239,10 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
             nik: prev.nik || (a.nik ?? "") || "",
             noKK: prev.noKK || (a.noKK ?? "") || "",
             placeOfBirth: prev.placeOfBirth || (a.placeOfBirth ?? "") || "",
-            dateOfBirth: prev.dateOfBirth || (a.dateOfBirth ? new Date(a.dateOfBirth).toISOString().slice(0, 10) : "") || "",
+            dateOfBirth:
+              prev.dateOfBirth ||
+              (a.dateOfBirth ? new Date(a.dateOfBirth).toISOString().slice(0, 10) : "") ||
+              "",
             nationality: prev.nationality || (a.nationality ?? "Indonesia") || "Indonesia",
             religion: prev.religion || (a.religion ?? "") || "",
             motherTongue: prev.motherTongue || (a.motherTongue ?? "") || "",
@@ -245,21 +255,26 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
 
             fatherName: prev.fatherName || (a.fatherName ?? "") || "",
             fatherNik: prev.fatherNik || (a.fatherNik ?? "") || "",
-            fatherBirthYear: prev.fatherBirthYear || (a.fatherBirthYear ? String(a.fatherBirthYear) : "") || "",
+            fatherBirthYear:
+              prev.fatherBirthYear || (a.fatherBirthYear ? String(a.fatherBirthYear) : "") || "",
             fatherEducation: prev.fatherEducation || (a.fatherEducation ?? "") || "",
             fatherOccupation: prev.fatherOccupation || (a.fatherOccupation ?? "") || "",
             fatherIncome: prev.fatherIncome || (a.fatherIncome ?? "") || "",
 
             motherName: prev.motherName || (a.motherName ?? "") || "",
             motherNik: prev.motherNik || (a.motherNik ?? "") || "",
-            motherBirthYear: prev.motherBirthYear || (a.motherBirthYear ? String(a.motherBirthYear) : "") || "",
+            motherBirthYear:
+              prev.motherBirthYear || (a.motherBirthYear ? String(a.motherBirthYear) : "") || "",
             motherEducation: prev.motherEducation || (a.motherEducation ?? "") || "",
             motherOccupation: prev.motherOccupation || (a.motherOccupation ?? "") || "",
             motherIncome: prev.motherIncome || (a.motherIncome ?? "") || "",
 
             guardianName: prev.guardianName || (a.guardianName ?? "") || "",
             guardianNik: prev.guardianNik || (a.guardianNik ?? "") || "",
-            guardianBirthYear: prev.guardianBirthYear || (a.guardianBirthYear ? String(a.guardianBirthYear) : "") || "",
+            guardianBirthYear:
+              prev.guardianBirthYear ||
+              (a.guardianBirthYear ? String(a.guardianBirthYear) : "") ||
+              "",
             guardianEducation: prev.guardianEducation || (a.guardianEducation ?? "") || "",
             guardianOccupation: prev.guardianOccupation || (a.guardianOccupation ?? "") || "",
             guardianIncome: prev.guardianIncome || (a.guardianIncome ?? "") || "",
@@ -272,12 +287,14 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
             livesWith: prev.livesWith || (a.livesWith ?? "") || "",
             weight: prev.weight || (a.weight ? String(a.weight) : "") || "",
             height: prev.height || (a.height ? String(a.height) : "") || "",
-            distanceToSchool: prev.distanceToSchool || (a.distanceToSchool ? String(a.distanceToSchool) : "") || "",
+            distanceToSchool:
+              prev.distanceToSchool || (a.distanceToSchool ? String(a.distanceToSchool) : "") || "",
             transportationMode: prev.transportationMode || (a.transportationMode ?? "") || "",
             anak_ke: prev.anak_ke || (a.anakKe ? String(a.anakKe) : "") || "",
-            jumlahSaudara: prev.jumlahSaudara || (a.jumlahSaudara ? String(a.jumlahSaudara) : "") || "",
+            jumlahSaudara:
+              prev.jumlahSaudara || (a.jumlahSaudara ? String(a.jumlahSaudara) : "") || "",
 
-            achievements: prev.achievements || (a.achievements ?? "") || "",
+            achievements: prev.achievements || (a.achievements ?? "") || ""
           }));
         }
       } catch {
@@ -291,16 +308,16 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
   }, [applicantId]);
 
   const calculateProgress = () => {
-    const filledFields = Object.values(form).filter((value) => value !== "" && value !== null).length;
+    const filledFields = Object.values(form).filter(value => value !== "" && value !== null).length;
     const totalFields = Object.keys(form).length;
     return Math.round((filledFields / totalFields) * 100);
   };
 
-  const handleInputChange = (field: keyof FormData) => (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  };
+  const handleInputChange =
+    (field: keyof FormData) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setForm(prev => ({ ...prev, [field]: e.target.value }));
+    };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -310,14 +327,17 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
       const response = await fetch("/api/penerimaan-siswa/spmb/complete-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicantId, ...form }),
+        body: JSON.stringify({ applicantId, ...form })
       });
 
       const payload = await response.json();
       if (!response.ok) {
         setFeedback({ type: "error", message: payload.message ?? "Gagal menyimpan data." });
       } else {
-        setFeedback({ type: "success", message: payload.message ?? "Data profil berhasil disimpan." });
+        setFeedback({
+          type: "success",
+          message: payload.message ?? "Data profil berhasil disimpan."
+        });
         // keep currentStep as-is (do not reset)
       }
     } catch (error) {
@@ -345,7 +365,13 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         return (
           <div className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Nama Lengkap" field="fullName" required form={form} onChange={handleInputChange} />
+              <InputField
+                label="Nama Lengkap"
+                field="fullName"
+                required
+                form={form}
+                onChange={handleInputChange}
+              />
               <SelectField
                 label="Jenis Kelamin"
                 field="gender"
@@ -354,18 +380,49 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                 onChange={handleInputChange}
                 options={[
                   { value: "L", label: "Laki-laki" },
-                  { value: "P", label: "Perempuan" },
+                  { value: "P", label: "Perempuan" }
                 ]}
               />
-              <InputField label="NISN" field="nisn" placeholder="10 digit" form={form} onChange={handleInputChange} />
+              <InputField
+                label="NISN"
+                field="nisn"
+                placeholder="10 digit"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
-              <InputField label="NIK" field="nik" required placeholder="16 digit" form={form} onChange={handleInputChange} />
-              <InputField label="No. Kartu Keluarga" field="noKK" form={form} onChange={handleInputChange} />
+              <InputField
+                label="NIK"
+                field="nik"
+                required
+                placeholder="16 digit"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="No. Kartu Keluarga"
+                field="noKK"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Tempat Lahir" field="placeOfBirth" required form={form} onChange={handleInputChange} />
-              <InputField label="Tanggal Lahir" field="dateOfBirth" type="date" required form={form} onChange={handleInputChange} />
+              <InputField
+                label="Tempat Lahir"
+                field="placeOfBirth"
+                required
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Tanggal Lahir"
+                field="dateOfBirth"
+                type="date"
+                required
+                form={form}
+                onChange={handleInputChange}
+              />
               <SelectField
                 label="Kebangsaan"
                 field="nationality"
@@ -373,7 +430,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                 onChange={handleInputChange}
                 options={[
                   { value: "Indonesia", label: "Indonesia" },
-                  { value: "Asing", label: "Asing" },
+                  { value: "Asing", label: "Asing" }
                 ]}
               />
             </div>
@@ -390,20 +447,51 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "Katolik", label: "Katolik" },
                   { value: "Hindu", label: "Hindu" },
                   { value: "Buddha", label: "Buddha" },
-                  { value: "Konghucu", label: "Konghucu" },
+                  { value: "Konghucu", label: "Konghucu" }
                 ]}
               />
-              <InputField label="Bahasa Ibu" field="motherTongue" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Bahasa Ibu"
+                field="motherTongue"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Alamat" field="address" required form={form} onChange={handleInputChange} />
-              <InputField label="Desa/Kelurahan" field="village" form={form} onChange={handleInputChange} />
-              <InputField label="Kecamatan" field="district" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Alamat"
+                field="address"
+                required
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Desa/Kelurahan"
+                field="village"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Kecamatan"
+                field="district"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-3">
               <InputField label="Kota" field="city" form={form} onChange={handleInputChange} />
-              <InputField label="Provinsi" field="province" form={form} onChange={handleInputChange} />
-              <InputField label="Kode Pos" field="postalCode" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Provinsi"
+                field="province"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Kode Pos"
+                field="postalCode"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
         );
@@ -412,9 +500,26 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         return (
           <div className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Nama Lengkap" field="fatherName" form={form} onChange={handleInputChange} />
-              <InputField label="NIK" field="fatherNik" placeholder="16 digit" form={form} onChange={handleInputChange} />
-              <InputField label="Tahun Lahir" field="fatherBirthYear" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Nama Lengkap"
+                field="fatherName"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="NIK"
+                field="fatherNik"
+                placeholder="16 digit"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Tahun Lahir"
+                field="fatherBirthYear"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               <SelectField
@@ -428,10 +533,15 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "SMA", label: "SMA" },
                   { value: "Diploma", label: "Diploma" },
                   { value: "Sarjana", label: "Sarjana" },
-                  { value: "Pasca Sarjana", label: "Pasca Sarjana" },
+                  { value: "Pasca Sarjana", label: "Pasca Sarjana" }
                 ]}
               />
-              <InputField label="Pekerjaan" field="fatherOccupation" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Pekerjaan"
+                field="fatherOccupation"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <SelectField
               label="Penghasilan Bulanan"
@@ -443,7 +553,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                 { value: "1 - 2 juta", label: "1 - 2 juta" },
                 { value: "2 - 3 juta", label: "2 - 3 juta" },
                 { value: "3 - 5 juta", label: "3 - 5 juta" },
-                { value: "> 5 juta", label: "> 5 juta" },
+                { value: "> 5 juta", label: "> 5 juta" }
               ]}
             />
           </div>
@@ -453,9 +563,26 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         return (
           <div className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Nama Lengkap" field="motherName" form={form} onChange={handleInputChange} />
-              <InputField label="NIK" field="motherNik" placeholder="16 digit" form={form} onChange={handleInputChange} />
-              <InputField label="Tahun Lahir" field="motherBirthYear" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Nama Lengkap"
+                field="motherName"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="NIK"
+                field="motherNik"
+                placeholder="16 digit"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Tahun Lahir"
+                field="motherBirthYear"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               <SelectField
@@ -469,10 +596,15 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "SMA", label: "SMA" },
                   { value: "Diploma", label: "Diploma" },
                   { value: "Sarjana", label: "Sarjana" },
-                  { value: "Pasca Sarjana", label: "Pasca Sarjana" },
+                  { value: "Pasca Sarjana", label: "Pasca Sarjana" }
                 ]}
               />
-              <InputField label="Pekerjaan" field="motherOccupation" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Pekerjaan"
+                field="motherOccupation"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <SelectField
               label="Penghasilan Bulanan"
@@ -484,7 +616,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                 { value: "1 - 2 juta", label: "1 - 2 juta" },
                 { value: "2 - 3 juta", label: "2 - 3 juta" },
                 { value: "3 - 5 juta", label: "3 - 5 juta" },
-                { value: "> 5 juta", label: "> 5 juta" },
+                { value: "> 5 juta", label: "> 5 juta" }
               ]}
             />
           </div>
@@ -495,9 +627,26 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
           <div className="space-y-4">
             <p className="text-sm text-slate-600">Isi jika ada wali, jika tidak bisa dikosongkan</p>
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Nama Lengkap" field="guardianName" form={form} onChange={handleInputChange} />
-              <InputField label="NIK" field="guardianNik" placeholder="16 digit" form={form} onChange={handleInputChange} />
-              <InputField label="Tahun Lahir" field="guardianBirthYear" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Nama Lengkap"
+                field="guardianName"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="NIK"
+                field="guardianNik"
+                placeholder="16 digit"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Tahun Lahir"
+                field="guardianBirthYear"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               <SelectField
@@ -511,10 +660,15 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "SMA", label: "SMA" },
                   { value: "Diploma", label: "Diploma" },
                   { value: "Sarjana", label: "Sarjana" },
-                  { value: "Pasca Sarjana", label: "Pasca Sarjana" },
+                  { value: "Pasca Sarjana", label: "Pasca Sarjana" }
                 ]}
               />
-              <InputField label="Pekerjaan" field="guardianOccupation" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Pekerjaan"
+                field="guardianOccupation"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <SelectField
               label="Penghasilan Bulanan"
@@ -526,7 +680,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                 { value: "1 - 2 juta", label: "1 - 2 juta" },
                 { value: "2 - 3 juta", label: "2 - 3 juta" },
                 { value: "3 - 5 juta", label: "3 - 5 juta" },
-                { value: "> 5 juta", label: "> 5 juta" },
+                { value: "> 5 juta", label: "> 5 juta" }
               ]}
             />
           </div>
@@ -536,9 +690,29 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         return (
           <div className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-3">
-              <InputField label="Telepon Rumah" field="phone" placeholder="0212345" form={form} onChange={handleInputChange} />
-              <InputField label="Nomor HP" field="mobile" required placeholder="08123456789" form={form} onChange={handleInputChange} />
-              <InputField label="Email" field="email" type="email" placeholder="(opsional)" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Telepon Rumah"
+                field="phone"
+                placeholder="0212345"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Nomor HP"
+                field="mobile"
+                required
+                placeholder="08123456789"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Email"
+                field="email"
+                type="email"
+                placeholder="(opsional)"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
         );
@@ -556,14 +730,32 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "Orang Tua", label: "Orang Tua" },
                   { value: "Salah Satu Orang Tua", label: "Salah Satu Orang Tua" },
                   { value: "Wali", label: "Wali" },
-                  { value: "Lainnya", label: "Lainnya" },
+                  { value: "Lainnya", label: "Lainnya" }
                 ]}
               />
-              <InputField label="Berat Badan (kg)" field="weight" type="number" form={form} onChange={handleInputChange} />
-              <InputField label="Tinggi Badan (cm)" field="height" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Berat Badan (kg)"
+                field="weight"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Tinggi Badan (cm)"
+                field="height"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
-              <InputField label="Jarak ke Sekolah (km)" field="distanceToSchool" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Jarak ke Sekolah (km)"
+                field="distanceToSchool"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
               <SelectField
                 label="Moda Transportasi"
                 field="transportationMode"
@@ -574,13 +766,25 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
                   { value: "Sepeda", label: "Sepeda" },
                   { value: "Motor", label: "Motor" },
                   { value: "Mobil", label: "Mobil" },
-                  { value: "Angkutan Umum", label: "Angkutan Umum" },
+                  { value: "Angkutan Umum", label: "Angkutan Umum" }
                 ]}
               />
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
-              <InputField label="Anak ke-" field="anak_ke" type="number" form={form} onChange={handleInputChange} />
-              <InputField label="Jumlah Saudara" field="jumlahSaudara" type="number" form={form} onChange={handleInputChange} />
+              <InputField
+                label="Anak ke-"
+                field="anak_ke"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
+              <InputField
+                label="Jumlah Saudara"
+                field="jumlahSaudara"
+                type="number"
+                form={form}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
         );
@@ -589,9 +793,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         return (
           <div className="space-y-4">
             <label className="block text-sm">
-              <span className="font-semibold text-slate-800">
-                Daftar Prestasi (jika ada)
-              </span>
+              <span className="font-semibold text-slate-800">Daftar Prestasi (jika ada)</span>
               <textarea
                 value={form.achievements}
                 onChange={handleInputChange("achievements")}
@@ -624,7 +826,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
             <p className="text-xs text-slate-500">Selesai</p>
           </div>
         </div>
-        
+
         {/* Progress Bar */}
         <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
           <div
@@ -656,7 +858,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
           <div
             className="h-full bg-slate-900 transition-all duration-300"
             style={{
-              width: `${((currentStep + 1) / SECTIONS.length) * 100}%`,
+              width: `${((currentStep + 1) / SECTIONS.length) * 100}%`
             }}
           />
         </div>
@@ -687,7 +889,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
         <div className="mt-5 flex gap-2">
           <button
             type="button"
-            onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
             disabled={currentStep === 0}
             className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -714,7 +916,7 @@ export function ProfileCompletionForm({ applicantId }: { applicantId: string }) 
           ) : (
             <button
               type="button"
-              onClick={() => setCurrentStep((prev) => Math.min(SECTIONS.length - 1, prev + 1))}
+              onClick={() => setCurrentStep(prev => Math.min(SECTIONS.length - 1, prev + 1))}
               className="ml-auto inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
             >
               Selanjutnya

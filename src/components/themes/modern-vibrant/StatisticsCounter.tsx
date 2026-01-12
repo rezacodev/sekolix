@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface Statistic {
   id: string;
   value: number;
   label: string;
-  icon: 'users' | 'books' | 'awards' | 'globe';
+  icon: "users" | "books" | "awards" | "globe";
   suffix?: string;
   color: string;
 }
@@ -15,9 +15,7 @@ interface StatisticsCounterProps {
   statistics: Statistic[];
 }
 
-export default function StatisticsCounter({
-  statistics,
-}: StatisticsCounterProps) {
+export default function StatisticsCounter({ statistics }: StatisticsCounterProps) {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -40,16 +38,16 @@ export default function StatisticsCounter({
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'users':
-        return '👨‍🎓';
-      case 'books':
-        return '👨‍🏫';
-      case 'awards':
-        return '🎯';
-      case 'globe':
-        return '✨';
+      case "users":
+        return "👨‍🎓";
+      case "books":
+        return "👨‍🏫";
+      case "awards":
+        return "🎯";
+      case "globe":
+        return "✨";
       default:
-        return '👨‍🎓';
+        return "👨‍🎓";
     }
   };
 
@@ -60,7 +58,7 @@ export default function StatisticsCounter({
     >
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-linear-to-br from-cyan-50 to-purple-50 opacity-50"></div>
-      
+
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {statistics.map((stat, index) => (
@@ -82,7 +80,7 @@ function StatCard({
   stat,
   isVisible,
   delay,
-  getIcon,
+  getIcon
 }: {
   stat: Statistic;
   isVisible: boolean;
@@ -125,8 +123,8 @@ function StatCard({
       {/* Icon with gradient background */}
       <div
         className="w-24 h-24 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl pulse-ring"
-        style={{ 
-          background: `linear-gradient(135deg, ${stat.color} 0%, ${stat.color}dd 100%)`,
+        style={{
+          background: `linear-gradient(135deg, ${stat.color} 0%, ${stat.color}dd 100%)`
         }}
       >
         <span className="text-white text-5xl">{getIcon(stat.icon)}</span>

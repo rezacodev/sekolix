@@ -18,8 +18,8 @@ async function createProgram(formData: FormData) {
       name,
       code,
       description,
-      isActive: true,
-    },
+      isActive: true
+    }
   });
 
   revalidatePath("/admin/penerimaan-siswa/programs");
@@ -35,7 +35,7 @@ async function toggleProgramState(formData: FormData) {
 
   await db.program.update({
     where: { id: programId },
-    data: { isActive: action === "activate" },
+    data: { isActive: action === "activate" }
   });
 
   revalidatePath("/admin/penerimaan-siswa/programs");
@@ -43,7 +43,7 @@ async function toggleProgramState(formData: FormData) {
 
 export default async function AdmissionsProgramPage() {
   const programs = await db.program.findMany({
-    orderBy: { name: "asc" },
+    orderBy: { name: "asc" }
   });
 
   return (
@@ -51,7 +51,9 @@ export default async function AdmissionsProgramPage() {
       <header className="space-y-2">
         <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">Penerimaan Siswa</p>
         <h1 className="text-3xl font-semibold text-foreground">Program Penerimaan</h1>
-        <p className="text-sm text-muted-foreground">Tambah dan aktifkan program yang bisa dipilih siswa saat mendaftar.</p>
+        <p className="text-sm text-muted-foreground">
+          Tambah dan aktifkan program yang bisa dipilih siswa saat mendaftar.
+        </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -64,16 +66,25 @@ export default async function AdmissionsProgramPage() {
             {programs.length === 0 ? (
               <p className="text-sm text-muted-foreground">Belum ada program yang terdaftar.</p>
             ) : (
-              programs.map((program) => (
-                <div key={program.id} className="rounded-2xl border border-card bg-card p-4 shadow-sm">
+              programs.map(program => (
+                <div
+                  key={program.id}
+                  className="rounded-2xl border border-card bg-card p-4 shadow-sm"
+                >
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-base font-semibold text-foreground">{program.name}</p>
-                      <p className="text-xs text-muted-foreground">{program.code ?? "Tanpa kode"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {program.code ?? "Tanpa kode"}
+                      </p>
                     </div>
                     <form action={toggleProgramState} className="text-right">
                       <input type="hidden" name="programId" value={program.id} />
-                      <input type="hidden" name="action" value={program.isActive ? "deactivate" : "activate"} />
+                      <input
+                        type="hidden"
+                        name="action"
+                        value={program.isActive ? "deactivate" : "activate"}
+                      />
                       <button
                         type="submit"
                         className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
@@ -86,7 +97,9 @@ export default async function AdmissionsProgramPage() {
                       </button>
                     </form>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{program.description ?? "Belum ada deskripsi."}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {program.description ?? "Belum ada deskripsi."}
+                  </p>
                 </div>
               ))
             )}

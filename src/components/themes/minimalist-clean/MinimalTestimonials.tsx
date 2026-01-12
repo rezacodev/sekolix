@@ -20,7 +20,7 @@ interface MinimalTestimonialsProps {
 export default function MinimalTestimonials({
   testimonials,
   badge = "Testimoni",
-  title,
+  title
 }: MinimalTestimonialsProps) {
   return (
     <section className="py-20 md:py-32 bg-neutral-50">
@@ -33,7 +33,7 @@ export default function MinimalTestimonials({
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-          {testimonials.map((testimonial) => (
+          {testimonials.map(testimonial => (
             <div key={testimonial.id}>
               <div className="quote-minimal mb-6">
                 <p className="text-lg leading-relaxed">{testimonial.quote}</p>
@@ -49,9 +49,7 @@ export default function MinimalTestimonials({
                 </div>
                 <div>
                   <div className="font-bold">{testimonial.name}</div>
-                  <div className="text-sm text-neutral-600">
-                    {testimonial.role}
-                  </div>
+                  <div className="text-sm text-neutral-600">{testimonial.role}</div>
                 </div>
               </div>
             </div>

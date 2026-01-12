@@ -25,19 +25,16 @@ export async function GET(request: NextRequest) {
     const payments = await db.applicantPayment.findMany({
       where: whereClause,
       include: {
-        applicant: true,
+        applicant: true
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 100
     });
 
     return NextResponse.json(payments);
   } catch (error) {
     console.error("Error fetching payments:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch payments" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch payments" }, { status: 500 });
   }
 }
 
@@ -63,8 +60,8 @@ export async function POST(request: Request) {
         amount: Number(amount),
         method: method ?? "manual",
         proofUrl: proofUrl ?? null,
-        notes: notes ?? null,
-      },
+        notes: notes ?? null
+      }
     });
 
     return NextResponse.json(payment);

@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Calendar } from 'lucide-react';
+import { Clock, MapPin, Calendar } from "lucide-react";
 
 interface CalendarEvent {
   id: string;
@@ -26,7 +26,7 @@ const categoryStyles = {
   sports: { bg: "bg-green-500", text: "text-green-500", label: "Sports" },
   cultural: { bg: "bg-purple-500", text: "text-purple-500", label: "Cultural" },
   holiday: { bg: "bg-red-500", text: "text-red-500", label: "Holiday" },
-  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" },
+  other: { bg: "bg-gray-500", text: "text-gray-500", label: "Other" }
 };
 
 export function EventsSection({
@@ -41,7 +41,7 @@ export function EventsSection({
       day: "numeric",
       month: "short",
       year: "numeric",
-      weekday: "short",
+      weekday: "short"
     });
 
     const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, part) => {
@@ -55,7 +55,7 @@ export function EventsSection({
       day: parts.day || date.getDate().toString(),
       month: parts.month || date.toLocaleDateString("id-ID", { month: "short" }),
       year: parts.year || date.getFullYear().toString(),
-      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" }),
+      weekday: parts.weekday || date.toLocaleDateString("id-ID", { weekday: "short" })
     };
   };
 
@@ -76,9 +76,7 @@ export function EventsSection({
           <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
             {title}
           </h2>
-          <p className="text-gray-600 text-xl max-w-2xl mx-auto mb-8">
-            {subtitle}
-          </p>
+          <p className="text-gray-600 text-xl max-w-2xl mx-auto mb-8">{subtitle}</p>
           <div className="flex justify-center gap-4">
             <a
               href={viewAllLink}
@@ -92,7 +90,7 @@ export function EventsSection({
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedEvents.map((event) => {
+          {sortedEvents.map(event => {
             const dateInfo = formatDate(event.date);
             const categoryStyle = categoryStyles[event.category];
 
@@ -124,9 +122,7 @@ export function EventsSection({
 
                     {/* Description */}
                     {event.description && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
                     )}
 
                     {/* Time & Location */}

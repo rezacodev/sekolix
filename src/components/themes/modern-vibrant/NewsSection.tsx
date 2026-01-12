@@ -25,7 +25,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
       Prestasi: "from-yellow-400 to-orange-500",
       Kegiatan: "from-cyan-400 to-blue-500",
       Pengumuman: "from-purple-400 to-pink-500",
-      Info: "from-cyan-400 to-purple-500",
+      Info: "from-cyan-400 to-purple-500"
     };
     return colors[category] || "from-gray-400 to-gray-500";
   };
@@ -48,8 +48,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
             Kabar Terbaru
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Update terkini seputar kegiatan, prestasi, dan pengumuman penting
-            dari sekolah
+            Update terkini seputar kegiatan, prestasi, dan pengumuman penting dari sekolah
           </p>
         </div>
 

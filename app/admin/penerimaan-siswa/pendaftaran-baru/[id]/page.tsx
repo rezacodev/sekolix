@@ -5,20 +5,16 @@ import { ApplicantStatusForm } from "@/components/admin/applicant/ApplicantStatu
 import { ClientBreadcrumb } from "../../../ClientBreadcrumb";
 import { formatRupiah } from "@/lib/utils/currency";
 
-export default async function ApplicantDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
-}) {
+export default async function ApplicantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
   const applicant = await db.applicant.findUnique({
     where: { id },
     include: {
       program: true,
       payments: { orderBy: { createdAt: "desc" }, take: 5 },
-      validations: { orderBy: { createdAt: "desc" }, take: 5 },
-    },
+      validations: { orderBy: { createdAt: "desc" }, take: 5 }
+    }
   });
 
   if (!applicant) {
@@ -27,11 +23,11 @@ export default async function ApplicantDetailPage({
 
   return (
     <>
-      <ClientBreadcrumb 
+      <ClientBreadcrumb
         breadcrumbs={[
           { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
           { label: "Pendaftaran Baru", href: "/admin/penerimaan-siswa/pendaftaran-baru" },
-          { label: applicant.fullName || "Detail Pendaftar" },
+          { label: applicant.fullName || "Detail Pendaftar" }
         ]}
       />
       <div className="space-y-8 p-6">
@@ -52,18 +48,36 @@ export default async function ApplicantDetailPage({
               <div className="rounded-2xl border border-card bg-muted px-4 py-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Status Kelengkapan</span>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    (applicant as Record<string, unknown>).profileCompleted
-                      ? "bg-success text-success-foreground"
-                      : "bg-accent text-accent-foreground"
-                  }`}>
-                    {(applicant as Record<string, unknown>).profileCompleted ? "Lengkap" : "Belum Lengkap"}
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      (applicant as Record<string, unknown>).profileCompleted
+                        ? "bg-success text-success-foreground"
+                        : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    {(applicant as Record<string, unknown>).profileCompleted
+                      ? "Lengkap"
+                      : "Belum Lengkap"}
                   </span>
                 </div>
               </div>
 
               {/* Data Pribadi */}
-              {(Boolean(applicant.address) || Boolean(applicant.nationality) || Boolean(applicant.religion) || Boolean((applicant as Record<string, unknown>).motherTongue) || Boolean((applicant as Record<string, unknown>).village) || Boolean((applicant as Record<string, unknown>).district) || Boolean((applicant as Record<string, unknown>).city) || Boolean((applicant as Record<string, unknown>).province) || Boolean(applicant.email) || Boolean(applicant.schoolOrigin) || Boolean(applicant.gender) || Boolean(applicant.dateOfBirth) || Boolean(applicant.placeOfBirth) || Boolean(applicant.nisn) || Boolean(applicant.noKK)) ? (
+              {Boolean(applicant.address) ||
+              Boolean(applicant.nationality) ||
+              Boolean(applicant.religion) ||
+              Boolean((applicant as Record<string, unknown>).motherTongue) ||
+              Boolean((applicant as Record<string, unknown>).village) ||
+              Boolean((applicant as Record<string, unknown>).district) ||
+              Boolean((applicant as Record<string, unknown>).city) ||
+              Boolean((applicant as Record<string, unknown>).province) ||
+              Boolean(applicant.email) ||
+              Boolean(applicant.schoolOrigin) ||
+              Boolean(applicant.gender) ||
+              Boolean(applicant.dateOfBirth) ||
+              Boolean(applicant.placeOfBirth) ||
+              Boolean(applicant.nisn) ||
+              Boolean(applicant.noKK) ? (
                 <div className="rounded-2xl border border-card p-4 bg-card">
                   <h4 className="text-sm font-semibold text-foreground mb-3">Data Pribadi</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -82,13 +96,18 @@ export default async function ApplicantDetailPage({
                     {applicant.gender ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Jenis Kelamin</div>
-                        <div className="text-foreground font-medium">{String(applicant.gender).charAt(0).toUpperCase() + String(applicant.gender).slice(1)}</div>
+                        <div className="text-foreground font-medium">
+                          {String(applicant.gender).charAt(0).toUpperCase() +
+                            String(applicant.gender).slice(1)}
+                        </div>
                       </div>
                     ) : null}
                     {applicant.dateOfBirth ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Tanggal Lahir</div>
-                        <div className="text-foreground font-medium">{applicant.dateOfBirth.toLocaleDateString('id-ID', { dateStyle: 'long' })}</div>
+                        <div className="text-foreground font-medium">
+                          {applicant.dateOfBirth.toLocaleDateString("id-ID", { dateStyle: "long" })}
+                        </div>
                       </div>
                     ) : null}
                     {applicant.placeOfBirth ? (
@@ -124,25 +143,33 @@ export default async function ApplicantDetailPage({
                     {(applicant as Record<string, unknown>).village ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Desa/Kel</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).village)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).village)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).district ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Kecamatan</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).district)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).district)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).city ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Kota</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).city)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).city)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).province ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Provinsi</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).province)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).province)}
+                        </div>
                       </div>
                     ) : null}
                     {applicant.nationality ? (
@@ -160,7 +187,9 @@ export default async function ApplicantDetailPage({
                     {(applicant as Record<string, unknown>).motherTongue ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Bahasa Ibu</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherTongue)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).motherTongue)}
+                        </div>
                       </div>
                     ) : null}
                   </div>
@@ -168,7 +197,12 @@ export default async function ApplicantDetailPage({
               ) : null}
 
               {/* Data Orang Tua */}
-              {(Boolean((applicant as Record<string, unknown>).fatherName) || Boolean((applicant as Record<string, unknown>).motherName) || Boolean((applicant as Record<string, unknown>).fatherOccupation) || Boolean((applicant as Record<string, unknown>).motherOccupation) || Boolean((applicant as Record<string, unknown>).fatherNik) || Boolean((applicant as Record<string, unknown>).motherNik)) ? (
+              {Boolean((applicant as Record<string, unknown>).fatherName) ||
+              Boolean((applicant as Record<string, unknown>).motherName) ||
+              Boolean((applicant as Record<string, unknown>).fatherOccupation) ||
+              Boolean((applicant as Record<string, unknown>).motherOccupation) ||
+              Boolean((applicant as Record<string, unknown>).fatherNik) ||
+              Boolean((applicant as Record<string, unknown>).motherNik) ? (
                 <div className="rounded-2xl border border-card p-4 bg-card">
                   <h4 className="text-sm font-semibold text-foreground mb-3">Data Orang Tua</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -178,31 +212,41 @@ export default async function ApplicantDetailPage({
                         {(applicant as Record<string, unknown>).fatherName ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Nama</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).fatherName)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).fatherName)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).fatherNik ? (
                           <div>
                             <div className="text-xs text-muted-foreground">NIK</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).fatherNik)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).fatherNik)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).fatherOccupation ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Pekerjaan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).fatherOccupation)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).fatherOccupation)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).fatherEducation ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Pendidikan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).fatherEducation)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).fatherEducation)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).fatherIncome ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Penghasilan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).fatherIncome)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).fatherIncome)}
+                            </div>
                           </div>
                         ) : null}
                       </div>
@@ -214,31 +258,41 @@ export default async function ApplicantDetailPage({
                         {(applicant as Record<string, unknown>).motherName ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Nama</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherName)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).motherName)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).motherNik ? (
                           <div>
                             <div className="text-xs text-muted-foreground">NIK</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherNik)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).motherNik)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).motherOccupation ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Pekerjaan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherOccupation)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).motherOccupation)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).motherEducation ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Pendidikan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherEducation)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).motherEducation)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).motherIncome ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Penghasilan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).motherIncome)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).motherIncome)}
+                            </div>
                           </div>
                         ) : null}
                       </div>
@@ -252,19 +306,25 @@ export default async function ApplicantDetailPage({
                         {(applicant as Record<string, unknown>).guardianName ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Nama</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).guardianName)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).guardianName)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).guardianNik ? (
                           <div>
                             <div className="text-xs text-muted-foreground">NIK</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).guardianNik)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).guardianNik)}
+                            </div>
                           </div>
                         ) : null}
                         {(applicant as Record<string, unknown>).guardianOccupation ? (
                           <div>
                             <div className="text-xs text-muted-foreground">Pekerjaan</div>
-                            <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).guardianOccupation)}</div>
+                            <div className="text-foreground font-medium">
+                              {String((applicant as Record<string, unknown>).guardianOccupation)}
+                            </div>
                           </div>
                         ) : null}
                       </div>
@@ -274,14 +334,18 @@ export default async function ApplicantDetailPage({
               ) : null}
 
               {/* Kontak Lengkap */}
-              {(Boolean((applicant as Record<string, unknown>).mobile) || Boolean(applicant.phone) || Boolean(applicant.email)) ? (
+              {Boolean((applicant as Record<string, unknown>).mobile) ||
+              Boolean(applicant.phone) ||
+              Boolean(applicant.email) ? (
                 <div className="rounded-2xl border border-card p-4 bg-card">
                   <h4 className="text-sm font-semibold text-foreground mb-3">Kontak Lengkap</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     {(applicant as Record<string, unknown>).mobile ? (
                       <div>
                         <div className="text-xs text-muted-foreground">HP</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).mobile)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).mobile)}
+                        </div>
                       </div>
                     ) : null}
                     {applicant.phone ? (
@@ -301,50 +365,70 @@ export default async function ApplicantDetailPage({
               ) : null}
 
               {/* Data Rincian */}
-              {(Boolean((applicant as Record<string, unknown>).weight) || Boolean((applicant as Record<string, unknown>).height) || Boolean((applicant as Record<string, unknown>).livesWith) || Boolean((applicant as Record<string, unknown>).transportationMode) || Boolean((applicant as Record<string, unknown>).anakKe) || Boolean((applicant as Record<string, unknown>).jumlahSaudara) || Boolean((applicant as Record<string, unknown>).distanceToSchool)) ? (
+              {Boolean((applicant as Record<string, unknown>).weight) ||
+              Boolean((applicant as Record<string, unknown>).height) ||
+              Boolean((applicant as Record<string, unknown>).livesWith) ||
+              Boolean((applicant as Record<string, unknown>).transportationMode) ||
+              Boolean((applicant as Record<string, unknown>).anakKe) ||
+              Boolean((applicant as Record<string, unknown>).jumlahSaudara) ||
+              Boolean((applicant as Record<string, unknown>).distanceToSchool) ? (
                 <div className="rounded-2xl border border-card p-4 bg-card">
                   <h4 className="text-sm font-semibold text-foreground mb-3">Data Rincian</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     {(applicant as Record<string, unknown>).weight ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Berat Badan</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).weight)} kg</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).weight)} kg
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).height ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Tinggi Badan</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).height)} cm</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).height)} cm
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).livesWith ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Tinggal Bersama</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).livesWith)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).livesWith)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).transportationMode ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Moda Transportasi</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).transportationMode)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).transportationMode)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).anakKe ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Anak ke-</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).anakKe)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).anakKe)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).jumlahSaudara ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Jumlah Saudara</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).jumlahSaudara)}</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).jumlahSaudara)}
+                        </div>
                       </div>
                     ) : null}
                     {(applicant as Record<string, unknown>).distanceToSchool ? (
                       <div>
                         <div className="text-xs text-muted-foreground">Jarak ke Sekolah</div>
-                        <div className="text-foreground font-medium">{String((applicant as Record<string, unknown>).distanceToSchool)} km</div>
+                        <div className="text-foreground font-medium">
+                          {String((applicant as Record<string, unknown>).distanceToSchool)} km
+                        </div>
                       </div>
                     ) : null}
                   </div>
@@ -355,7 +439,9 @@ export default async function ApplicantDetailPage({
               {(applicant as Record<string, unknown>).achievements ? (
                 <div className="rounded-2xl border border-card p-4 bg-card">
                   <h4 className="text-sm font-semibold text-foreground mb-2">Prestasi</h4>
-                  <p className="text-sm text-muted-foreground">{String((applicant as Record<string, unknown>).achievements)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {String((applicant as Record<string, unknown>).achievements)}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -368,13 +454,21 @@ export default async function ApplicantDetailPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-xl border border-card p-3">
                   <div className="text-xs text-muted-foreground">Program</div>
-                  <div className="mt-1 font-semibold text-foreground">{applicant.program?.name ?? applicant.programChoice ?? '-'}</div>
+                  <div className="mt-1 font-semibold text-foreground">
+                    {applicant.program?.name ?? applicant.programChoice ?? "-"}
+                  </div>
                 </div>
                 <div className="rounded-xl border border-card p-3">
                   <div className="text-xs text-muted-foreground">Status</div>
-                  <div className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-sm font-semibold ${
-                    applicant.status === 'accepted' ? 'bg-success text-success-foreground' : 'bg-accent text-accent-foreground'
-                  }`}>{String(applicant.status ?? '').toUpperCase() || '-'}</div>
+                  <div
+                    className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-sm font-semibold ${
+                      applicant.status === "accepted"
+                        ? "bg-success text-success-foreground"
+                        : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    {String(applicant.status ?? "").toUpperCase() || "-"}
+                  </div>
                 </div>
               </div>
             </section>
@@ -395,18 +489,34 @@ export default async function ApplicantDetailPage({
             <section className="rounded-3xl border border-card bg-card p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h3 className="text-md font-semibold text-foreground">Pembayaran terakhir</h3>
-                <Link href="/admin/penerimaan-siswa/pembayaran" className="text-sm font-medium text-success hover:text-success-foreground">Lihat semua</Link>
+                <Link
+                  href="/admin/penerimaan-siswa/pembayaran"
+                  className="text-sm font-medium text-success hover:text-success-foreground"
+                >
+                  Lihat semua
+                </Link>
               </div>
               {applicant.payments.length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">Belum ada pembayaran.</p>
               ) : (
                 <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                  {applicant.payments.map((payment) => (
-                    <div key={payment.id} className="rounded-xl border border-card bg-card px-4 py-3">
-                      <p className="font-semibold text-foreground">{formatRupiah(payment.amount)}</p>
-                      <p className="text-muted-foreground">Status: <span className="text-foreground">{payment.status}</span></p>
-                      <p className="text-muted-foreground">Metode: <span className="text-foreground">{payment.method}</span></p>
-                      <p className="text-xs text-muted-foreground">{payment.createdAt.toLocaleDateString("id-ID", { dateStyle: "medium" })}</p>
+                  {applicant.payments.map(payment => (
+                    <div
+                      key={payment.id}
+                      className="rounded-xl border border-card bg-card px-4 py-3"
+                    >
+                      <p className="font-semibold text-foreground">
+                        {formatRupiah(payment.amount)}
+                      </p>
+                      <p className="text-muted-foreground">
+                        Status: <span className="text-foreground">{payment.status}</span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        Metode: <span className="text-foreground">{payment.method}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {payment.createdAt.toLocaleDateString("id-ID", { dateStyle: "medium" })}
+                      </p>
                     </div>
                   ))}
                 </div>
