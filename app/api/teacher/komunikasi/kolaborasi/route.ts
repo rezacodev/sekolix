@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         ...(search
           ? {
               OR: [
-                { fullName: { contains: search, mode: "insensitive" } },
+                { name: { contains: search, mode: "insensitive" } },
                 { nip: { contains: search, mode: "insensitive" } },
               ],
             }
@@ -35,14 +35,14 @@ export async function GET(request: Request) {
       },
       select: {
         id: true,
-        fullName: true,
+        name: true,
         nip: true,
         gtkPosition: true,
         jabatanPTK: true,
         email: true,
-        mobile: true,
+        phone: true,
       },
-      orderBy: { fullName: "asc" },
+      orderBy: { name: "asc" },
     });
 
     // Get unread message counts from each staff member
@@ -61,11 +61,11 @@ export async function GET(request: Request) {
 
     const teachers = staff.map((s) => ({
       id: s.id,
-      fullName: s.fullName,
+      fullName: s.name,
       nip: s.nip ?? "",
       position: s.jabatanPTK ?? s.gtkPosition ?? "",
       email: s.email ?? null,
-      mobile: s.mobile ?? null,
+      mobile: s.phone ?? null,
       unread: unreadMap.get(s.id) ?? 0,
     }));
 

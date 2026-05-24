@@ -83,7 +83,8 @@ export async function POST(request: Request) {
     // Parse Excel
     const buffer = Buffer.from(await file.arrayBuffer());
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await workbook.xlsx.load(buffer as any);
     const sheet = workbook.worksheets[0];
     if (!sheet) return NextResponse.json({ error: "Sheet tidak ditemukan di file Excel" }, { status: 400 });
 
@@ -185,8 +186,8 @@ export async function POST(request: Request) {
       preview.push({
         row: r,
         studentId: student?.id ?? null,
-        studentName: nameRaw || student?.fullName ?? "",
-        nisn: nisnRaw || student?.nisn ?? "",
+        studentName: nameRaw || (student?.fullName ?? ""),
+        nisn: nisnRaw || (student?.nisn ?? ""),
         found: !!student,
         scores,
         errors: rowErrors,

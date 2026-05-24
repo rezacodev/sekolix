@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       prisma.teachingMaterial.findMany({
         where,
         include: {
-          teacher: { select: { id: true, fullName: true } },
+          teacher: { select: { id: true, name: true } },
           subject: { select: { id: true, name: true } },
         },
         orderBy: { created_at: "desc" },
@@ -62,11 +62,11 @@ export async function GET(request: Request) {
       id: String(m.id),
       title: m.title,
       description: m.description ?? null,
-      fileUrl: m.fileUrl ?? null,
-      fileType: m.fileType ?? null,
+      fileUrl: m.file_url ?? null,
+      fileType: m.file_type ?? null,
       is_shared: m.is_shared,
       isMine: m.teacher_id === staffId,
-      teacher: { id: m.teacher.id, name: m.teacher.fullName },
+      teacher: { id: m.teacher.id, name: m.teacher.name },
       subject: m.subject ? { id: String(m.subject.id), name: m.subject.name } : null,
       created_at: m.created_at.toISOString(),
     }));

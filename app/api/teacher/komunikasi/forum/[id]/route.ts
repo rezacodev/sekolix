@@ -45,9 +45,9 @@ export async function GET(_req: Request, { params }: Params) {
     const teacherIds = [...new Set(teacherReplies.map((r) => r.author_id))];
     const teachers = await prisma.staff.findMany({
       where: { id: { in: teacherIds } },
-      select: { id: true, fullName: true },
+      select: { id: true, name: true },
     });
-    const teacherMap = new Map(teachers.map((t) => [t.id, t.fullName]));
+    const teacherMap = new Map(teachers.map((t) => [t.id, t.name]));
 
     return NextResponse.json({
       id: String(discussion.id),

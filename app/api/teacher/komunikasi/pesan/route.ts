@@ -74,7 +74,7 @@ export async function GET(request: Request) {
 
     const teachers = await prisma.staff.findMany({
       where: { id: { in: teacherIds } },
-      select: { id: true, fullName: true, gtkPosition: true },
+      select: { id: true, name: true, gtkPosition: true },
     });
     const teacherMap = new Map(teachers.map((t) => [t.id, t]));
 
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
       .map((conv) => {
         let partnerName = conv.partnerId;
         if (conv.partnerType === "TEACHER") {
-          partnerName = teacherMap.get(conv.partnerId)?.fullName ?? conv.partnerId;
+          partnerName = teacherMap.get(conv.partnerId)?.name ?? conv.partnerId;
         }
         return { ...conv, partnerName };
       })

@@ -44,12 +44,12 @@ export async function GET(_req: Request, { params }: Params) {
     // Get partner info
     const partner = await prisma.staff.findFirst({
       where: { id: partnerId },
-      select: { id: true, fullName: true, gtkPosition: true, jabatanPTK: true },
+      select: { id: true, name: true, gtkPosition: true, jabatanPTK: true },
     });
 
     return NextResponse.json({
       partner: partner
-        ? { id: partner.id, name: partner.fullName, position: partner.jabatanPTK ?? partner.gtkPosition ?? "" }
+        ? { id: partner.id, name: partner.name, position: partner.jabatanPTK ?? partner.gtkPosition ?? "" }
         : { id: partnerId, name: partnerId, position: "" },
       messages: messages.map((m) => ({
         id: String(m.id),
