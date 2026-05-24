@@ -1,0 +1,1 @@
+export { seedLandingPage } from './landing-page.seed';

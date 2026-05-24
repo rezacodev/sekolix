@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 const createSchema = z.object({
   class_id: z.number().int(),
   rombel_id: z.number().int().optional(),
-  subject_id: z.number().int(),
-  teacher_id: z.string(),
+  teacher_subject_id: z.number().int(),
   day: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]),
-  start_time: z.string(), // Format: HH:mm
-  end_time: z.string(), // Format: HH:mm
+  period: z.number().int().optional(),
+  start_time: z.string().optional(), // Format: HH:mm
+  end_time: z.string().optional(), // Format: HH:mm
   room: z.string().optional()
 });
 
@@ -55,10 +55,14 @@ export async function GET(request: NextRequest) {
         class: {
           select: { id: true, name: true }
         },
-        subject: {
-          select: { id: true, name: true, code: true }
-        },
-        teacher: { select: { id: true, name: true, nip: true } }
+        teacherSubject: {
+          include: {
+            subject: {
+              select: { id: true, name: true, code: true, is_practice: true }
+            },
+            teacher: { select: { id: true, name: true, nip: true, email: true } }
+          }
+        }
       },
       orderBy: [{ day: "asc" }, { start_time: "asc" }],
       skip: page * pageSize,
@@ -72,16 +76,25 @@ export async function GET(request: NextRequest) {
     ...item,
     id: Number(item.id),
     class_id: Number(item.class_id),
-    subject_id: Number(item.subject_id),
-    start_time: item.start_time.toISOString().substring(11, 16), // HH:mm format
-    end_time: item.end_time.toISOString().substring(11, 16), // HH:mm format
+    teacher_subject_id: Number(item.teacher_subject_id),
+    start_time: item.start_time?.toISOString().substring(11, 16), // HH:mm format
+    end_time: item.end_time?.toISOString().substring(11, 16), // HH:mm format
     class: {
       ...item.class,
       id: Number(item.class.id)
     },
-    subject: {
-      ...item.subject,
-      id: Number(item.subject.id)
+    teacherSubject: {
+      ...item.teacherSubject,
+      id: Number(item.teacherSubject.id),
+      subject_id: Number(item.teacherSubject.subject_id),
+      subject: {
+        ...item.teacherSubject.subject,
+        id: Number(item.teacherSubject.subject.id)
+      },
+      teacher: item.teacherSubject.teacher ? {
+        ...item.teacherSubject.teacher,
+        id: item.teacherSubject.teacher.id
+      } : null
     }
   }));
 
@@ -93,47 +106,57 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createSchema.parse(body);
 
-    // Validate time format and logic
-    const startTime = new Date(`1970-01-01T${validated.start_time}:00`);
-    const endTime = new Date(`1970-01-01T${validated.end_time}:00`);
+    // Validate time format and logic if both times are provided
+    let startTime: Date | undefined;
+    let endTime: Date | undefined;
+    
+    if (validated.start_time) {
+      startTime = new Date(`1970-01-01T${validated.start_time}:00`);
+    }
+    if (validated.end_time) {
+      endTime = new Date(`1970-01-01T${validated.end_time}:00`);
+    }
 
-    if (startTime >= endTime) {
+    if (startTime && endTime && startTime >= endTime) {
       return NextResponse.json({ error: "Start time must be before end time" }, { status: 400 });
     }
 
-    // Check for scheduling conflicts
-    const conflict = await prisma.classSchedule.findFirst({
-      where: {
-        class_id: BigInt(validated.class_id),
-        day: validated.day,
-        deleted_at: null,
-        OR: [
-          {
-            AND: [{ start_time: { lte: startTime } }, { end_time: { gt: startTime } }]
-          },
-          {
-            AND: [{ start_time: { lt: endTime } }, { end_time: { gte: endTime } }]
-          },
-          {
-            AND: [{ start_time: { gte: startTime } }, { end_time: { lte: endTime } }]
-          }
-        ]
-      }
-    });
+    // Check for scheduling conflicts only if times are provided
+    if (startTime && endTime) {
+      const conflict = await prisma.classSchedule.findFirst({
+        where: {
+          class_id: BigInt(validated.class_id),
+          day: validated.day,
+          deleted_at: null,
+          OR: [
+            {
+              AND: [{ start_time: { lte: startTime } }, { end_time: { gt: startTime } }]
+            },
+            {
+              AND: [{ start_time: { lt: endTime } }, { end_time: { gte: endTime } }]
+            },
+            {
+              AND: [{ start_time: { gte: startTime } }, { end_time: { lte: endTime } }]
+            }
+          ]
+        }
+      });
 
-    if (conflict) {
-      return NextResponse.json(
-        { error: "Schedule conflict detected for this class and time slot" },
-        { status: 400 }
-      );
+      if (conflict) {
+        return NextResponse.json(
+          { error: "Schedule conflict detected for this class and time slot" },
+          { status: 400 }
+        );
+      }
     }
 
     const classSchedule = await prisma.classSchedule.create({
       data: {
         class_id: BigInt(validated.class_id),
-        subject_id: BigInt(validated.subject_id),
-        teacher_id: validated.teacher_id,
+        rombel_id: validated.rombel_id ? BigInt(validated.rombel_id) : null,
+        teacher_subject_id: BigInt(validated.teacher_subject_id),
         day: validated.day,
+        period: validated.period,
         start_time: startTime,
         end_time: endTime,
         room: validated.room
@@ -142,10 +165,14 @@ export async function POST(request: NextRequest) {
         class: {
           select: { id: true, name: true }
         },
-        subject: {
-          select: { id: true, name: true, code: true }
-        },
-        teacher: { select: { id: true, name: true, nip: true } }
+        teacherSubject: {
+          include: {
+            subject: {
+              select: { id: true, name: true, code: true, is_practice: true }
+            },
+            teacher: { select: { id: true, name: true, nip: true, email: true } }
+          }
+        }
       }
     });
 
@@ -154,16 +181,26 @@ export async function POST(request: NextRequest) {
       ...classSchedule,
       id: Number(classSchedule.id),
       class_id: Number(classSchedule.class_id),
-      subject_id: Number(classSchedule.subject_id),
-      start_time: classSchedule.start_time.toISOString().substring(11, 16),
-      end_time: classSchedule.end_time.toISOString().substring(11, 16),
+      rombel_id: classSchedule.rombel_id ? Number(classSchedule.rombel_id) : null,
+      teacher_subject_id: Number(classSchedule.teacher_subject_id),
+      start_time: classSchedule.start_time?.toISOString().substring(11, 16),
+      end_time: classSchedule.end_time?.toISOString().substring(11, 16),
       class: {
         ...classSchedule.class,
         id: Number(classSchedule.class.id)
       },
-      subject: {
-        ...classSchedule.subject,
-        id: Number(classSchedule.subject.id)
+      teacherSubject: {
+        ...classSchedule.teacherSubject,
+        id: Number(classSchedule.teacherSubject.id),
+        subject_id: Number(classSchedule.teacherSubject.subject_id),
+        subject: {
+          ...classSchedule.teacherSubject.subject,
+          id: Number(classSchedule.teacherSubject.subject.id)
+        },
+        teacher: classSchedule.teacherSubject.teacher ? {
+          ...classSchedule.teacherSubject.teacher,
+          id: classSchedule.teacherSubject.teacher.id
+        } : null
       }
     };
 

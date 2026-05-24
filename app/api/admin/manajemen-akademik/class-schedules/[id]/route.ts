@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 const updateSchema = z.object({
   class_id: z.number().int().optional(),
-  subject_id: z.number().int().optional(),
-  teacher_id: z.string().optional(),
+  teacher_subject_id: z.number().int().optional(),
   day: z
     .enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"])
     .optional(),
@@ -25,10 +24,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         class: {
           select: { id: true, name: true }
         },
-        subject: {
-          select: { id: true, name: true, code: true, is_practice: true }
-        },
-        teacher: { select: { id: true, name: true, nip: true, email: true } }
+        teacherSubject: {
+          include: {
+            subject: {
+              select: { id: true, name: true, code: true, is_practice: true }
+            },
+            teacher: { select: { id: true, name: true, nip: true, email: true } }
+          }
+        }
       }
     });
 
@@ -41,16 +44,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ...classSchedule,
       id: Number(classSchedule.id),
       class_id: Number(classSchedule.class_id),
-      subject_id: Number(classSchedule.subject_id),
-      start_time: classSchedule.start_time.toISOString().substring(11, 16),
-      end_time: classSchedule.end_time.toISOString().substring(11, 16),
+      teacher_subject_id: Number(classSchedule.teacher_subject_id),
+      start_time: classSchedule.start_time?.toISOString().substring(11, 16),
+      end_time: classSchedule.end_time?.toISOString().substring(11, 16),
       class: {
         ...classSchedule.class,
         id: Number(classSchedule.class.id)
       },
-      subject: {
-        ...classSchedule.subject,
-        id: Number(classSchedule.subject.id)
+      teacherSubject: {
+        ...classSchedule.teacherSubject,
+        id: Number(classSchedule.teacherSubject.id),
+        subject_id: Number(classSchedule.teacherSubject.subject_id),
+        subject: {
+          ...classSchedule.teacherSubject.subject,
+          id: Number(classSchedule.teacherSubject.subject.id)
+        },
+        teacher: classSchedule.teacherSubject.teacher ? {
+          ...classSchedule.teacherSubject.teacher,
+          id: classSchedule.teacherSubject.teacher.id
+        } : null
       }
     };
 
@@ -100,31 +112,34 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const checkStartTime = startTime || currentSchedule.start_time;
       const checkEndTime = endTime || currentSchedule.end_time;
 
-      const conflict = await prisma.classSchedule.findFirst({
-        where: {
-          id: { not: BigInt(id) },
-          class_id: checkClassId,
-          day: checkDay,
-          deleted_at: null,
-          OR: [
-            {
-              AND: [{ start_time: { lte: checkStartTime } }, { end_time: { gt: checkStartTime } }]
-            },
-            {
-              AND: [{ start_time: { lt: checkEndTime } }, { end_time: { gte: checkEndTime } }]
-            },
-            {
-              AND: [{ start_time: { gte: checkStartTime } }, { end_time: { lte: checkEndTime } }]
-            }
-          ]
-        }
-      });
+      // Only check for conflicts if we have both start and end times
+      if (checkStartTime && checkEndTime) {
+        const conflict = await prisma.classSchedule.findFirst({
+          where: {
+            id: { not: BigInt(id) },
+            class_id: checkClassId,
+            day: checkDay,
+            deleted_at: null,
+            OR: [
+              {
+                AND: [{ start_time: { lte: checkStartTime } }, { end_time: { gt: checkStartTime } }]
+              },
+              {
+                AND: [{ start_time: { lt: checkEndTime } }, { end_time: { gte: checkEndTime } }]
+              },
+              {
+                AND: [{ start_time: { gte: checkStartTime } }, { end_time: { lte: checkEndTime } }]
+              }
+            ]
+          }
+        });
 
-      if (conflict) {
-        return NextResponse.json(
-          { error: "Schedule conflict detected for this class and time slot" },
-          { status: 400 }
-        );
+        if (conflict) {
+          return NextResponse.json(
+            { error: "Schedule conflict detected for this class and time slot" },
+            { status: 400 }
+          );
+        }
       }
     }
 
@@ -132,11 +147,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (validated.class_id) {
       updateData.class = { connect: { id: BigInt(validated.class_id) } };
     }
-    if (validated.subject_id) {
-      updateData.subject = { connect: { id: BigInt(validated.subject_id) } };
-    }
-    if (validated.teacher_id) {
-      updateData.teacher = { connect: { id: validated.teacher_id } };
+    if (validated.teacher_subject_id) {
+      updateData.teacherSubject = { connect: { id: BigInt(validated.teacher_subject_id) } };
     }
     if (validated.day) updateData.day = validated.day;
     if (startTime) updateData.start_time = startTime;
@@ -150,10 +162,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         class: {
           select: { id: true, name: true }
         },
-        subject: {
-          select: { id: true, name: true, code: true }
-        },
-        teacher: { select: { id: true, name: true, nip: true } }
+        teacherSubject: {
+          include: {
+            subject: {
+              select: { id: true, name: true, code: true, is_practice: true }
+            },
+            teacher: { select: { id: true, name: true, nip: true, email: true } }
+          }
+        }
       }
     });
 
@@ -162,16 +178,25 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       ...classSchedule,
       id: Number(classSchedule.id),
       class_id: Number(classSchedule.class_id),
-      subject_id: Number(classSchedule.subject_id),
-      start_time: classSchedule.start_time.toISOString().substring(11, 16),
-      end_time: classSchedule.end_time.toISOString().substring(11, 16),
+      teacher_subject_id: Number(classSchedule.teacher_subject_id),
+      start_time: classSchedule.start_time?.toISOString().substring(11, 16),
+      end_time: classSchedule.end_time?.toISOString().substring(11, 16),
       class: {
         ...classSchedule.class,
         id: Number(classSchedule.class.id)
       },
-      subject: {
-        ...classSchedule.subject,
-        id: Number(classSchedule.subject.id)
+      teacherSubject: {
+        ...classSchedule.teacherSubject,
+        id: Number(classSchedule.teacherSubject.id),
+        subject_id: Number(classSchedule.teacherSubject.subject_id),
+        subject: {
+          ...classSchedule.teacherSubject.subject,
+          id: Number(classSchedule.teacherSubject.subject.id)
+        },
+        teacher: classSchedule.teacherSubject.teacher ? {
+          ...classSchedule.teacherSubject.teacher,
+          id: classSchedule.teacherSubject.teacher.id
+        } : null
       }
     };
 

@@ -177,7 +177,6 @@ export default function SubjectForm({ initialData, curriculumOptions, onSubmit }
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('Removing curriculum:', id);
                                 const newValue = field.value.filter(v => v !== id);
                                 field.onChange(newValue);
                               }}
@@ -263,7 +262,6 @@ export default function SubjectForm({ initialData, curriculumOptions, onSubmit }
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('Removing class:', id);
                                 const newValue = (field.value || []).filter(v => v !== id);
                                 field.onChange(newValue);
                               }}
@@ -322,7 +320,6 @@ export default function SubjectForm({ initialData, curriculumOptions, onSubmit }
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('Removing program:', id);
                                 const newValue = (field.value || []).filter(v => v !== id);
                                 field.onChange(newValue);
                               }}

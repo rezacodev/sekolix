@@ -21,6 +21,7 @@ model User {
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
   adminTheme    String    @default("classic-light")
+  teacherTheme  String    @default("minimalist-light")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -361,7 +362,10 @@ model PesertaDidik {
   grades         Grade[]
   reportCards    ReportCard[]
   examResults    ExamResult[]
+  examAttempts   ExamAttempt[]
   transfers      Transfer[]
+  attendances    Attendance[]
+  assignmentSubmissions AssignmentSubmission[]
   @@index([programId])
   @@index([entryYearId])
   @@map("peserta_didik")
@@ -456,6 +460,7 @@ model TahunAjaran {
   registrationCodeSetting           AdmissionRegistrationCodeSetting?
   academicEvents                    AcademicEvent[]
   reportCards                       ReportCard[]
+  semesters                         AcademicSemester[]
   transferBatchesFrom               TransferBatch[] @relation("TransferFromYear")
   transferBatchesTo                 TransferBatch[] @relation("TransferToYear")
 
@@ -552,6 +557,18 @@ model Staff {
   updatedAt      DateTime  @updatedAt
 
   teacherSubjects TeacherSubject[]
+  recordedAttendances Attendance[] // Absensi yang dicatat oleh staff ini
+  recordedJournals TeachingJournal[] @relation("JournalRecorder") // Jurnal yang dicatat
+  uploadedMaterials TeachingMaterial[] @relation("MaterialUploader") // Materi yang diupload
+  createdSyllabuses Syllabus[] @relation("SyllabusCreator") // Silabus yang dibuat
+  approvedSyllabuses Syllabus[] @relation("SyllabusApprover") // Silabus yang diapprove
+  createdLessonPlans LessonPlan[] @relation("LessonPlanCreator") // RPP yang dibuat
+  approvedLessonPlans LessonPlan[] @relation("LessonPlanApprover") // RPP yang diapprove
+  gradedSubmissions AssignmentSubmission[] @relation("AssignmentGrader") // Submission yang dinilai
+  questionBanks QuestionBank[] // Soal yang dibuat oleh guru ini
+  examPackages  ExamPackage[]
+  examSchedules ExamSchedule[]
+  discussions   Discussion[]
 
   @@map("gtk")
   @@index([userId])
@@ -688,6 +705,7 @@ model Subject {
   code          String?     @unique
   name          String
   is_practice   Boolean     @default(false)
+  kkm           Int?        // Kriteria Ketuntasan Minimal
   deleted_at    DateTime?
   created_at    DateTime    @default(now())
   updated_at    DateTime    @updatedAt
@@ -699,7 +717,14 @@ model Subject {
   assessments     Assessment[]
   onlineClasses   OnlineClass[]
   questionBanks   QuestionBank[]
+  examPackages    ExamPackage[]
   exams           Exam[]
+  teachingMaterials TeachingMaterial[]
+  discussions     Discussion[]
+  syllabuses    Syllabus[]
+  lessonPlans   LessonPlan[]
+  assignments   Assignment[]
+  rubrics       AssessmentRubric[]
 
   @@map("subjects")
 }
@@ -767,6 +792,9 @@ model Class {
   onlineClasses  OnlineClass[]
   transfersFrom  Transfer[] @relation("TransferFromClass")
   transfersTo    Transfer[] @relation("TransferToClass")
+  teachingMaterials TeachingMaterial[]
+  syllabuses     Syllabus[]
+  lessonPlans    LessonPlan[]
 
   @@map("classes")
 }
@@ -792,6 +820,12 @@ model Rombel {
   transfersTo   Transfer[] @relation("TransferToGroup")
   teacherSubjects TeacherSubject[]
   schedules       ClassSchedule[]
+  attendances     Attendance[]
+  teachingJournals TeachingJournal[]
+  assignments Assignment[]
+  rubrics      AssessmentRubric[]
+  examSchedules ExamSchedule[]
+  discussions  Discussion[]
 
   @@map("class_groups")
 }
@@ -812,6 +846,8 @@ model TeacherSubject {
   class      Class    @relation(fields: [class_id], references: [id])
   rombel     Rombel?  @relation(fields: [rombel_id], references: [id])
   schedules  ClassSchedule[]
+  attendances Attendance[] // Absensi untuk mata pelajaran ini
+  teachingJournals TeachingJournal[] // Jurnal mengajar
 
   @@unique([teacher_id, subject_id, class_id])
   @@unique([teacher_id, subject_id, rombel_id])
@@ -922,21 +958,151 @@ model Assessment {
   @@map("assessments")
 }
 
+// Rubrik Penilaian - untuk penilaian yang lebih variatif
+model AssessmentRubric {
+  id          BigInt   @id @default(autoincrement())
+  subject_id  BigInt
+  rombel_id   BigInt
+  name        String   // Nama rubrik, misal: "Tugas Proyek", "Presentasi", dll
+  description String?  @db.Text
+  type        AssessmentType @default(TUGAS)
+  weight      Int      @default(1)
+  max_score   Decimal  @default(100)
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  subject     Subject  @relation(fields: [subject_id], references: [id])
+  rombel      Rombel   @relation(fields: [rombel_id], references: [id])
+  criteria    RubricCriteria[]
+  grades      Grade[]
+
+  @@map("assessment_rubrics")
+}
+
+// Semester akademik per tahun ajaran
+model AcademicSemester {
+  id             Int       @id @default(autoincrement())
+  tahunAjaranId  String
+  number         Int       // 1 atau 2
+  label          String    // "Semester 1", "Ganjil", dll
+  startDate      DateTime
+  endDate        DateTime
+  is_active      Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  tahunAjaran    TahunAjaran @relation(fields: [tahunAjaranId], references: [id])
+
+  @@unique([tahunAjaranId, number])
+  @@map("semesters")
+}
+
+// Konfigurasi email SMTP untuk notifikasi
+model EmailNotificationConfig {
+  id          Int      @id @default(1) // singleton row
+  is_enabled  Boolean  @default(false)
+  smtp_host   String?
+  smtp_port   Int?     @default(587)
+  smtp_user   String?
+  smtp_pass   String?  // stored encrypted or plaintext (app-level decision)
+  from_email  String?
+  from_name   String?
+  updated_at  DateTime @updatedAt
+
+  @@map("email_notification_config")
+}
+
+// Toggle notifikasi dalam aplikasi (in-app)
+model InAppNotificationSetting {
+  id                    Int      @id @default(1) // singleton row
+  new_applicant         Boolean  @default(true)
+  payment_received      Boolean  @default(true)
+  grade_submitted       Boolean  @default(false)
+  new_assignment        Boolean  @default(false)
+  attendance_summary    Boolean  @default(false)
+  updated_at            DateTime @updatedAt
+
+  @@map("in_app_notification_settings")
+}
+
+// Bobot komponen nilai global per tipe assessment
+model GradeComponentWeight {
+  id        Int            @id @default(autoincrement())
+  component AssessmentType @unique
+  weight    Int            @default(0) // Persentase 0-100; total semua komponen harus = 100
+  updated_at DateTime      @updatedAt
+
+  @@map("grade_component_weights")
+}
+
+// Skala konversi nilai angka → huruf (konfigurabel)
+model GradeScale {
+  id         Int      @id @default(autoincrement())
+  grade      String   // "A", "B", "C", "D", "E"
+  min_score  Int      // Batas bawah (inklusif)
+  max_score  Int      // Batas atas (inklusif)
+  label      String?  // "Sangat Baik", "Baik", dll (opsional)
+  updated_at DateTime @updatedAt
+
+  @@unique([grade])
+  @@map("grade_scales")
+}
+
+// Kriteria penilaian dalam rubrik
+model RubricCriteria {
+  id          BigInt   @id @default(autoincrement())
+  rubric_id   BigInt
+  name        String   // Nama kriteria, misal: "Kelengkapan", "Kreativitas"
+  description String?  @db.Text
+  max_score   Decimal  @default(25)
+  order       Int      @default(0)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  rubric        AssessmentRubric @relation(fields: [rubric_id], references: [id], onDelete: Cascade)
+  rubricScores  RubricScore[]
+
+  @@map("rubric_criteria")
+}
+
 model Grade {
   id            BigInt   @id @default(autoincrement())
   student_id    String
   assessment_id BigInt
   score         Decimal
+  rubric_id     BigInt?
   notes         String?
   deleted_at    DateTime?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  student      PesertaDidik @relation(fields: [student_id], references: [id])
-  assessment   Assessment   @relation(fields: [assessment_id], references: [id])
+  student      PesertaDidik     @relation(fields: [student_id], references: [id])
+  assessment   Assessment       @relation(fields: [assessment_id], references: [id])
+  rubric       AssessmentRubric? @relation(fields: [rubric_id], references: [id])
+  rubricScores RubricScore[]
 
   @@unique([student_id, assessment_id])
+  @@unique([student_id, rubric_id])
   @@map("grades")
+}
+
+model RubricScore {
+  id                   BigInt   @id @default(autoincrement())
+  grade_id             BigInt
+  rubric_criterion_id  BigInt
+  score                Decimal
+  deleted_at           DateTime?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  grade             Grade             @relation(fields: [grade_id], references: [id])
+  rubricCriterion   RubricCriteria   @relation(fields: [rubric_criterion_id], references: [id])
+
+  @@unique([grade_id, rubric_criterion_id])
+  @@map("rubric_scores")
 }
 
 // Rapor
@@ -1009,7 +1175,11 @@ model LearningMaterial {
 
 model Assignment {
   id               BigInt   @id @default(autoincrement())
-  online_class_id  BigInt
+  online_class_id  BigInt?
+  rombel_id        BigInt?
+  subject_id       BigInt?
+  academic_year    String?
+  semester         Int?
   title            String
   description      String?  @db.Text
   due_date         DateTime
@@ -1018,9 +1188,36 @@ model Assignment {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  online_class     OnlineClass @relation(fields: [online_class_id], references: [id])
+  online_class     OnlineClass?         @relation(fields: [online_class_id], references: [id])
+  rombel           Rombel?              @relation(fields: [rombel_id], references: [id])
+  subject          Subject?             @relation(fields: [subject_id], references: [id])
+  submissions      AssignmentSubmission[]
 
   @@map("assignments")
+}
+
+model AssignmentSubmission {
+  id               BigInt    @id @default(autoincrement())
+  assignment_id    BigInt
+  student_id       String
+  submitted_at     DateTime?
+  score            Decimal?
+  feedback         String?   @db.Text
+  attachment_url   String?
+  attachment_name  String?
+  status           String    @default("not_submitted") // not_submitted, submitted, graded
+  graded_at        DateTime?
+  graded_by        String?   // staff_id yang menilai
+  deleted_at       DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  
+  assignment       Assignment    @relation(fields: [assignment_id], references: [id])
+  student          PesertaDidik  @relation(fields: [student_id], references: [id])
+  grader           Staff?        @relation("AssignmentGrader", fields: [graded_by], references: [id])
+  
+  @@unique([assignment_id, student_id])
+  @@map("assignment_submissions")
 }
 
 // CBT / CAT
@@ -1029,23 +1226,179 @@ enum QuestionType {
   TRUE_FALSE
   SHORT_ANSWER
   ESSAY
+  MATCHING
+}
+
+enum Difficulty {
+  MUDAH
+  SEDANG
+  SULIT
+}
+
+enum CognitiveLevel {
+  MENGINGAT
+  MEMAHAMI
+  MENERAPKAN
+  MENGANALISIS
+  MENGEVALUASI
+  MENCIPTAKAN
 }
 
 model QuestionBank {
-  id         BigInt       @id @default(autoincrement())
-  subject_id BigInt
-  question   String       @db.Text
-  type       QuestionType
-  options    Json?        // For multiple choice options
-  answer     String       @db.Text // Correct answer
-  difficulty String?      // EASY, MEDIUM, HARD
-  deleted_at DateTime?
-  created_at DateTime     @default(now())
-  updated_at DateTime     @updatedAt
+  id             BigInt         @id @default(autoincrement())
+  teacher_id     String         // Staff ID yang membuat soal
+  subject_id     BigInt
+  question_type  QuestionType
+  difficulty     Difficulty     @default(SEDANG)
+  cognitive_level CognitiveLevel @default(MEMAHAMI)
+  question_text  String         @db.Text
+  options        Json?          // For multiple choice options (array of strings)
+  correct_answer String         @db.Text // Correct answer
+  explanation    String?        @db.Text // Penjelasan jawaban
+  tags           String[]       @default([]) // Array of tags for search
+  topic          String?        // Topik/bab
+  usage_count    Int            @default(0) // Berapa kali digunakan di ujian
+  last_used_at   DateTime?      // Terakhir digunakan kapan
+  is_active      Boolean        @default(true)
+  deleted_at     DateTime?
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
 
-  subject    Subject      @relation(fields: [subject_id], references: [id])
+  teacher        Staff          @relation(fields: [teacher_id], references: [id])
+  subject        Subject        @relation(fields: [subject_id], references: [id])
+  examQuestions  ExamPackageQuestion[]
+  answerRecords  ExamAnswerRecord[]
 
   @@map("question_banks")
+}
+
+// Paket ujian yang dibuat guru dari bank soal
+enum ExamType {
+  KUIS
+  UTS
+  UAS
+  ULANGAN_HARIAN
+  LATIHAN
+}
+
+model ExamPackage {
+  id             BigInt      @id @default(autoincrement())
+  teacher_id     String
+  subject_id     BigInt
+  title          String
+  description    String?     @db.Text
+  exam_type      ExamType    @default(KUIS)
+  duration       Int         @default(60) // menit
+  passing_grade  Int         @default(70) // 0-100
+  randomize      Boolean     @default(false)
+  is_published   Boolean     @default(false)
+  deleted_at     DateTime?
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  teacher        Staff       @relation(fields: [teacher_id], references: [id])
+  subject        Subject     @relation(fields: [subject_id], references: [id])
+  questions      ExamPackageQuestion[]
+  schedules      ExamSchedule[]
+
+  @@map("exam_packages")
+}
+
+model ExamPackageQuestion {
+  id             BigInt      @id @default(autoincrement())
+  package_id     BigInt
+  question_id    BigInt
+  order          Int         @default(0)
+  created_at     DateTime    @default(now())
+
+  package        ExamPackage  @relation(fields: [package_id], references: [id], onDelete: Cascade)
+  question       QuestionBank @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@unique([package_id, question_id])
+  @@map("exam_package_questions")
+}
+
+// Status siklus hidup jadwal ujian
+enum ExamScheduleStatus {
+  DRAFT      // Belum dibuka untuk siswa
+  OPEN       // Sedang berlangsung, siswa bisa mengerjakan
+  PAUSED     // Dijeda sementara
+  CLOSED     // Selesai / ditutup manual
+}
+
+model ExamSchedule {
+  id               BigInt             @id @default(autoincrement())
+  package_id       BigInt
+  rombel_id        BigInt
+  teacher_id       String
+  title            String             // Bisa berbeda dari nama paket
+  token            String             @unique // Kode akses 6 karakter
+  start_at         DateTime           // Kapan ujian dibuka
+  end_at           DateTime           // Kapan ujian ditutup
+  window_minutes   Int                @default(0) // Toleransi keterlambatan masuk (0 = harus tepat waktu)
+  status           ExamScheduleStatus @default(DRAFT)
+  deleted_at       DateTime?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+
+  package          ExamPackage        @relation(fields: [package_id], references: [id])
+  rombel           Rombel             @relation(fields: [rombel_id], references: [id])
+  teacher          Staff              @relation(fields: [teacher_id], references: [id])
+  attempts         ExamAttempt[]
+
+  @@index([teacher_id, status])
+  @@index([token])
+  @@map("exam_schedules")
+}
+
+// Status pengerjaan ujian oleh siswa
+enum AttemptStatus {
+  IN_PROGRESS  // Sedang mengerjakan
+  SUBMITTED    // Sudah submit (auto-graded selesai)
+  GRADED       // Sudah dikoreksi guru (essay)
+}
+
+model ExamAttempt {
+  id           BigInt        @id @default(autoincrement())
+  schedule_id  BigInt
+  student_id   String
+  status       AttemptStatus @default(IN_PROGRESS)
+  score        Decimal?      // Final score 0-100 (null jika belum dinilai/ada essay pending)
+  auto_score   Decimal?      // Skor dari soal otomatis (MC, TF, SA)
+  essay_score  Decimal?      // Skor dari soal essay (manual)
+  started_at   DateTime      @default(now())
+  submitted_at DateTime?
+  graded_at    DateTime?
+  graded_by    String?       // Staff ID yang mengoreksi
+  deleted_at   DateTime?
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+
+  schedule     ExamSchedule  @relation(fields: [schedule_id], references: [id])
+  student      PesertaDidik  @relation(fields: [student_id], references: [id])
+  answers      ExamAnswerRecord[]
+
+  @@unique([schedule_id, student_id])
+  @@index([schedule_id, status])
+  @@map("exam_attempts")
+}
+
+model ExamAnswerRecord {
+  id           BigInt      @id @default(autoincrement())
+  attempt_id   BigInt
+  question_id  BigInt
+  answer       String      @db.Text  // Jawaban siswa (teks atau index pilihan)
+  is_correct   Boolean?              // null jika essay
+  score        Decimal?              // Nilai per soal (null jika belum dikoreksi)
+  essay_note   String?    @db.Text  // Catatan guru untuk essay
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  attempt      ExamAttempt  @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  question     QuestionBank @relation(fields: [question_id], references: [id])
+
+  @@unique([attempt_id, question_id])
+  @@map("exam_answer_records")
 }
 
 model Exam {
@@ -1135,3 +1488,302 @@ enum TransferStatus {
   CANCELLED
   FAILED
 }
+
+// Attendance / Absensi
+enum AttendanceStatus {
+  HADIR      // Present
+  SAKIT      // Sick
+  IZIN       // Permitted absence
+  ALPHA      // Absent without permission
+}
+
+model Attendance {
+  id                 BigInt           @id @default(autoincrement())
+  student_id         String
+  teacher_subject_id BigInt
+  rombel_id          BigInt
+  date               DateTime         @db.Date
+  meeting_number     Int              // Pertemuan ke-berapa
+  status             AttendanceStatus
+  notes              String?          @db.Text // Keterangan/alasan
+  recorded_by        String?          // Staff ID yang mencatat
+  deleted_at         DateTime?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  student            PesertaDidik     @relation(fields: [student_id], references: [id])
+  teacherSubject     TeacherSubject   @relation(fields: [teacher_subject_id], references: [id])
+  rombel             Rombel           @relation(fields: [rombel_id], references: [id])
+  recorder           Staff?           @relation(fields: [recorded_by], references: [id])
+
+  @@unique([student_id, teacher_subject_id, date, meeting_number])
+  @@index([date])
+  @@index([rombel_id, date])
+  @@index([teacher_subject_id, date])
+  @@map("attendances")
+}
+
+// Teaching Journal
+model TeachingJournal {
+  id                 BigInt         @id @default(autoincrement())
+  teacher_subject_id BigInt
+  rombel_id          BigInt
+  date               DateTime       @db.Date
+  time_start         String?        // Format: HH:mm
+  time_end           String?        // Format: HH:mm
+  period             Int?           // Jam pelajaran ke-berapa
+  topic              String         @db.Text // Materi yang diajarkan
+  teaching_method    String?        @db.Text // Metode pembelajaran
+  media_used         String?        @db.Text // Media yang digunakan
+  obstacles          String?        @db.Text // Kendala/hambatan
+  follow_up          String?        @db.Text // Tindak lanjut
+  notes              String?        @db.Text // Catatan tambahan
+  recorded_by        String         // Staff ID yang mencatat
+  deleted_at         DateTime?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  teacherSubject TeacherSubject @relation(fields: [teacher_subject_id], references: [id])
+  rombel         Rombel         @relation(fields: [rombel_id], references: [id])
+  recorder       Staff          @relation("JournalRecorder", fields: [recorded_by], references: [id])
+
+  @@index([date])
+  @@index([rombel_id, date])
+  @@index([teacher_subject_id, date])
+  @@map("teaching_journals")
+}
+
+// Teaching Materials
+model TeachingMaterial {
+  id              BigInt    @id @default(autoincrement())
+  teacher_id      String    // Staff ID yang upload
+  subject_id      BigInt
+  class_id        BigInt?   // Optional - bisa untuk semua kelas
+  title           String
+  description     String?   @db.Text
+  file_url        String?   // URL file yang diupload
+  file_type       String?   // pdf, doc, ppt, video, audio, link
+  file_name       String?   // Original filename
+  file_size       BigInt?   // File size in bytes
+  external_link   String?   // For YouTube embed or external links
+  chapter         String?   // Chapter/topic name
+  tags            String?   // Comma-separated tags
+  published_at    DateTime? // Scheduled publishing
+  is_shared       Boolean   @default(false) // Dapat dibagikan ke sesama guru
+  views           Int       @default(0)
+  downloads       Int       @default(0)
+  deleted_at      DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  teacher Staff   @relation("MaterialUploader", fields: [teacher_id], references: [id])
+  subject Subject @relation(fields: [subject_id], references: [id])
+  class   Class?  @relation(fields: [class_id], references: [id])
+
+  @@index([teacher_id])
+  @@index([subject_id])
+  @@index([class_id])
+  @@index([published_at])
+  @@map("teaching_materials")
+}
+
+// Syllabus - Silabus Pembelajaran
+model Syllabus {
+  id                    BigInt    @id @default(autoincrement())
+  teacher_id            String    // Staff ID pembuat silabus
+  subject_id            BigInt
+  class_id              BigInt    // Tingkat kelas
+  academic_year         String    // Tahun ajaran (e.g., "2025/2026")
+  semester              Int       // 1 atau 2
+  title                 String    // Judul silabus
+  core_competencies     String?   @db.Text // Kompetensi Inti (KI)
+  basic_competencies    String?   @db.Text // Kompetensi Dasar (KD)
+  indicators            String?   @db.Text // Indikator pencapaian kompetensi
+  subject_matter        String?   @db.Text // Materi Pokok
+  learning_activities   String?   @db.Text // Kegiatan Pembelajaran
+  assessment            String?   @db.Text // Penilaian
+  time_allocation       String?   // Alokasi waktu (e.g., "8 x 45 menit")
+  learning_resources    String?   @db.Text // Sumber Belajar
+  notes                 String?   @db.Text // Catatan tambahan
+  file_url              String?   // Attachment silabus dalam bentuk file
+  file_name             String?
+  is_approved           Boolean   @default(false) // Approval status
+  approved_by           String?   // Staff ID yang approve
+  approved_at           DateTime?
+  deleted_at            DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  teacher    Staff     @relation("SyllabusCreator", fields: [teacher_id], references: [id])
+  subject    Subject   @relation(fields: [subject_id], references: [id])
+  class      Class     @relation(fields: [class_id], references: [id])
+  approver   Staff?    @relation("SyllabusApprover", fields: [approved_by], references: [id])
+  lessonPlans LessonPlan[]
+
+  @@index([teacher_id])
+  @@index([subject_id])
+  @@index([class_id])
+  @@index([academic_year, semester])
+  @@map("syllabuses")
+}
+
+// Lesson Plan - Rencana Pelaksanaan Pembelajaran (RPP)
+model LessonPlan {
+  id                      BigInt    @id @default(autoincrement())
+  syllabus_id             BigInt?   // Optional link to syllabus
+  teacher_id              String    // Staff ID pembuat RPP
+  subject_id              BigInt
+  class_id                BigInt
+  academic_year           String    // Tahun ajaran (e.g., "2025/2026")
+  semester                Int       // 1 atau 2
+  title                   String    // Judul/topik pembelajaran
+  meeting_number          Int?      // Pertemuan ke-
+  time_allocation         String?   // Alokasi waktu (e.g., "2 x 45 menit")
+  learning_objectives     String    @db.Text // Tujuan pembelajaran
+  indicators              String?   @db.Text // Indikator pencapaian
+  subject_matter          String?   @db.Text // Materi pembelajaran
+  teaching_method         String?   @db.Text // Metode mengajar
+  media_and_tools         String?   @db.Text // Media dan alat pembelajaran
+  learning_resources      String?   @db.Text // Sumber belajar
+  
+  // Langkah-langkah pembelajaran
+  opening_activities      String?   @db.Text // Kegiatan pendahuluan
+  core_activities         String?   @db.Text // Kegiatan inti
+  closing_activities      String?   @db.Text // Kegiatan penutup
+  
+  // Penilaian
+  assessment_technique    String?   @db.Text // Teknik penilaian
+  assessment_instrument   String?   @db.Text // Instrumen penilaian
+  
+  notes                   String?   @db.Text // Catatan
+  file_url                String?   // Attachment RPP
+  file_name               String?
+  
+  is_approved             Boolean   @default(false)
+  approved_by             String?
+  approved_at             DateTime?
+  
+  deleted_at              DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+
+  syllabus   Syllabus? @relation(fields: [syllabus_id], references: [id])
+  teacher    Staff     @relation("LessonPlanCreator", fields: [teacher_id], references: [id])
+  subject    Subject   @relation(fields: [subject_id], references: [id])
+  class      Class     @relation(fields: [class_id], references: [id])
+  approver   Staff?    @relation("LessonPlanApprover", fields: [approved_by], references: [id])
+
+  @@index([teacher_id])
+  @@index([subject_id])
+  @@index([class_id])
+  @@index([syllabus_id])
+  @@index([academic_year, semester])
+  @@map("lesson_plans")
+}
+
+// ─── Komunikasi ──────────────────────────────────────────────────────────────
+
+model Discussion {
+  id          BigInt    @id @default(autoincrement())
+  teacher_id  String
+  rombel_id   BigInt?
+  subject_id  BigInt?
+  title       String
+  content     String    @db.Text
+  is_pinned   Boolean   @default(false)
+  is_closed   Boolean   @default(false)
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  teacher     Staff             @relation(fields: [teacher_id], references: [id])
+  rombel      Rombel?           @relation(fields: [rombel_id], references: [id])
+  subject     Subject?          @relation(fields: [subject_id], references: [id])
+  replies     DiscussionReply[]
+
+  @@index([teacher_id])
+  @@index([rombel_id])
+  @@map("discussions")
+}
+
+enum ReplyAuthorType {
+  TEACHER
+  STUDENT
+}
+
+model DiscussionReply {
+  id            BigInt          @id @default(autoincrement())
+  discussion_id BigInt
+  author_id     String          // Staff ID or Student ID
+  author_type   ReplyAuthorType @default(TEACHER)
+  content       String          @db.Text
+  deleted_at    DateTime?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+
+  discussion    Discussion      @relation(fields: [discussion_id], references: [id], onDelete: Cascade)
+
+  @@index([discussion_id])
+  @@map("discussion_replies")
+}
+
+enum MessageSenderType {
+  TEACHER
+  STUDENT
+  PARENT
+  ADMIN
+}
+
+model Message {
+  id            BigInt            @id @default(autoincrement())
+  sender_id     String            // Staff/Student/Parent ID
+  sender_type   MessageSenderType @default(TEACHER)
+  receiver_id   String            // Staff/Student/Parent ID
+  receiver_type MessageSenderType @default(TEACHER)
+  subject       String?
+  content       String            @db.Text
+  is_read       Boolean           @default(false)
+  read_at       DateTime?
+  deleted_at    DateTime?
+  created_at    DateTime          @default(now())
+  updated_at    DateTime          @updatedAt
+
+  @@index([sender_id, receiver_id])
+  @@index([receiver_id, is_read])
+  @@map("messages")
+}
+
+// API Key manajemen untuk integrasi eksternal
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String    // Nama/label API key (e.g. "Integrasi DAPODIK")
+  key_prefix  String    // 8 karakter pertama, ditampilkan di UI
+  key_hash    String    @unique // SHA-256 hash dari full key
+  is_active   Boolean   @default(true)
+  last_used_at DateTime?
+  expires_at  DateTime? // null = tidak pernah kedaluwarsa
+  created_by  String?   // staffId atau "system"
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("api_keys")
+}
+
+// Konfigurasi webhook untuk event tertentu
+model WebhookConfig {
+  id          String    @id @default(cuid())
+  event       String    // e.g. "STUDENT_ADMITTED", "GRADE_SUBMITTED", "ATTENDANCE_SAVED"
+  label       String    // Label tampilan event
+  url         String?   @db.Text // URL endpoint tujuan
+  is_active   Boolean   @default(false)
+  secret      String?   // Secret untuk HMAC signature (opsional)
+  last_triggered_at DateTime?
+  last_status Int?      // HTTP status terakhir dari endpoint
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@unique([event])
+  @@map("webhook_configs")
+}
+

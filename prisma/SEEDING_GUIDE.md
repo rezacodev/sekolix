@@ -1,153 +1,253 @@
-# Database Seeding Guide
+# Prisma Seeding – Refactor Guide & Best Practice
 
-## Overview
+Dokumen ini berisi:
+1. Evaluasi struktur seed Prisma saat ini
+2. Panduan refaktor agar scalable
+3. Best practice pembuatan seed ke depan
+4. Pola yang direkomendasikan untuk fitur baru
 
-This project uses a single comprehensive seed script (`prisma/seed.mjs`) to initialize the database with all necessary data.
+Cocok untuk aplikasi skala menengah–besar (Sistem Akademik, ERP, LMS, dsb).
 
-## Default Credentials
+---
 
-### Admin Account
+## 1. Gambaran Struktur Seed Saat Ini
 
-After seeding, use these credentials to login:
+Struktur seed saat ini:
 
-- **Email:** `admin@sekolix.com`
-- **Password:** `admin123`
+```text
+prisma/seeds/
+├── index.js
+├── landing-page/
+├── manajemen-akademik/
+│   ├── foundation/
+│   ├── curriculum/
+│   ├── classes/
+│   ├── students/
+│   ├── users/
+│   ├── utils/
+│   ├── seed-assignments.ts
+│   ├── seed-grades.ts
+│   ├── seed-syllabus-rpp.ts
+│   └── ...
+├── manajemen-guru/
+├── penerimaan-siswa/
+✅ Kelebihan
+Sudah berbasis domain/fitur (sangat bagus)
 
-> ⚠️ **IMPORTANT:** Change the password immediately after first login in production!
+Tidak berdasarkan tabel mentah
 
-## What Gets Seeded
+Ada pemisahan modul (akademik, guru, siswa)
 
-### 1. Academic Years (Tahun Ajaran)
+Sudah ada util helper
 
-- **2023-2024** (Inactive)
-- **2024-2025** (Inactive)
-- **2025-2026** (Active) ← Only one year is active at a time
+⚠️ Masalah yang Akan Muncul ke Depan
+index.js berpotensi jadi God File
 
-### 2. Program (Program Keahlian)
+Tidak ada pemisahan master vs dummy
 
-- **Multimedia** - Desain grafis dan multimedia
+Tidak semua seed idempotent (aman dijalankan ulang)
 
-### 3. Registration Code Settings
+Beberapa file seed terlalu “procedural”
 
-- Per academic year (independent settings)
-- Each year has its own counter and configuration
-- Format: `PREFIX + YEAR_CODE + PADDED_NUMBER + SUFFIX`
-- Example: `DAFTAR250001` (DAFTAR = prefix, 25 = year code, 0001 = padded number)
+Sulit menjalankan seed per skenario
 
-### 4. Landing Page Settings
+2. Prinsip Refaktor (WAJIB DIPAHAMI)
+Sebelum refaktor, pegang prinsip ini:
 
-- Hero title and description for admission page
-- Toggle for enabling/disabling application form
+Seeder ≠ Script sekali pakai
 
-### 5. Dummy Applicants
+Seeder harus:
 
-- 10 dummy applicants with auto-generated registration codes
-- Only for the active academic year (2025-2026)
-- NIK, email, phone, and school origin included
+Bisa dijalankan ulang
 
-## Running the Seed
+Bisa dipanggil sebagian
 
-### Normal Seed (Keeps Existing Data)
+Tidak tergantung urutan implicit
 
-```bash
-npm run seed
-# or
-node prisma/seed.mjs
-```
+Seeder mengikuti alur bisnis, bukan tabel
 
-- Creates missing data
-- Keeps existing data intact
-- Useful for adding data to existing database
+3. Struktur Seeder yang Direkomendasikan (Target)
+text
+Copy code
+prisma/seeds/
+├── _core/
+│   ├── index.ts
+│   ├── academic-years.seed.ts
+│   ├── roles.seed.ts
+│   └── settings.seed.ts
+│
+├── landing-page/
+│   ├── index.ts
+│   └── landing-page.seed.ts
+│
+├── akademik/
+│   ├── index.ts
+│   ├── foundation.seed.ts
+│   ├── curriculum.seed.ts
+│   ├── classes.seed.ts
+│   ├── subjects.seed.ts
+│   ├── rooms.seed.ts
+│   └── lesson-times.seed.ts
+│
+├── users/
+│   ├── index.ts
+│   ├── admin.seed.ts
+│   ├── teacher.seed.ts
+│   └── student.seed.ts
+│
+├── guru/
+│   ├── index.ts
+│   ├── teaching-materials.seed.ts
+│   ├── syllabus.seed.ts
+│   └── rpp.seed.ts
+│
+├── dummy/
+│   ├── index.ts
+│   ├── assignments.dummy.ts
+│   ├── grades.dummy.ts
+│   └── submissions.dummy.ts
+│
+├── scenarios/
+│   ├── minimal.seed.ts
+│   ├── demo.seed.ts
+│   └── full.seed.ts
+│
+├── utils/
+│   ├── prisma.ts
+│   └── seed-utils.ts
+│
+└── seed.ts
+4. Cara Refaktor Bertahap (Aman & Realistis)
+STEP 1 – Pecah index.js
+❌ Jangan semua logic di index.js
 
-### Fresh Seed (Clears Everything)
+ts
+Copy code
+// seed.ts (root)
+import { seedCore } from './_core'
+import { seedAkademik } from './akademik'
+import { seedUsers } from './users'
 
-```bash
-node prisma/seed.mjs --fresh
-# or
-npm run seed -- --fresh
-```
+async function main() {
+  await seedCore()
+  await seedUsers()
+  await seedAkademik()
+}
 
-- **Deletes all data** from the database
-- Creates fresh new data
-- Useful for starting completely fresh
+main()
+STEP 2 – Gunakan index.ts per domain
+ts
+Copy code
+// akademik/index.ts
+export async function seedAkademik() {
+  await seedFoundation()
+  await seedCurriculum()
+  await seedClasses()
+}
+➡️ Domain bertindak sebagai orchestrator kecil
 
-## Academic Year Management
+STEP 3 – Pastikan Semua Seed Idempotent
+❌
 
-### Key Rules
+ts
+Copy code
+await prisma.role.create({ data: { name: 'admin' } })
+✅
 
-1. **Only ONE academic year can be active at a time**
-2. Each year has **independent** registration code settings
-3. Changing settings in one year **does not affect** other years
-4. Registration code counter is **per year** (Year A's count doesn't affect Year B)
+ts
+Copy code
+await prisma.role.upsert({
+  where: { name: 'admin' },
+  update: {},
+  create: { name: 'admin' },
+})
+STEP 4 – Pisahkan MASTER vs DUMMY
+Jenis	Lokasi	Boleh Production
+Master	_core, akademik	✅ Ya
+Dummy	dummy/	❌ Tidak
 
-### Important Files
+ts
+Copy code
+if (process.env.NODE_ENV !== 'production') {
+  await seedDummy()
+}
+5. Best Practice Pembuatan Seed ke Depan
+5.1 Satu File = Satu Konsep Bisnis
+❌ seed-academic-all.ts
+✅ curriculum.seed.ts, classes.seed.ts
 
-- `prisma/seed.mjs` - Main seed script (use this one)
-- `prisma/schema.prisma` - Database schema definition
-- `src/lib/spmb/registrationCodeGenerator.ts` - Code generation logic
+5.2 Jangan Hardcode ID
+❌
 
-## Database Schema
+ts
+Copy code
+classId: 1
+✅
 
-### AdmissionRegistrationCodeSetting
+ts
+Copy code
+const classA = await prisma.class.findFirst({ where: { name: 'X-A' } })
+5.3 Gunakan Helper untuk Relasi Kompleks
+ts
+Copy code
+createAssignments({
+  rombel,
+  subject,
+  teacher,
+})
+5.4 Gunakan Skenario Seeder
+bash
+Copy code
+npx prisma db seed -- --scenario=demo
+ts
+Copy code
+// scenarios/demo.seed.ts
+export async function seedDemo() {
+  await seedCore()
+  await seedAkademik()
+  await seedDummy()
+}
+6. Pola untuk Fitur Baru (WAJIB IKUT)
+Saat fitur baru ditambahkan:
 
-```
-- id: String (auto)
-- tahunAjaranId: String (unique FK to TahunAjaran)
-- prefix: String (default: "DAFTAR")
-- suffix: String (default: "")
-- padLength: Number (default: 4)
-- includeYearCode: Boolean (default: true)
-- nextNumber: Number (default: 1)
-```
+Tentukan domain:
 
-### Applicant
+akademik / guru / siswa / keuangan / dll
 
-```
-- registrationCode: String (UNIQUE)
-- nik: String (unique)
-- phone: String
-- fullName: String
-- email: String
-- schoolOrigin: String
-```
+Buat folder jika perlu
 
-## Generated Registration Codes Example
+Buat:
 
-For **2025-2026** academic year with default settings:
+xxx.seed.ts
 
-- 1st applicant: `DAFTAR250001`
-- 2nd applicant: `DAFTAR250002`
-- 10th applicant: `DAFTAR250010`
-- 11th applicant: `DAFTAR250011`
+daftarkan di index.ts domain
 
-The counter increments automatically with each new applicant.
+Jangan sentuh seed domain lain kecuali perlu
 
-## Troubleshooting
+7. Anti-Pattern yang Harus Dihindari ❌
+Seed saling memanggil lintas domain
 
-### If you see "Academic years already exist"
+Seed membaca file seed lain langsung
 
-- Use `--fresh` flag to reset: `node prisma/seed.mjs --fresh`
-- Or manually delete unwanted years from the database
+Seed menghapus data production
 
-### If registration codes look wrong
+Seed terlalu bergantung urutan implicit
 
-- Check that `yearCode` is set correctly in the academic year
-- Check registration code settings in admin panel
-- Reset counter if needed
+Seed dijadikan migration
 
-### Database Errors
+8. Kesimpulan
+Struktur seed kamu:
 
-- Make sure you've run `npx prisma migrate dev` first
-- Check that PostgreSQL is running
-- Verify `.env` database connection string is correct
+✅ Sudah domain-based (bagus)
 
-## Customization
+⚠️ Perlu orchestration & standardisasi
 
-To customize the seed data, edit `prisma/seed.mjs` and modify:
+🚀 Sangat potensial untuk jangka panjang
 
-- Academic year labels and dates
-- Program name and description
-- Registration code prefix/suffix
-- Dummy applicant data
+Dengan refaktor bertahap ini:
 
-Then run the seed again with `--fresh` flag.
+Penambahan fitur akan lebih aman
+
+Debug seed jauh lebih mudah
+
+Bisa dipakai sebagai standar tim / open-source

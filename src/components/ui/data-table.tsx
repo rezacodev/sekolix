@@ -333,8 +333,30 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between px-2">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {serverSide ? (
+            <div className="space-y-1">
+              <div>
+                Total {totalCount ?? 0} data
+              </div>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <div>
+                  {table.getFilteredSelectedRowModel().rows.length} row(s) selected
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <div>
+                Total {table.getFilteredRowModel().rows.length} data
+              </div>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <div>
+                  {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                  {table.getFilteredRowModel().rows.length} row(s) selected
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center space-x-6 lg:space-x-8">

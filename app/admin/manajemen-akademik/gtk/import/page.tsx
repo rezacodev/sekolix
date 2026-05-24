@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Upload, Download, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { PageHeader } from "@/components/admin";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface ImportData {
   nuptk?: string;
@@ -103,7 +103,6 @@ export default function ImportGtkPage() {
       );
       if (existingRes.ok) {
         existingRecords = await existingRes.json();
-        console.log("Existing GTK records found:", existingRecords);
       } else {
         console.error("Failed to check existing GTK records:", existingRes.status);
       }

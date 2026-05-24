@@ -23,7 +23,7 @@ import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { Plus, MoreHorizontal, Users, BookOpen, Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/admin";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface Rombel {
   id: number;

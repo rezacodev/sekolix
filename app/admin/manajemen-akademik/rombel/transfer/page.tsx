@@ -5,7 +5,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/components/admin";
+import { PageHeader } from "@/components/shared/page-header";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { Plus, Users, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";

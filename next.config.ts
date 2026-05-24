@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Reduce console output in production
+  logging: {
+    fetches: {
+      fullUrl: process.env.NODE_ENV === 'development',
+    },
+  },
   images: {
     // Allow serving SVG from remote hosts when necessary (placeholders, external svgs)
     dangerouslyAllowSVG: true,

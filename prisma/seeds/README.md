@@ -8,9 +8,34 @@ This project uses a modular seeding approach where each module/component has its
 prisma/
 ├── seeds/
 │   ├── index.js              # Main seed orchestrator (complete seeding)
-│   ├── landing-page.js       # Landing page content (pages, articles)
-│   ├── penerimaan-siswa.js   # Student admission (registration, applicants)
-│   ├── manajemen-akademik.js # Academic management (all academic data)
+│   ├── landing-page/
+│   │   └── landing-page.js   # Landing page content (pages, articles)
+│   ├── penerimaan-siswa/
+│   │   └── penerimaan-siswa.js # Student admission (registration, applicants)
+│   ├── manajemen-akademik/
+│   │   ├── utils/
+│   │   │   └── seed-utils.js # Shared utilities and dummy data
+│   │   ├── foundation/
+│   │   │   └── foundation.js # School identity, academic years, programs, events
+│   │   ├── curriculum/
+│   │   │   └── curriculum.js # Curriculums, subjects, and relationships
+│   │   ├── classes/
+│   │   │   └── classes.js    # Classes, class groups, and relationships
+│   │   ├── users/
+│   │   │   └── users.js      # Users, staff, teacher assignments, schedules
+│   │   ├── students/
+│   │   │   └── students.js   # Students, assessments, grades, reports
+│   │   ├── ruang-jam-pelajaran.js # Rooms and lesson times
+│   │   ├── seed-assessments.ts # Assessment templates
+│   │   ├── seed-assignments.ts # Sample assignments
+│   │   ├── seed-grades.ts # Sample grades
+│   │   ├── seed-syllabus-rpp.ts # Syllabus and lesson plans
+│   │   ├── seed-teaching-materials.ts # Learning materials
+│   │   └── create-sample-submissions.ts # Assignment submissions
+│   ├── manajemen-guru/
+│   │   ├── teacher-portal.js # Teacher portal data
+│   │   ├── seed-grades-for-guru.ts # Grades for teacher testing
+│   │   └── run-all-teacher-seeds.ts # Teacher seeds runner
 │   └── README.md             # This documentation
 └── seed.mjs                  # Legacy seed file (deprecated)
 ```
@@ -34,32 +59,41 @@ npx prisma db seed -- --seed prisma/seed.mjs
 
 ## Seed Modules
 
-### 1. Landing Page (`landing-page.js`)
+### 1. Landing Page (`landing-page/landing-page.js`)
 - **Pages**: Static pages (Tentang Sekolah, Program Akademik, Fasilitas)
 - **Articles**: News and announcements (Penerimaan Siswa Baru, Ekstrakurikuler)
 
-### 2. Penerimaan Siswa (`penerimaan-siswa.js`)
+### 2. Penerimaan Siswa (`penerimaan-siswa/penerimaan-siswa.js`)
 - **Registration Settings**: Registration codes and periods
 - **Applicants**: Student applications with complete personal data
 
-### 3. Manajemen Akademik (`manajemen-akademik.js`)
-- **School Identity**: School information and settings
-- **Tahun Ajaran**: Academic years
-- **Programs**: Study programs (IPA, IPS, Bahasa)
-- **Academic Events**: School events and exam schedules
-- **Users & Staff**: Admin and teacher accounts
-- **Curriculums**: Educational curriculums (Merdeka, Nasional, etc.)
-- **Subjects**: Academic subjects (Matematika, Bahasa Indonesia, etc.)
-- **Subject-Curriculum Relationships**: Links subjects to curriculums
-- **Classes**: Class levels (1-12 for SD, SMP, SMA)
-- **Subject-Class Relationships**: Links subjects to classes
-- **Class Groups (Rombel)**: Student groups per class
-- **Teacher Assignments**: Subject assignments to teachers
-- **Class Schedules**: Weekly schedules
-- **Students (Peserta Didik)**: Enrolled students
-- **Assessments & Grades**: Student evaluations
-- **Report Cards**: Academic reports
-- **Exam Results**: Test results
+### 3. Manajemen Akademik (`manajemen-akademik/`)
+
+#### Foundation (`foundation/foundation.js`)
+- School identity, academic years, programs, and academic events
+
+#### Curriculum (`curriculum/curriculum.js`)
+- Curriculums, subjects, and their relationships (subject-curriculum, subject-program)
+
+#### Classes (`classes/classes.js`)
+- Class levels, class groups (rombels), and subject-class relationships
+
+#### Users (`users/users.js`)
+- Users, staff, teacher subject assignments, and class schedules
+
+#### Students (`students/students.js`)
+- Student enrollment, assessments, grades, report cards, and exam results
+
+#### Additional Modules
+- **Rooms & Times** (`ruang-jam-pelajaran.js`): Rooms and lesson times
+- **Academic Data** (`seed-assessments.ts`, `seed-grades.ts`): Additional assessment templates and grades
+- **Teaching Materials** (`seed-syllabus-rpp.ts`, `seed-teaching-materials.ts`): Syllabus and materials
+- **Assignments** (`seed-assignments.ts`, `create-sample-submissions.ts`): Sample assignments and submissions
+
+### 4. Manajemen Guru (`manajemen-guru/`)
+- **Teacher Portal** (`teacher-portal.js`): Teacher-specific data
+- **Testing Data** (`seed-grades-for-guru.ts`): Sample grades for teacher testing
+- **Runner** (`run-all-teacher-seeds.ts`): Script to run teacher seeds
 
 ## Data Included
 

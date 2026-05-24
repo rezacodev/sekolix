@@ -116,7 +116,6 @@ export async function POST(
     const rombelId = parseInt(id);
     const { subjects } = await request.json();
 
-    console.log('[subjects-mapping POST] Received subjects:', subjects.length);
 
     // Get rombel with class info
     const rombel = await prisma.rombel.findUnique({

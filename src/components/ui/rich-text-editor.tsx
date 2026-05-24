@@ -171,7 +171,6 @@ export function RichTextEditor({
           continue;
         }
         if (seen.has(name)) {
-          console.warn(`[tiptap] Duplicate extension skipped: ${name}`);
           continue;
         }
         seen.add(name);
@@ -201,7 +200,6 @@ export function RichTextEditor({
       editor.commands.setContent(content);
     } catch (e) {
       // ignore invalid content
-      console.warn("Failed to set editor content:", e);
     }
   }, [content, editor]);
 

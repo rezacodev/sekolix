@@ -16,7 +16,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Upload, Users } from "lucide-react";
-import { PageHeader } from "@/components/admin";
+import { PageHeader } from "@/components/shared/page-header";
 import AssignmentModal from "./AssignmentModal";
 import { PesertaDidik, Rombel } from "@prisma/client";
 
@@ -54,12 +54,6 @@ export default function DataSiswaAktifPage() {
       updater: Record<string, boolean> | ((old: Record<string, boolean>) => Record<string, boolean>)
     ) => {
       const newSelection = typeof updater === "function" ? updater(rowSelection) : updater;
-      console.log(
-        "Row selection changed:",
-        newSelection,
-        "count:",
-        Object.keys(newSelection).filter(k => newSelection[k]).length
-      );
       setRowSelection(newSelection);
     },
     [rowSelection]
@@ -81,16 +75,9 @@ export default function DataSiswaAktifPage() {
         if (year) url.searchParams.set("yearId", year);
         if (program) url.searchParams.set("program", program);
 
-        console.log("Fetching peserta-didik:", url.toString());
         const res = await fetch(url.toString());
         if (!res.ok) throw new Error("Fetch failed");
         const data = await res.json();
-        console.log(
-          "Peserta-didik response items:",
-          (data.items || []).length,
-          "totalCount:",
-          data.totalCount
-        );
         setItems(
           Array.isArray(data.items)
             ? (data.items as StudentWithRombels[]).map(it => ({
@@ -123,7 +110,6 @@ export default function DataSiswaAktifPage() {
       const res = await fetch("/api/admin/penerimaan-siswa/settings/years");
       if (res.ok) {
         const data = await res.json();
-        console.log("Years data:", data);
         setYears(data || []);
         const activeYear = (data || []).find(
           (y: { id?: string; label?: string; isActive?: boolean }) => y.isActive

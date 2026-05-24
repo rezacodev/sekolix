@@ -53,19 +53,67 @@ export const authOptions: NextAuthOptions = {
       if (typedUser) {
         token.id = typedUser.id;
         token.role = typedUser.role ?? "USER";
+
+        // Fetch staff info for dual role detection
+        try {
+          const staff = await db.staff.findFirst({
+            where: { userId: typedUser.id },
+            select: {
+              id: true,
+              role: true
+            }
+          });
+
+          if (staff) {
+            token.staffId = staff.id;
+            token.staffRole = staff.role;
+            // Dual role = ADMIN user role + TEACHER staff role
+            token.isDualRole = typedUser.role === "ADMIN" && staff.role === "TEACHER";
+          }
+        } catch (error) {
+          console.error("Error fetching staff info in JWT callback:", error);
+        }
       }
-      return token as JWT & { id?: string; role?: string };
+      return token as JWT & { 
+        id?: string; 
+        role?: string;
+        staffId?: string;
+        staffRole?: string;
+        isDualRole?: boolean;
+      };
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token as JWT & { id?: string }).id ?? "";
         session.user.role = ((token as JWT & { role?: UserRole }).role ?? "USER") as UserRole;
+        session.user.staffId = (token as JWT & { staffId?: string }).staffId;
+        session.user.staffRole = (token as JWT & { staffRole?: string }).staffRole as "TEACHER" | "STAFF" | undefined;
+        session.user.isDualRole = (token as JWT & { isDualRole?: boolean }).isDualRole ?? false;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // If redirecting to login, allow it
+      if (url.startsWith("/login")) {
+        return url;
+      }
+
+      // If URL is relative, prepend baseUrl
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // If URL is on same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+
+      // Default redirect to base URL
+      return baseUrl;
     }
   },
   pages: {
-    signIn: "/admin/login"
+    signIn: "/login"
   },
   session: {
     strategy: "jwt" as const,

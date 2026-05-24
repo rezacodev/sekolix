@@ -1,1 +1,1 @@
-export { PageHeader } from "./page-header";
+export { PageHeader } from "../shared/page-header";

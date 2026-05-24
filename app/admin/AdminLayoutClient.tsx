@@ -43,6 +43,7 @@ import { BreadcrumbProvider, useBreadcrumb } from "@/contexts/admin";
 import { BreadcrumbDisplay } from "./BreadcrumbDisplay";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ADMIN_THEMES } from "@/constants/admin-themes";
+import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 
 // Breadcrumb mapping for automatic breadcrumb generation
 const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = {
@@ -911,7 +912,9 @@ function AdminLayoutContent({
         {/* Top Navbar */}
         <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
           <BreadcrumbDisplay />
-          <DropdownMenu>
+          <div className="flex items-center gap-3">
+            <RoleSwitcher />
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 hover:bg-accent">
                 <Avatar className="h-8 w-8">
@@ -940,6 +943,7 @@ function AdminLayoutContent({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </header>
 
         {/* Main Content */}

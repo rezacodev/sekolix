@@ -21,3 +21,19 @@ export { useBreadcrumb } from "./useBreadcrumb";
 
 // Admin Hooks
 export * from "./admin";
+
+// Teacher-specific Hooks
+export { useTeacherClasses, useTeacherRombels, useTeacherSubjects } from "./useTeacherClasses";
+export type { TeacherClass, TeacherClassSubject, TeacherClassSchedule } from "./useTeacherClasses";
+
+export { useStudentData, useFilteredStudents } from "./useStudentData";
+export type { StudentBasic } from "./useStudentData";
+
+export { useGrading } from "./useGrading";
+export type { GradeEntry, RubricDef } from "./useGrading";
+
+export { useAttendance, ATTENDANCE_OPTIONS } from "./useAttendance";
+export type { AttendanceStatus, AttendanceRecord, AttendanceSession } from "./useAttendance";
+
+export { useAssignments, useAssignmentsSummary } from "./useAssignments";
+export type { Assignment, AssignmentStatus } from "./useAssignments";

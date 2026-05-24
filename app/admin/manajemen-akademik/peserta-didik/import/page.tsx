@@ -23,7 +23,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Upload, Download, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { PageHeader } from "@/components/admin";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface ImportData {
   nik: string;
@@ -217,7 +217,6 @@ export default function ImportPesertaDidikPage() {
       );
       if (existingRes.ok) {
         existingRecords = await existingRes.json();
-        console.log("Existing records found:", existingRecords);
       } else {
         console.error("Failed to check existing records:", existingRes.status);
       }

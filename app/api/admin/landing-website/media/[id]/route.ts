@@ -27,16 +27,9 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
-    console.log("Attempting to delete media:", {
-      id: media.id,
-      publicId: media.publicId,
-      type: media.type
-    });
-
     // Try to delete from Cloudinary first, but don't fail if it errors
     try {
       const cloudinaryResult = await deleteFromCloudinary(media.publicId, media.type);
-      console.log("Cloudinary delete result:", cloudinaryResult);
     } catch (cloudinaryError) {
       console.error("Cloudinary delete failed (continuing anyway):", cloudinaryError);
       // Continue to delete from database even if Cloudinary fails
@@ -47,7 +40,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       where: { id }
     });
 
-    console.log("Media deleted successfully from database");
     return NextResponse.json({ message: "Media deleted successfully" });
   } catch (error: unknown) {
     console.error("Error deleting media:", error);

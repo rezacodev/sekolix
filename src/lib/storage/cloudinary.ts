@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { logger } from "../logger";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -19,7 +20,7 @@ export async function deleteFromCloudinary(publicId: string, resourceType: strin
       resource_type: type
     });
 
-    console.log("Cloudinary delete result:", result);
+    logger.log("Cloudinary delete result:", result);
     return result;
   } catch (error) {
     console.error("Error deleting from Cloudinary:", error);
