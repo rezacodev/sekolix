@@ -68,11 +68,11 @@ export default function AnalisisPage() {
   const maxBucketStudents = data?.attAnalysis.reduce((m, b) => Math.max(m, b.students), 1) ?? 1;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Analisis Pembelajaran</h1>
-        <p className="text-sm text-muted-foreground mt-1">Korelasi kehadiran vs nilai, materi rendah, dan rekomendasi perbaikan</p>
+        <h1 className="text-3xl font-bold tracking-tight">Analisis Pembelajaran</h1>
+        <p className="text-sm text-muted-foreground">Korelasi kehadiran vs nilai, materi rendah, dan rekomendasi perbaikan</p>
       </div>
 
       {/* Filters */}

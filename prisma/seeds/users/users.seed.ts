@@ -16,33 +16,43 @@ import {
 export async function seedUsersAndStaff(school: { id: string; name: string; shortName: string | null; schoolLevel: string; npsn: string | null; address: string | null; postalCode: string | null; phone: string | null; email: string | null; website: string | null; logoUrl: string | null; logoDarkUrl: string | null; faviconUrl: string | null; coverImageUrl: string | null; headmaster: string | null; headmasterNIP: string | null; accreditation: string | null; establishedYear: number | null; timezone: string | null; language: string | null; metaDescription: string | null; socialLinks: Prisma.JsonValue; defaultTheme: string | null; settings: Prisma.JsonValue; isPublic: boolean; createdAt: Date; updatedAt: Date; }, numTeachers = 15) {
   console.log("👤 Seeding users and staff...");
 
-  // Create admin user
-  let adminUser = await prisma.user.findFirst({
-    where: { email: "admin@sekolix.com" },
-  });
-
-  if (!adminUser) {
-    adminUser = await prisma.user.create({
+  // ── Superadmin ───────────────────────────────────────────────────────────
+  let superadminUser = await prisma.user.findFirst({ where: { email: "superadmin@sekolix.com" } });
+  if (!superadminUser) {
+    superadminUser = await prisma.user.create({
       data: {
-        email: "admin@sekolix.com",
-        password: await bcrypt.hash("admin123", 10),
-        role: "ADMIN",
+        email: "superadmin@sekolix.com",
+        name: "Super Administrator",
+        password: await bcrypt.hash("superadmin123", 10),
+        role: "SUPERADMIN",
         isActive: true,
       },
     });
   }
 
-  // Create admin staff record
-  let adminStaff = await prisma.staff.findFirst({
-    where: { userId: adminUser.id },
-  });
+  // ── Admin ─────────────────────────────────────────────────────────────────
+  let adminUser = await prisma.user.findFirst({ where: { email: "admin@sekolix.com" } });
+  if (!adminUser) {
+    adminUser = await prisma.user.create({
+      data: {
+        email: "admin@sekolix.com",
+        name: "Administrator",
+        password: await bcrypt.hash("admin123", 10),
+        role: "ADMIN",
+        isActive: true,
+      },
+    });
+  } else if (adminUser.role !== "ADMIN") {
+    await prisma.user.update({ where: { id: adminUser.id }, data: { role: "ADMIN" } });
+  }
 
+  let adminStaff = await prisma.staff.findFirst({ where: { userId: adminUser.id } });
   if (!adminStaff) {
     adminStaff = await prisma.staff.create({
       data: {
         userId: adminUser.id,
         name: "Administrator",
-        role: "STAFF", // Admin is staff, not teacher
+        role: "STAFF",
         nik: generateNIK(),
         placeOfBirth: "Jakarta",
         dateOfBirth: new Date(1980, 0, 1),
@@ -58,27 +68,61 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
     });
   }
 
-  // Create main teacher user for testing (guru@sekolix.com)
-  let mainTeacherUser = await prisma.user.findFirst({
-    where: { email: "guru@sekolix.com" },
-  });
+  // ── Staff (TU / Tata Usaha) ───────────────────────────────────────────────
+  let staffUser = await prisma.user.findFirst({ where: { email: "staff@sekolix.com" } });
+  if (!staffUser) {
+    staffUser = await prisma.user.create({
+      data: {
+        email: "staff@sekolix.com",
+        name: "Siti Rahayu",
+        password: await bcrypt.hash("staff123", 10),
+        role: "STAFF",
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.user.update({ where: { id: staffUser.id }, data: { role: "STAFF" } });
+  }
 
+  let staffRecord = await prisma.staff.findFirst({ where: { userId: staffUser.id } });
+  if (!staffRecord) {
+    staffRecord = await prisma.staff.create({
+      data: {
+        userId: staffUser.id,
+        name: "Siti Rahayu",
+        role: "STAFF",
+        nik: generateNIK(),
+        placeOfBirth: "Bandung",
+        dateOfBirth: new Date(1990, 3, 20),
+        gender: "FEMALE",
+        religion: "Islam",
+        address: "Jl. Pahlawan No. 5, Bandung",
+        phone: generatePhone(),
+        position: "Tata Usaha",
+        jenisPTK: "Tenaga Kependidikan",
+        jabatanPTK: "Staf Tata Usaha",
+        isActive: true,
+      },
+    });
+  }
+
+  // ── Guru (main teacher) ───────────────────────────────────────────────────
+  let mainTeacherUser = await prisma.user.findFirst({ where: { email: "guru@sekolix.com" } });
   if (!mainTeacherUser) {
     mainTeacherUser = await prisma.user.create({
       data: {
         email: "guru@sekolix.com",
         name: "Budi Santoso",
         password: await bcrypt.hash("guru123", 10),
-        role: "USER",
+        role: "GURU",
         isActive: true,
       },
     });
+  } else {
+    await prisma.user.update({ where: { id: mainTeacherUser.id }, data: { role: "GURU" } });
   }
 
-  let mainTeacherStaff = await prisma.staff.findFirst({
-    where: { userId: mainTeacherUser.id },
-  });
-
+  let mainTeacherStaff = await prisma.staff.findFirst({ where: { userId: mainTeacherUser.id } });
   const staffListLocal = [adminStaff];
 
   if (!mainTeacherStaff) {
@@ -86,7 +130,7 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
       data: {
         userId: mainTeacherUser.id,
         name: "Budi Santoso",
-        role: "TEACHER", // Set role sebagai TEACHER
+        role: "TEACHER",
         nik: generateNIK(),
         placeOfBirth: "Jakarta",
         dateOfBirth: new Date(1985, 5, 15),
@@ -105,7 +149,80 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
     staffListLocal.push(mainTeacherStaff);
   }
 
-  // Create teacher users and staff
+  // ── Dual-role: Superadmin + Teacher ──────────────────────────────────────
+  let dualRoleUser = await prisma.user.findFirst({ where: { email: "dualrole@sekolix.com" } });
+  if (!dualRoleUser) {
+    dualRoleUser = await prisma.user.create({
+      data: {
+        email: "dualrole@sekolix.com",
+        name: "Ahmad Fauzi",
+        password: await bcrypt.hash("dualrole123", 10),
+        role: "SUPERADMIN",
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.user.update({ where: { id: dualRoleUser.id }, data: { role: "SUPERADMIN" } });
+  }
+
+  let dualRoleStaff = await prisma.staff.findFirst({ where: { userId: dualRoleUser.id } });
+  if (!dualRoleStaff) {
+    dualRoleStaff = await prisma.staff.create({
+      data: {
+        userId: dualRoleUser.id,
+        name: "Ahmad Fauzi",
+        role: "TEACHER",
+        nik: generateNIK(),
+        placeOfBirth: "Surabaya",
+        dateOfBirth: new Date(1978, 8, 10),
+        gender: "MALE",
+        religion: "Islam",
+        address: "Jl. Merdeka No. 99, Surabaya",
+        phone: generatePhone(),
+        position: "Guru",
+        jenisPTK: "Guru",
+        jabatanPTK: "Guru Senior",
+        isActive: true,
+      },
+    });
+    staffListLocal.push(dualRoleStaff);
+  } else {
+    staffListLocal.push(dualRoleStaff);
+  }
+
+  // ── Murid ─────────────────────────────────────────────────────────────────
+  let muridUser = await prisma.user.findFirst({ where: { email: "murid@sekolix.com" } });
+  if (!muridUser) {
+    await prisma.user.create({
+      data: {
+        email: "murid@sekolix.com",
+        name: "Rina Wulandari",
+        password: await bcrypt.hash("murid123", 10),
+        role: "MURID",
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.user.update({ where: { id: muridUser.id }, data: { role: "MURID" } });
+  }
+
+  // ── Orangtua ──────────────────────────────────────────────────────────────
+  let orangtuaUser = await prisma.user.findFirst({ where: { email: "orangtua@sekolix.com" } });
+  if (!orangtuaUser) {
+    await prisma.user.create({
+      data: {
+        email: "orangtua@sekolix.com",
+        name: "Hendra Kusuma",
+        password: await bcrypt.hash("orangtua123", 10),
+        role: "ORANGTUA",
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.user.update({ where: { id: orangtuaUser.id }, data: { role: "ORANGTUA" } });
+  }
+
+  // ── Additional teacher users ──────────────────────────────────────────────
 
   for (let i = 1; i <= numTeachers; i++) {
     let teacherUser = await prisma.user.findFirst({
@@ -117,10 +234,12 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
         data: {
           email: `guru${i}@sekolix.com`,
           password: await bcrypt.hash("guru123", 10),
-          role: "USER",
+          role: "GURU",
           isActive: true,
         },
       });
+    } else {
+      await prisma.user.update({ where: { id: teacherUser.id }, data: { role: "GURU" } });
     }
 
     let teacherStaff = await prisma.staff.findFirst({

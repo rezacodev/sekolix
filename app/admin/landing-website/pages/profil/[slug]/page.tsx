@@ -12,7 +12,7 @@ export default async function ProfilePageEditor({ params }: PageParams) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   const { slug } = await params;

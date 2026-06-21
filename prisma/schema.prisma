@@ -33,7 +33,13 @@ model User {
 }
 
 enum UserRole {
+  SUPERADMIN
   ADMIN
+  GURU
+  STAFF
+  MURID
+  ORANGTUA
+  // Legacy — kept for migration safety
   EDITOR
   USER
 }
@@ -1785,5 +1791,19 @@ model WebhookConfig {
 
   @@unique([event])
   @@map("webhook_configs")
+}
+
+// RBAC: Role-based permission overrides per role (used by CASL ability builder)
+model RolePermission {
+  id        String   @id @default(cuid())
+  role      UserRole
+  subject   String   // CASL subject slug, e.g. "akademik.nilai", "pengaturan.system"
+  action    String   // "manage" | "read" | "create" | "update" | "delete"
+  inverted  Boolean  @default(false) // true = cannot (deny rule)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([role, subject, action])
+  @@map("role_permissions")
 }
 

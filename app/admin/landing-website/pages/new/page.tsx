@@ -7,7 +7,7 @@ export default async function NewPagePage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   return <PageNewClient />;

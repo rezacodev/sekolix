@@ -26,9 +26,8 @@ async function getStats() {
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "ADMIN") {
-    redirect("/admin/login");
-  }
+  // Middleware already enforces admin-role access; session is guaranteed here
+  if (!session?.user) redirect("/login");
 
   const stats = await getStats();
 

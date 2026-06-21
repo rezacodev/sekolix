@@ -2,7 +2,15 @@
  * Authentication types
  */
 
-export type UserRole = "ADMIN" | "EDITOR" | "USER";
+export type UserRole =
+  | "SUPERADMIN"
+  | "ADMIN"
+  | "GURU"
+  | "STAFF"
+  | "MURID"
+  | "ORANGTUA"
+  | "EDITOR"  // legacy
+  | "USER";   // legacy
 
 export interface AuthUser {
   id: string;

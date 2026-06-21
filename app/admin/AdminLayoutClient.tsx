@@ -241,6 +241,10 @@ const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = 
     { label: "Pengaturan", href: "/admin/pengaturan" },
     { label: "Backup & Restore" }
   ],
+  "/admin/pengaturan/permissions": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Izin Akses Role" }
+  ],
   "/admin/pengguna": [
     { label: "Pengaturan", href: "/admin/pengaturan" },
     { label: "Manajemen Pengguna" }
@@ -252,6 +256,7 @@ type SubMenu = {
   label: string;
   href: string;
   badge?: string;
+  superadminOnly?: boolean;
 };
 
 type AppCategory = {
@@ -262,6 +267,7 @@ type AppCategory = {
   description: string;
   href?: string;
   subMenus?: SubMenu[];
+  allowedRoles?: string[]; // if set, category is hidden for roles not in this list
 };
 
 const appCategories: AppCategory[] = [
@@ -368,6 +374,7 @@ const appCategories: AppCategory[] = [
     icon: Settings,
     color: "bg-muted",
     description: "Konfigurasi sistem",
+    allowedRoles: ["SUPERADMIN", "ADMIN"],
     subMenus: [
       {
         id: "settings-identitas",
@@ -376,8 +383,9 @@ const appCategories: AppCategory[] = [
       },
       { id: "settings-users", label: "Manajemen Pengguna", href: "/admin/pengguna" },
       { id: "settings-notifikasi", label: "Notifikasi", href: "/admin/pengaturan/notifikasi" },
-      { id: "settings-integrasi", label: "Integrasi & API", href: "/admin/pengaturan/integrasi-api" },
-      { id: "settings-backup", label: "Backup & Restore", href: "/admin/pengaturan/backup-restore" }
+      { id: "settings-integrasi", label: "Integrasi & API", href: "/admin/pengaturan/integrasi-api", superadminOnly: true },
+      { id: "settings-backup", label: "Backup & Restore", href: "/admin/pengaturan/backup-restore", superadminOnly: true },
+      { id: "settings-permissions", label: "Izin Akses Role", href: "/admin/pengaturan/permissions", superadminOnly: true }
     ]
   }
 ];
@@ -734,7 +742,9 @@ function AdminLayoutContent({
         <div className="flex-1 min-h-0">
           <ScrollArea className="h-full px-3 py-4 bg-muted/30">
             <nav className="flex flex-col gap-1">
-              {appCategories.map(app => {
+              {appCategories.filter(app =>
+                !app.allowedRoles || app.allowedRoles.includes(session?.user?.role ?? "")
+              ).map(app => {
                 const Icon = app.icon;
                 const hasSubMenus = app.subMenus && app.subMenus.length > 0;
                 const isExpanded = expandedMenus.includes(app.id);
@@ -792,7 +802,7 @@ function AdminLayoutContent({
                         <DropdownMenuContent side="right" align="start" className="w-44">
                           <DropdownMenuLabel>{app.name}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          {app.subMenus!.map(sub => (
+                          {app.subMenus!.filter(sub => !sub.superadminOnly || session?.user?.role === "SUPERADMIN").map(sub => (
                             <DropdownMenuItem key={sub.id} asChild>
                               <Link href={sub.href}>{sub.label}</Link>
                             </DropdownMenuItem>
@@ -834,7 +844,7 @@ function AdminLayoutContent({
 
                     {!isSidebarMinimized && isExpanded && (
                       <div className="ml-11 mt-1 space-y-1">
-                        {app.subMenus?.map(sub => {
+                        {app.subMenus?.filter(sub => !sub.superadminOnly || session?.user?.role === "SUPERADMIN").map(sub => {
                           const isSubActive = isActiveRoute(sub.href);
                           return (
                             <Button

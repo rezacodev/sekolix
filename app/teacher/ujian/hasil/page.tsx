@@ -100,12 +100,12 @@ export default function HasilUjianPage() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Hasil Ujian</h1>
-          <p className="text-sm text-muted-foreground mt-1">Rekap nilai dan analisis hasil ujian per kelas</p>
+          <h1 className="text-3xl font-bold tracking-tight">Hasil Ujian</h1>
+          <p className="text-sm text-muted-foreground">Rekap nilai dan analisis hasil ujian per kelas</p>
         </div>
       </div>
 

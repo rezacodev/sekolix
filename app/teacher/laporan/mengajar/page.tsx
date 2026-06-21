@@ -100,12 +100,12 @@ export default function LaporanMengajarPage() {
   const maxCount = data?.weeklyChart.reduce((m, w) => Math.max(m, w.count), 0) ?? 1;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Laporan Mengajar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Rekap jurnal dan absensi kelas yang Anda ampu</p>
+          <h1 className="text-3xl font-bold tracking-tight">Laporan Mengajar</h1>
+          <p className="text-sm text-muted-foreground">Rekap jurnal dan absensi kelas yang Anda ampu</p>
         </div>
         <Button variant="outline" asChild className="gap-1">
           <a href={exportUrl()} download>

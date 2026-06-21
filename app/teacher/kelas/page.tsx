@@ -179,11 +179,11 @@ export default function KelasPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Kelas Saya</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Kelas Saya</h1>
           <p className="text-muted-foreground">
             Kelola dan pantau semua kelas yang Anda ajar
           </p>

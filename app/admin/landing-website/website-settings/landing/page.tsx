@@ -12,7 +12,7 @@ export default async function LandingSectionsSettingsPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   const sections = await db.landingSection.findMany({

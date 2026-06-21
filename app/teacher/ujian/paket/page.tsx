@@ -198,12 +198,12 @@ export default function PaketUjianPage() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Paket Ujian</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-3xl font-bold tracking-tight">Paket Ujian</h1>
+          <p className="text-sm text-muted-foreground">
             Buat dan kelola paket ujian dari bank soal untuk siswa
           </p>
         </div>

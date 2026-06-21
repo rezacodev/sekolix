@@ -565,25 +565,27 @@ function WebhooksTab() {
 
 export default function IntegrasiApiPage() {
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Integrasi & API</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-3xl font-bold tracking-tight">Integrasi &amp; API</h1>
+        <p className="text-muted-foreground">
           Kelola API key dan konfigurasi webhook untuk integrasi sistem eksternal
         </p>
       </div>
 
       <Tabs defaultValue="api-keys">
-        <TabsList>
-          <TabsTrigger value="api-keys" className="gap-2">
-            <Key className="h-4 w-4" />
-            API Key
-          </TabsTrigger>
-          <TabsTrigger value="webhooks" className="gap-2">
-            <Webhook className="h-4 w-4" />
-            Webhook
-          </TabsTrigger>
-        </TabsList>
+        <div className="border-b border-border">
+          <TabsList className="h-auto bg-transparent p-0 rounded-none gap-0">
+            <TabsTrigger value="api-keys" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <Key className="h-4 w-4" />
+              API Key
+            </TabsTrigger>
+            <TabsTrigger value="webhooks" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <Webhook className="h-4 w-4" />
+              Webhook
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="api-keys" className="mt-6">
           <ApiKeysTab />

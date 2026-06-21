@@ -61,10 +61,10 @@ export default function ForumPage() {
   const regular = discussions.filter((d) => !d.is_pinned);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Forum Diskusi</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Forum Diskusi</h1>
           <p className="text-muted-foreground text-sm">{total} diskusi</p>
         </div>
         <Button onClick={() => router.push("/teacher/komunikasi/forum/buat")}>

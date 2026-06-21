@@ -15,9 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Search, ChevronRight, BookOpen, Users, BarChart2, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/shared/page-header";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { useEffect as useLayoutEffect } from "react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -53,7 +51,7 @@ interface RombelRow {
 export default function NilaiRaporPage() {
   const breadcrumbContext = useBreadcrumb();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     breadcrumbContext?.setBreadcrumbs?.([
       { label: "Manajemen Akademik", href: "/admin/manajemen-akademik" },
       { label: "Nilai & Rapor", href: "/admin/manajemen-akademik/nilai-rapor" },
@@ -119,11 +117,11 @@ export default function NilaiRaporPage() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Nilai & Rapor"
-        description="Pantau nilai siswa per rombel dan mata pelajaran, lalu cetak rapor"
-      />
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Nilai &amp; Rapor</h1>
+        <p className="text-muted-foreground">Pantau nilai siswa per rombel dan mata pelajaran, lalu cetak rapor</p>
+      </div>
 
       {/* Filters */}
       <Card>

@@ -4,7 +4,9 @@ import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
+import { buildRules } from "@/lib/permissions/definitions";
 import type { UserRole } from "@/types";
+import type { RolePermissionOverride } from "@/lib/permissions/types";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -54,28 +56,26 @@ export const authOptions: NextAuthOptions = {
         token.id = typedUser.id;
         token.role = typedUser.role ?? "USER";
 
-        // Fetch staff info for dual role detection
+        // Fetch linked staff info
         try {
           const staff = await db.staff.findFirst({
             where: { userId: typedUser.id },
-            select: {
-              id: true,
-              role: true
-            }
+            select: { id: true, role: true }
           });
 
           if (staff) {
             token.staffId = staff.id;
             token.staffRole = staff.role;
-            // Dual role = ADMIN user role + TEACHER staff role
-            token.isDualRole = typedUser.role === "ADMIN" && staff.role === "TEACHER";
+            // Dual role = admin-level user who also has a teacher staff record
+            const isAdminRole = ["SUPERADMIN", "ADMIN"].includes(typedUser.role ?? "");
+            token.isDualRole = isAdminRole && staff.role === "TEACHER";
           }
         } catch (error) {
           console.error("Error fetching staff info in JWT callback:", error);
         }
       }
-      return token as JWT & { 
-        id?: string; 
+      return token as JWT & {
+        id?: string;
         role?: string;
         staffId?: string;
         staffRole?: string;
@@ -84,31 +84,46 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token as JWT & { id?: string }).id ?? "";
-        session.user.role = ((token as JWT & { role?: UserRole }).role ?? "USER") as UserRole;
-        session.user.staffId = (token as JWT & { staffId?: string }).staffId;
-        session.user.staffRole = (token as JWT & { staffRole?: string }).staffRole as "TEACHER" | "STAFF" | undefined;
-        session.user.isDualRole = (token as JWT & { isDualRole?: boolean }).isDualRole ?? false;
+        const t = token as JWT & {
+          id?: string;
+          role?: string;
+          staffId?: string;
+          staffRole?: string;
+          isDualRole?: boolean;
+        };
+        session.user.id = t.id ?? "";
+        session.user.role = (t.role ?? "USER") as UserRole;
+        session.user.staffId = t.staffId;
+        session.user.staffRole = t.staffRole as "TEACHER" | "STAFF" | undefined;
+        session.user.isDualRole = t.isDualRole ?? false;
+
+        // Build CASL ability rules (include DB overrides for STAFF role)
+        try {
+          let overrides: RolePermissionOverride[] = [];
+          const role = session.user.role as UserRole;
+          if (role === "STAFF") {
+            const dbOverrides = await (db as any).rolePermission.findMany({
+              where: { role },
+            });
+            overrides = dbOverrides.map((o: any) => ({
+              role: o.role,
+              subject: o.subject,
+              action: o.action,
+              inverted: o.inverted,
+            }));
+          }
+          session.user.abilityRules = buildRules(role, overrides) as object[];
+        } catch (error) {
+          console.error("Error building ability rules:", error);
+          session.user.abilityRules = [];
+        }
       }
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // If redirecting to login, allow it
-      if (url.startsWith("/login")) {
-        return url;
-      }
-
-      // If URL is relative, prepend baseUrl
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
-      }
-      
-      // If URL is on same origin, allow it
-      if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-
-      // Default redirect to base URL
+      if (url.startsWith("/login")) return url;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     }
   },
@@ -117,7 +132,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt" as const,
-    maxAge: 30 * 24 * 60 * 60 // 30 days
+    maxAge: 30 * 24 * 60 * 60
   },
   secret: process.env.NEXTAUTH_SECRET
 };

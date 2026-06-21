@@ -1,27 +1,70 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+// Roles allowed into the admin panel
+const ADMIN_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+// Roles that can access teacher portal
+const TEACHER_ROLES = ["SUPERADMIN", "GURU"] as const;
+// Roles allowed to manage system-level config (integrasi API, backup, dll)
+const SYSTEM_CONFIG_ROLES = ["SUPERADMIN"] as const;
+// System-config routes within admin
+const SYSTEM_CONFIG_PATHS = ["/admin/pengaturan/integrasi-api", "/admin/pengaturan/backup"] as const;
+
+// Public-facing paths that never require login
+const PUBLIC_PREFIXES = [
+  "/about",
+  "/contact",
+  "/gallery",
+  "/informasi",
+  "/profil",
+  "/apply",
+  "/api/penerimaan-siswa",
+] as const;
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
+    const role = token?.role as string | undefined;
 
-    // Admin routes protection
+    // Admin panel routes
     if (pathname.startsWith("/admin")) {
-      if (token?.role !== "ADMIN") {
+      if (!role || !ADMIN_ROLES.includes(role as typeof ADMIN_ROLES[number])) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+
+      // System-config sub-routes: superadmin only
+      if (SYSTEM_CONFIG_PATHS.some((p) => pathname.startsWith(p))) {
+        if (!SYSTEM_CONFIG_ROLES.includes(role as typeof SYSTEM_CONFIG_ROLES[number])) {
+          return NextResponse.redirect(new URL("/unauthorized", req.url));
+        }
       }
     }
 
-    // Teacher routes protection
+    // Teacher portal routes
     if (pathname.startsWith("/teacher")) {
-      // Allow if user has TEACHER staff role
-      if (token?.staffRole !== "TEACHER") {
+      const hasTeacherAccess =
+        TEACHER_ROLES.includes(role as typeof TEACHER_ROLES[number]) ||
+        token?.staffRole === "TEACHER";
+      if (!hasTeacherAccess) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
     }
 
-    // Allow access
+    // Student portal routes
+    if (pathname.startsWith("/student")) {
+      if (role !== "MURID") {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    }
+
+    // Parent portal routes
+    if (pathname.startsWith("/parent")) {
+      if (role !== "ORANGTUA") {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    }
+
     return NextResponse.next();
   },
   {
@@ -29,20 +72,18 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
 
-        // Public routes that don't require authentication
-        const publicRoutes = [
-          "/login",
-          "/select-role",
-          "/unauthorized",
-          "/"
-        ];
-
-        // Check if current path is public
-        if (publicRoutes.some(route => pathname === route || pathname.startsWith("/api/auth"))) {
+        // Explicitly public routes (no auth required)
+        if (
+          pathname === "/" ||
+          pathname === "/login" ||
+          pathname === "/select-role" ||
+          pathname === "/unauthorized" ||
+          pathname.startsWith("/api/auth") ||
+          PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+        ) {
           return true;
         }
 
-        // For protected routes, require token
         return !!token;
       }
     },
@@ -52,16 +93,8 @@ export default withAuth(
   }
 );
 
-// Configure which routes use middleware
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ]
 };

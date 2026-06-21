@@ -118,8 +118,8 @@ export default function TeacherDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Dashboard Guru</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard Guru</h1>
+        <p className="text-muted-foreground">
           Selamat datang kembali! Berikut ringkasan aktivitas Anda hari ini.
         </p>
       </div>

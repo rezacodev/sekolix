@@ -165,12 +165,12 @@ export default function JadwalUjianPage() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Jadwal Ujian</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola jadwal pelaksanaan ujian untuk setiap kelas</p>
+          <h1 className="text-3xl font-bold tracking-tight">Jadwal Ujian</h1>
+          <p className="text-sm text-muted-foreground">Kelola jadwal pelaksanaan ujian untuk setiap kelas</p>
         </div>
         <Button asChild>
           <Link href="/teacher/ujian/jadwal/buat">

@@ -84,12 +84,12 @@ export default function LaporanNilaiPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Laporan Nilai</h1>
-          <p className="text-sm text-muted-foreground mt-1">Rekap nilai dan prestasi siswa per kelas dan mata pelajaran</p>
+          <h1 className="text-3xl font-bold tracking-tight">Laporan Nilai</h1>
+          <p className="text-sm text-muted-foreground">Rekap nilai dan prestasi siswa per kelas dan mata pelajaran</p>
         </div>
         <Button variant="outline" asChild className="gap-1">
           <a href={exportUrl()} download>

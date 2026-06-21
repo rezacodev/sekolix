@@ -9,7 +9,7 @@ export default async function EditNewsPage({ params }: { params: Promise<{ id: s
   const { id } = await params;
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   const news = await db.news.findUnique({

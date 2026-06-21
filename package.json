@@ -20,6 +20,8 @@
     "prisma:seed:full": "tsx prisma/seeds/seed.ts --scenario=full"
   },
   "dependencies": {
+    "@casl/ability": "^7.0.0",
+    "@casl/react": "^7.0.0",
     "@fullcalendar/daygrid": "^6.1.19",
     "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",

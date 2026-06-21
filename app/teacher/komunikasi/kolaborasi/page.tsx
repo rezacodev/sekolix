@@ -42,10 +42,10 @@ export default function KolaborasiPage() {
   useEffect(() => { fetchTeachers(); }, [fetchTeachers]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Kolaborasi Guru</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Kolaborasi Guru</h1>
           <p className="text-muted-foreground text-sm">{total} guru terdaftar</p>
         </div>
         <Button variant="outline" onClick={() => router.push("/teacher/komunikasi/kolaborasi/materi")}>

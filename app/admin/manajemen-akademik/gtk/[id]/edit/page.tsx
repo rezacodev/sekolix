@@ -8,7 +8,7 @@ export default async function EditGtkPage({ params }: { params: Promise<{ id: st
   const session = await getServerSession(authOptions);
   const { id } = await params;
 
-  if (!session) redirect("/admin/login");
+  if (!session) redirect("/login");
 
   const staff = await db.staff.findUnique({ where: { id } });
   if (!staff) redirect("/admin/manajemen-akademik/gtk");

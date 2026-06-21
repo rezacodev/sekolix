@@ -82,10 +82,10 @@ export default function OrangTuaPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Komunikasi Orang Tua</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Komunikasi Orang Tua</h1>
           <p className="text-muted-foreground text-sm">{total} siswa</p>
         </div>
         {selected.size > 0 && (

@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Search, RotateCcw, BookOpen, FlaskConical, Scale, Plus, Trash2, GraduationCap, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/admin";
 
 // ─── KKM types ────────────────────────────────────────────────────────────────
 
@@ -415,31 +414,33 @@ export default function PengaturanAkademikPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Pengaturan Akademik"
-        description="Kelola KKM per mata pelajaran dan bobot komponen nilai"
-      />
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Pengaturan Akademik</h1>
+        <p className="text-muted-foreground">Kelola KKM per mata pelajaran dan bobot komponen nilai</p>
+      </div>
 
       <Tabs defaultValue="kkm">
-        <TabsList>
-          <TabsTrigger value="kkm" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            KKM per Mata Pelajaran
-          </TabsTrigger>
-          <TabsTrigger value="bobot" className="gap-2">
-            <Scale className="h-4 w-4" />
-            Bobot Komponen Nilai
-          </TabsTrigger>
-          <TabsTrigger value="skala" className="gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Skala Nilai Huruf
-          </TabsTrigger>
-          <TabsTrigger value="semester" className="gap-2">
-            <CalendarDays className="h-4 w-4" />
-            Semester
-          </TabsTrigger>
-        </TabsList>
+        <div className="border-b border-border">
+          <TabsList className="h-auto bg-transparent p-0 rounded-none gap-0">
+            <TabsTrigger value="kkm" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <BookOpen className="h-4 w-4" />
+              KKM per Mata Pelajaran
+            </TabsTrigger>
+            <TabsTrigger value="bobot" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <Scale className="h-4 w-4" />
+              Bobot Komponen Nilai
+            </TabsTrigger>
+            <TabsTrigger value="skala" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <GraduationCap className="h-4 w-4" />
+              Skala Nilai Huruf
+            </TabsTrigger>
+            <TabsTrigger value="semester" className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground">
+              <CalendarDays className="h-4 w-4" />
+              Semester
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ── TAB KKM ───────────────────────────────────────────────────── */}
         <TabsContent value="kkm" className="mt-6">

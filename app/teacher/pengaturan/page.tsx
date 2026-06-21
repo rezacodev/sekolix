@@ -227,23 +227,34 @@ export default function PengaturanPage() {
       </div>
 
       <Tabs defaultValue="profil">
-        <TabsList className="mb-6">
-          <TabsTrigger value="profil" className="gap-2">
-            <User className="h-4 w-4" />
-            Profil
-          </TabsTrigger>
-          <TabsTrigger value="riwayat" className="gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Riwayat & Sertifikasi
-          </TabsTrigger>
-          <TabsTrigger value="password" className="gap-2">
-            <Lock className="h-4 w-4" />
-            Password
-          </TabsTrigger>
-        </TabsList>
+        <div className="border-b border-border">
+          <TabsList className="h-auto bg-transparent p-0 rounded-none gap-0">
+            <TabsTrigger
+              value="profil"
+              className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground"
+            >
+              <User className="h-4 w-4" />
+              Profil
+            </TabsTrigger>
+            <TabsTrigger
+              value="riwayat"
+              className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground"
+            >
+              <GraduationCap className="h-4 w-4" />
+              Riwayat &amp; Sertifikasi
+            </TabsTrigger>
+            <TabsTrigger
+              value="password"
+              className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-none border-b-2 border-transparent bg-transparent shadow-none text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground"
+            >
+              <Lock className="h-4 w-4" />
+              Password
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ─── TAB: PROFIL ───────────────────────────────────────────────── */}
-        <TabsContent value="profil">
+        <TabsContent value="profil" className="pt-6">
           <form onSubmit={handleSaveProfile} className="space-y-6">
             {/* Foto & identitas singkat */}
             <Card>
@@ -407,7 +418,7 @@ export default function PengaturanPage() {
         </TabsContent>
 
         {/* ─── TAB: RIWAYAT & SERTIFIKASI ────────────────────────────────── */}
-        <TabsContent value="riwayat">
+        <TabsContent value="riwayat" className="pt-6">
           <div className="space-y-6">
             {/* Info kepegawaian (read-only) */}
             <Card>
@@ -494,7 +505,7 @@ export default function PengaturanPage() {
         </TabsContent>
 
         {/* ─── TAB: PASSWORD ──────────────────────────────────────────────── */}
-        <TabsContent value="password">
+        <TabsContent value="password" className="pt-6">
           <Card className="max-w-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

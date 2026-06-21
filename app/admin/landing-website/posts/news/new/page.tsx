@@ -7,7 +7,7 @@ export default async function NewNewsPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   return (

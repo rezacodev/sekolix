@@ -14,7 +14,7 @@ export default async function ThemeSettingsPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   // Get all theme configs
