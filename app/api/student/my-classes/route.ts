@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 export async function GET(req: NextRequest) {
   const session = await getServerSession();
 
-  if (!session || session.user.role !== "MURID") {
+  if (!session?.user || session.user.role !== "MURID") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

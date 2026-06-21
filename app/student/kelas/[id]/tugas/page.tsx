@@ -144,11 +144,11 @@ export default function TugasPage({ params }: { params: { id: string } }) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Update assignment status
-    const updated = assignments.map((a) =>
+    const updated: Assignment[] = assignments.map((a) =>
       a.id === selectedAssignment.id
         ? {
             ...a,
-            status: "dikumpulkan",
+            status: "dikumpulkan" as const,
             submission: {
               submittedAt: new Date().toISOString(),
               ...(selectedAssignment.type === "upload"

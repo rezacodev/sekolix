@@ -11,7 +11,7 @@ export default function StudentKalenderPage() {
   const firstDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const calendarDays = [];
-  for (let i = 0; i < firstDay; i++) {
+  for (let i = 0; i < firstDay(currentMonth); i++) {
     calendarDays.push(null);
   }
   for (let i = 1; i <= daysInMonth(currentMonth); i++) {

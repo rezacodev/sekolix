@@ -54,9 +54,9 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
   });
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [tabSwitches, setTabSwitches] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout>();
-  const autoSaveRef = useRef<NodeJS.Timeout>();
-  const visibilityRef = useRef<any>();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
+  const visibilityRef = useRef<any>(null);
 
   // Mock questions - replace dengan API call
   useEffect(() => {
@@ -118,7 +118,9 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
       }));
     }, 1000);
 
-    return () => clearInterval(timerRef.current);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
 
   // Auto-save answers
@@ -131,7 +133,9 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
       }, 500);
     }, 10000);
 
-    return () => clearInterval(autoSaveRef.current);
+    return () => {
+      if (autoSaveRef.current) clearInterval(autoSaveRef.current);
+    };
   }, []);
 
   // Tab switch detection

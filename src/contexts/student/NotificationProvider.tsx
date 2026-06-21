@@ -34,21 +34,22 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const addNotification = useCallback((notification: Omit<Notification, "id" | "timestamp">) => {
     const id = Math.random().toString(36).substr(2, 9);
+    const duration = notification.duration ?? 5000;
     const newNotification: Notification = {
       ...notification,
       id,
       timestamp: new Date(),
       dismissible: notification.dismissible !== false,
-      duration: notification.duration ?? 5000,
+      duration,
     };
 
     setNotifications((prev) => [...prev, newNotification]);
 
     // Auto-dismiss if duration > 0
-    if (newNotification.duration > 0) {
+    if (duration > 0) {
       setTimeout(() => {
         removeNotification(id);
-      }, newNotification.duration);
+      }, duration);
     }
 
     return id;

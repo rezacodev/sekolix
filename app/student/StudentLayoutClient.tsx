@@ -1,6 +1,5 @@
 "use client";
 
-import "./active-student-menu.css";
 import Image from "next/image";
 
 import { useSession } from "next-auth/react";
@@ -36,7 +35,7 @@ import {
   GraduationCap
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { BreadcrumbProvider, useBreadcrumb } from "@/contexts/admin";
+import { BreadcrumbProvider, useBreadcrumb as useBreadcrumbContext } from "@/contexts/admin";
 import { BreadcrumbDisplay } from "../admin/BreadcrumbDisplay";
 import { NotificationProvider } from "@/contexts/student/NotificationProvider";
 import { NotificationCenter } from "@/components/student/NotificationCenter";
@@ -64,10 +63,12 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [theme, setTheme] = useState<string>("blue");
-  const { setBreadcrumbs } = useBreadcrumb();
+  const breadcrumbContext = useBreadcrumbContext();
+  const setBreadcrumbs = breadcrumbContext?.setBreadcrumbs;
 
   // Set breadcrumbs based on pathname
   useEffect(() => {
+    if (!setBreadcrumbs) return;
     const crumbs = BREADCRUMB_MAP[pathname] || [{ label: "Halaman" }];
     setBreadcrumbs(crumbs);
   }, [pathname, setBreadcrumbs]);
@@ -231,7 +232,7 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name} />
+                      <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                       <AvatarFallback>
                         {session?.user?.name?.split(" ")[0][0] || "U"}
                       </AvatarFallback>

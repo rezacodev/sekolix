@@ -25,7 +25,7 @@ export default function StudentDashboard() {
     if (status === "unauthenticated") {
       router.push("/login");
     }
-    if (session && session.user.role !== "MURID") {
+    if (session?.user && session.user.role !== "MURID") {
       router.push("/unauthorized");
     }
   }, [session, status, router]);
