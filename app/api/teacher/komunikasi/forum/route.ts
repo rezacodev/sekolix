@@ -13,8 +13,8 @@ async function getStaffId(): Promise<string | null> {
 const createSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
-  rombel_id: z.number().int().optional(),
-  subject_id: z.number().int().optional(),
+  rombel_id: z.coerce.bigint().optional(),
+  subject_id: z.coerce.bigint().optional(),
   is_pinned: z.boolean().optional(),
 });
 
@@ -102,13 +102,29 @@ export async function POST(request: Request) {
 
     const { title, content, rombel_id, subject_id, is_pinned } = parsed.data;
 
+    if (rombel_id || subject_id) {
+      const teacherSubject = await prisma.teacherSubject.findFirst({
+        where: {
+          teacher_id: staffId,
+          deleted_at: null,
+          ...(rombel_id ? { rombel_id } : {}),
+          ...(subject_id ? { subject_id } : {}),
+        },
+        select: { id: true },
+      });
+
+      if (!teacherSubject) {
+        return NextResponse.json({ error: "Forum scope is outside teacher assignment" }, { status: 403 });
+      }
+    }
+
     const discussion = await prisma.discussion.create({
       data: {
         teacher_id: staffId,
         title,
         content,
-        ...(rombel_id ? { rombel_id: BigInt(rombel_id) } : {}),
-        ...(subject_id ? { subject_id: BigInt(subject_id) } : {}),
+        ...(rombel_id ? { rombel_id } : {}),
+        ...(subject_id ? { subject_id } : {}),
         is_pinned: is_pinned ?? false,
       },
     });

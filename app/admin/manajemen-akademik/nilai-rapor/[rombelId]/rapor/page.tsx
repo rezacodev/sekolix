@@ -223,7 +223,7 @@ export default function RaporPage({
             Daftar Rapor Siswa
           </CardTitle>
           <CardDescription>
-            Klik tombol unduh untuk cetak rapor PDF per siswa, atau gunakan tombol "Unduh Semua" di atas.
+            Klik tombol unduh untuk cetak rapor PDF per siswa, atau gunakan tombol Unduh Semua di atas.
           </CardDescription>
         </CardHeader>
         <CardContent>

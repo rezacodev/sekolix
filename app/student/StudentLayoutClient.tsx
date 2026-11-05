@@ -32,7 +32,8 @@ import {
   Megaphone,
   User,
   ChevronDown,
-  GraduationCap
+  GraduationCap,
+  Trophy
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { BreadcrumbProvider, useBreadcrumb as useBreadcrumbContext } from "@/contexts/admin";
@@ -49,6 +50,8 @@ const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = 
   "/student/jadwal": [{ label: "Jadwal" }],
   "/student/kalender": [{ label: "Kalender Akademik" }],
   "/student/pengumuman": [{ label: "Pengumuman" }],
+  "/student/perpustakaan": [{ label: "Perpustakaan" }],
+  "/student/ekstrakurikuler": [{ label: "Ekstrakurikuler" }],
   "/student/profil": [{ label: "Profil" }]
 };
 
@@ -62,7 +65,10 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isCompactMode, setIsCompactMode] = useState(false);
-  const [theme, setTheme] = useState<string>("blue");
+  const [theme, setTheme] = useState<string>(() => {
+    if (typeof window === "undefined") return "blue";
+    return localStorage.getItem("student-theme") || "blue";
+  });
   const breadcrumbContext = useBreadcrumbContext();
   const setBreadcrumbs = breadcrumbContext?.setBreadcrumbs;
 
@@ -72,12 +78,6 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
     const crumbs = BREADCRUMB_MAP[pathname] || [{ label: "Halaman" }];
     setBreadcrumbs(crumbs);
   }, [pathname, setBreadcrumbs]);
-
-  // Load theme from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("student-theme") || "blue";
-    setTheme(savedTheme);
-  }, []);
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
@@ -97,6 +97,8 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
     { icon: Calendar, label: "Jadwal", href: "/student/jadwal", badge: null },
     { icon: Calendar, label: "Kalender", href: "/student/kalender", badge: null },
     { icon: Megaphone, label: "Pengumuman", href: "/student/pengumuman", badge: null },
+    { icon: BookOpen, label: "Perpustakaan", href: "/student/perpustakaan", badge: null },
+    { icon: Trophy, label: "Ekskul", href: "/student/ekstrakurikuler", badge: null },
     { icon: User, label: "Profil", href: "/student/profil", badge: null }
   ];
 
@@ -105,7 +107,7 @@ export const StudentLayoutClient = ({ children }: StudentLayoutClientProps) => {
   return (
     <NotificationProvider>
       <BreadcrumbProvider>
-        <div className={`flex h-screen bg-gray-100 dark:bg-gray-900 theme-${theme}`}>
+        <div className={`flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900 theme-${theme}`}>
         {/* Sidebar */}
         <div
           className={`${

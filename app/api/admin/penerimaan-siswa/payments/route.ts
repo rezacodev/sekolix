@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { UserRole } from "@/types";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
 
 const allowedRoles: UserRole[] = ["ADMIN", "EDITOR"];
 
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role as UserRole | undefined;
 
-    if (!session || !userRole || !allowedRoles.includes(userRole)) {
+    if (!session?.user || !userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: "Akses ditolak" }, { status: 403 });
     }
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role as UserRole | undefined;
 
-    if (!session || !userRole || !allowedRoles.includes(userRole)) {
+    if (!session?.user || !userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: "Akses ditolak" }, { status: 403 });
     }
 
@@ -62,6 +63,25 @@ export async function POST(request: Request) {
         proofUrl: proofUrl ?? null,
         notes: notes ?? null
       }
+    });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "penerimaan-siswa.payment",
+      action: "create",
+      entityType: "ApplicantPayment",
+      entityId: payment.id,
+      metadata: { applicantId, amount: payment.amount, method: payment.method },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "ApplicantPayment",
+      entityId: payment.id,
+      action: "create",
+      after: payment,
+      reason: "SPMB payment create",
+      metadata: { applicantId },
     });
 
     return NextResponse.json(payment);

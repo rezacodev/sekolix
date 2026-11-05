@@ -28,6 +28,8 @@ model User {
   accounts Account[]
   sessions Session[]
   staff   Staff[]
+  accessRoles UserAccessRole[]
+  parentGuardian ParentGuardian?
 
   @@map("users")
 }
@@ -369,12 +371,133 @@ model PesertaDidik {
   reportCards    ReportCard[]
   examResults    ExamResult[]
   examAttempts   ExamAttempt[]
+  studentInvoices StudentInvoice[]
+  counselingCases StudentCounselingCase[]
+  counselingSessions CounselingSession[]
+  disciplineRecords DisciplineRecord[]
+  achievementsList StudentAchievement[]
+  developmentNotes StudentDevelopmentNote[]
+  counselingReferrals CounselingReferral[]
+  parentSummonLetters ParentSummonLetter[]
+  generatedLetters GeneratedLetter[] @relation("GeneratedLetterStudent")
+  extracurricularMemberships ExtracurricularMember[]
+  extracurricularAttendances ExtracurricularAttendance[]
+  extracurricularAchievements ExtracurricularAchievement[]
+  extracurricularRegistrations ExtracurricularRegistration[]
+  libraryMemberships LibraryMember[]
   transfers      Transfer[]
   attendances    Attendance[]
   assignmentSubmissions AssignmentSubmission[]
+  parentLinks    ParentStudent[]
+  parentLeaveRequests ParentLeaveRequest[]
+  parentMessages ParentTeacherMessage[]
+  parentNotifications ParentNotification[]
   @@index([programId])
   @@index([entryYearId])
   @@map("peserta_didik")
+}
+
+model ParentGuardian {
+  id        String   @id @default(cuid())
+  user_id   String   @unique
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  students      ParentStudent[]
+  leaveRequests ParentLeaveRequest[]
+  messages      ParentTeacherMessage[]
+  notifications ParentNotification[]
+  paymentProofs ParentPaymentProof[]
+  summonLetters ParentSummonLetter[]
+
+  @@map("parent_guardians")
+}
+
+model ParentStudent {
+  id           String   @id @default(cuid())
+  parent_id    String
+  student_id   String
+  relationship String   @default("WALI")
+  is_primary   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  parent  ParentGuardian @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  student PesertaDidik   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@unique([parent_id, student_id])
+  @@index([student_id])
+  @@map("parent_students")
+}
+
+model ParentLeaveRequest {
+  id             String   @id @default(cuid())
+  parent_id      String
+  student_id     String
+  type           String
+  start_date     DateTime @db.Date
+  end_date       DateTime @db.Date
+  reason         String   @db.Text
+  attachment_url String?
+  status         String   @default("PENDING")
+  reviewed_by    String?
+  reviewed_at    DateTime?
+  response_note  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parent  ParentGuardian @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  student PesertaDidik   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  reviewer Staff?        @relation(fields: [reviewed_by], references: [id])
+
+  @@index([parent_id, createdAt])
+  @@index([student_id, start_date])
+  @@map("parent_leave_requests")
+}
+
+model ParentTeacherMessage {
+  id         String   @id @default(cuid())
+  parent_id  String
+  student_id String
+  teacher_id String?
+  subject    String
+  content    String   @db.Text
+  response   String?  @db.Text
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  parent  ParentGuardian @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  student PesertaDidik   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  teacher Staff?         @relation(fields: [teacher_id], references: [id])
+
+  @@index([parent_id, createdAt])
+  @@index([student_id, createdAt])
+  @@map("parent_teacher_messages")
+}
+
+model ParentNotification {
+  id         String    @id @default(cuid())
+  parent_id  String
+  student_id String?
+  type       String
+  title      String
+  message    String    @db.Text
+  href       String?
+  read_at    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  parent  ParentGuardian @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  student PesertaDidik?  @relation(fields: [student_id], references: [id], onDelete: SetNull)
+
+  @@index([parent_id, read_at, createdAt])
+  @@map("parent_notifications")
 }
 
 model ApplicantPayment {
@@ -467,6 +590,7 @@ model TahunAjaran {
   academicEvents                    AcademicEvent[]
   reportCards                       ReportCard[]
   semesters                         AcademicSemester[]
+  studentInvoices                   StudentInvoice[]
   transferBatchesFrom               TransferBatch[] @relation("TransferFromYear")
   transferBatchesTo                 TransferBatch[] @relation("TransferToYear")
 
@@ -575,6 +699,54 @@ model Staff {
   examPackages  ExamPackage[]
   examSchedules ExamSchedule[]
   discussions   Discussion[]
+  reviewedParentLeaveRequests ParentLeaveRequest[]
+  parentMessages ParentTeacherMessage[]
+  counselingCases StudentCounselingCase[] @relation("CounselingCaseCounselor")
+  counselingSessions CounselingSession[] @relation("CounselingSessionCounselor")
+  disciplineRecords DisciplineRecord[] @relation("DisciplineRecordRecorder")
+  achievementsVerified StudentAchievement[] @relation("AchievementVerifier")
+  developmentNotes StudentDevelopmentNote[] @relation("DevelopmentNoteAuthor")
+  referralsCreated CounselingReferral[] @relation("CounselingReferralCreator")
+  referralsAssigned CounselingReferral[] @relation("CounselingReferralAssignee")
+  summonLetters ParentSummonLetter[] @relation("ParentSummonCreator")
+  libraryMemberships LibraryMember[] @relation("LibraryMemberStaff")
+  libraryLoansProcessed LibraryLoan[] @relation("LibraryLoanProcessor")
+  libraryLoansReturned LibraryLoan[] @relation("LibraryLoanReturner")
+  assetsResponsible Asset[] @relation("AssetResponsible")
+  assetLocationMoves AssetLocationHistory[] @relation("AssetLocationMover")
+  assetConditionChecks AssetConditionHistory[] @relation("AssetConditionChecker")
+  assetLoansRequested AssetLoan[] @relation("AssetLoanRequester")
+  assetLoansApproved AssetLoan[] @relation("AssetLoanApprover")
+  assetMaintenances AssetMaintenance[] @relation("AssetMaintenanceTechnician")
+  staffAttendances StaffAttendance[] @relation("StaffAttendanceStaff")
+  staffAttendancesRecorded StaffAttendance[] @relation("StaffAttendanceRecorder")
+  staffLeaveRequests StaffLeaveRequest[] @relation("StaffLeaveRequester")
+  staffLeaveReviewed StaffLeaveRequest[] @relation("StaffLeaveReviewer")
+  staffDutySchedules StaffDutySchedule[] @relation("StaffDutyAssignee")
+  staffDutyCreated StaffDutySchedule[] @relation("StaffDutyCreator")
+  staffDocuments StaffDocument[] @relation("StaffDocumentOwner")
+  staffDocumentsUploaded StaffDocument[] @relation("StaffDocumentUploader")
+  staffContracts StaffContract[] @relation("StaffContractOwner")
+  staffContractsCreated StaffContract[] @relation("StaffContractCreator")
+  staffAssignmentLetters StaffAssignmentLetter[] @relation("StaffAssignmentOwner")
+  staffAssignmentLettersCreated StaffAssignmentLetter[] @relation("StaffAssignmentCreator")
+  letterTemplatesCreated LetterTemplate[] @relation("LetterTemplateCreator")
+  incomingLettersReceived IncomingLetter[] @relation("IncomingLetterReceiver")
+  incomingLettersCreated IncomingLetter[] @relation("IncomingLetterCreator")
+  outgoingLettersCreated OutgoingLetter[] @relation("OutgoingLetterCreator")
+  outgoingLettersSigned OutgoingLetter[] @relation("OutgoingLetterSigner")
+  letterDispositionsAssigned LetterDisposition[] @relation("LetterDispositionAssignee")
+  letterDispositionsCreated LetterDisposition[] @relation("LetterDispositionCreator")
+  generatedLettersStaff GeneratedLetter[] @relation("GeneratedLetterStaff")
+  generatedLettersCreated GeneratedLetter[] @relation("GeneratedLetterCreator")
+  letterApprovalsRequested LetterApproval[] @relation("LetterApprovalRequester")
+  letterApprovalsReviewed LetterApproval[] @relation("LetterApprovalReviewer")
+  archiveRecordsCreated ArchiveRecord[] @relation("ArchiveRecordCreator")
+  extracurricularCoaches ExtracurricularCoach[]
+  extracurricularCreated Extracurricular[] @relation("ExtracurricularCreator")
+  extracurricularAttendancesRecorded ExtracurricularAttendance[] @relation("ExtracurricularAttendanceRecorder")
+  extracurricularAchievementsVerified ExtracurricularAchievement[] @relation("ExtracurricularAchievementVerifier")
+  extracurricularRegistrationsReviewed ExtracurricularRegistration[] @relation("ExtracurricularRegistrationReviewer")
 
   @@map("gtk")
   @@index([userId])
@@ -832,6 +1004,7 @@ model Rombel {
   rubrics      AssessmentRubric[]
   examSchedules ExamSchedule[]
   discussions  Discussion[]
+  studentInvoices StudentInvoice[]
 
   @@map("class_groups")
 }
@@ -885,6 +1058,12 @@ model Room {
   deleted_at  DateTime?
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
+
+  assetLocations AssetLocation[]
+  assets         Asset[]
+  assetLocationHistoriesFrom AssetLocationHistory[] @relation("AssetLocationFromRoom")
+  assetLocationHistoriesTo   AssetLocationHistory[] @relation("AssetLocationToRoom")
+  assetLoans     AssetLoan[]
 
   @@map("rooms")
 }
@@ -1807,3 +1986,1442 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+model FinancialBillingType {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  amount      Decimal  @db.Decimal(14, 2)
+  frequency   String   @default("ONE_TIME")
+  is_active   Boolean  @default(true)
+  created_by  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoices StudentInvoice[]
+
+  @@map("financial_billing_types")
+}
+
+model StudentInvoice {
+  id               String   @id @default(cuid())
+  invoice_number   String   @unique
+  student_id       String
+  billing_type_id  String
+  academic_year_id String?
+  rombel_id        BigInt?
+  period_month     Int?
+  period_year      Int?
+  due_date         DateTime @db.Date
+  subtotal         Decimal  @db.Decimal(14, 2)
+  discount_amount  Decimal  @default(0) @db.Decimal(14, 2)
+  late_fee_amount  Decimal  @default(0) @db.Decimal(14, 2)
+  total_amount     Decimal  @db.Decimal(14, 2)
+  paid_amount      Decimal  @default(0) @db.Decimal(14, 2)
+  status           String   @default("UNPAID")
+  notes            String?  @db.Text
+  created_by       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  student      PesertaDidik         @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  billingType  FinancialBillingType @relation(fields: [billing_type_id], references: [id])
+  academicYear TahunAjaran?         @relation(fields: [academic_year_id], references: [id], onDelete: SetNull)
+  rombel       Rombel?              @relation(fields: [rombel_id], references: [id], onDelete: SetNull)
+  payments     StudentPayment[]
+  discounts    StudentInvoiceDiscount[]
+  lateFees     StudentInvoiceLateFee[]
+  parentProofs ParentPaymentProof[]
+
+  @@index([student_id, status])
+  @@index([billing_type_id])
+  @@index([academic_year_id])
+  @@index([rombel_id])
+  @@index([due_date, status])
+  @@map("student_invoices")
+}
+
+model StudentPayment {
+  id             String   @id @default(cuid())
+  invoice_id     String
+  payment_number String   @unique
+  amount         Decimal  @db.Decimal(14, 2)
+  method         String
+  paid_at        DateTime
+  status         String   @default("VALIDATED")
+  received_by    String?
+  validated_by   String?
+  proof_url      String?
+  note           String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  invoice StudentInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+
+  @@index([invoice_id])
+  @@index([paid_at, status])
+  @@map("student_payments")
+}
+
+model StudentInvoiceDiscount {
+  id         String   @id @default(cuid())
+  invoice_id String
+  name       String
+  amount     Decimal  @db.Decimal(14, 2)
+  reason     String?  @db.Text
+  created_by String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  invoice StudentInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+
+  @@index([invoice_id])
+  @@map("student_invoice_discounts")
+}
+
+model StudentInvoiceLateFee {
+  id         String   @id @default(cuid())
+  invoice_id String
+  name       String
+  amount     Decimal  @db.Decimal(14, 2)
+  reason     String?  @db.Text
+  created_by String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  invoice StudentInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+
+  @@index([invoice_id])
+  @@map("student_invoice_late_fees")
+}
+
+model ParentPaymentProof {
+  id            String    @id @default(cuid())
+  invoice_id    String
+  parent_id     String
+  amount        Decimal   @db.Decimal(14, 2)
+  transfer_date DateTime  @db.Date
+  proof_url     String
+  note          String?   @db.Text
+  status        String    @default("PENDING")
+  reviewed_by   String?
+  reviewed_at   DateTime?
+  review_note   String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  invoice StudentInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  parent  ParentGuardian @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+
+  @@index([invoice_id])
+  @@index([parent_id, status])
+  @@map("parent_payment_proofs")
+}
+
+model StudentCounselingCase {
+  id             String    @id @default(cuid())
+  student_id     String
+  counselor_id   String?
+  category       String    @default("GENERAL")
+  title          String
+  description    String    @db.Text
+  status         String    @default("OPEN")
+  priority       String    @default("MEDIUM")
+  visibility     String    @default("PRIVATE_BK")
+  parent_visible Boolean   @default(false)
+  opened_at      DateTime  @default(now())
+  closed_at      DateTime?
+  created_by     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  student      PesertaDidik @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor    Staff?       @relation("CounselingCaseCounselor", fields: [counselor_id], references: [id], onDelete: SetNull)
+  sessions     CounselingSession[]
+  disciplineRecords DisciplineRecord[]
+  developmentNotes StudentDevelopmentNote[]
+  referrals    CounselingReferral[]
+  summonLetters ParentSummonLetter[]
+
+  @@index([student_id, status])
+  @@index([counselor_id, status])
+  @@index([parent_visible, status])
+  @@map("student_counseling_cases")
+}
+
+model CounselingSession {
+  id              String    @id @default(cuid())
+  case_id         String
+  student_id      String
+  counselor_id    String?
+  session_date    DateTime
+  summary         String    @db.Text
+  follow_up_plan  String?   @db.Text
+  next_session_at DateTime?
+  visibility      String    @default("PRIVATE_BK")
+  parent_visible  Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  counselingCase StudentCounselingCase @relation(fields: [case_id], references: [id], onDelete: Cascade)
+  student        PesertaDidik          @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor      Staff?                @relation("CounselingSessionCounselor", fields: [counselor_id], references: [id], onDelete: SetNull)
+
+  @@index([case_id, session_date])
+  @@index([student_id, session_date])
+  @@map("counseling_sessions")
+}
+
+model DisciplineRule {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  category    String   @default("GENERAL")
+  severity    String   @default("LOW")
+  points      Int      @default(0)
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  records DisciplineRecord[]
+
+  @@index([category, severity])
+  @@map("discipline_rules")
+}
+
+model DisciplineRecord {
+  id             String   @id @default(cuid())
+  student_id     String
+  rule_id        String?
+  case_id        String?
+  recorded_by    String?
+  incident_date  DateTime @db.Date
+  description    String   @db.Text
+  points         Int      @default(0)
+  action_taken   String?  @db.Text
+  status         String   @default("OPEN")
+  parent_visible Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student        PesertaDidik           @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  rule           DisciplineRule?        @relation(fields: [rule_id], references: [id], onDelete: SetNull)
+  counselingCase StudentCounselingCase? @relation(fields: [case_id], references: [id], onDelete: SetNull)
+  recorder       Staff?                 @relation("DisciplineRecordRecorder", fields: [recorded_by], references: [id], onDelete: SetNull)
+
+  @@index([student_id, incident_date])
+  @@index([rule_id])
+  @@index([case_id])
+  @@index([parent_visible, status])
+  @@map("discipline_records")
+}
+
+model StudentAchievement {
+  id               String   @id @default(cuid())
+  student_id       String
+  verified_by      String?
+  title            String
+  category         String   @default("ACADEMIC")
+  level            String   @default("SCHOOL")
+  organizer        String?
+  achievement_date DateTime @db.Date
+  description      String?  @db.Text
+  certificate_url  String?
+  parent_visible   Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  student  PesertaDidik @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  verifier Staff?       @relation("AchievementVerifier", fields: [verified_by], references: [id], onDelete: SetNull)
+
+  @@index([student_id, achievement_date])
+  @@index([category, level])
+  @@index([parent_visible])
+  @@map("student_achievements")
+}
+
+model StudentDevelopmentNote {
+  id             String   @id @default(cuid())
+  student_id     String
+  case_id        String?
+  author_id      String?
+  type           String   @default("GENERAL")
+  title          String
+  note           String   @db.Text
+  visibility     String   @default("PRIVATE_BK")
+  parent_visible Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student        PesertaDidik           @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselingCase StudentCounselingCase? @relation(fields: [case_id], references: [id], onDelete: SetNull)
+  author         Staff?                 @relation("DevelopmentNoteAuthor", fields: [author_id], references: [id], onDelete: SetNull)
+
+  @@index([student_id, createdAt])
+  @@index([case_id])
+  @@index([parent_visible, visibility])
+  @@map("student_development_notes")
+}
+
+model CounselingReferral {
+  id           String   @id @default(cuid())
+  student_id   String
+  case_id      String?
+  referred_by  String?
+  assigned_to  String?
+  source       String   @default("TEACHER")
+  reason       String   @db.Text
+  status       String   @default("PENDING")
+  response     String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student        PesertaDidik           @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselingCase StudentCounselingCase? @relation(fields: [case_id], references: [id], onDelete: SetNull)
+  creator        Staff?                 @relation("CounselingReferralCreator", fields: [referred_by], references: [id], onDelete: SetNull)
+  assignee       Staff?                 @relation("CounselingReferralAssignee", fields: [assigned_to], references: [id], onDelete: SetNull)
+
+  @@index([student_id, status])
+  @@index([assigned_to, status])
+  @@index([case_id])
+  @@map("counseling_referrals")
+}
+
+model ParentSummonLetter {
+  id             String    @id @default(cuid())
+  case_id        String
+  student_id     String
+  parent_id      String?
+  created_by     String?
+  letter_number  String    @unique
+  scheduled_at   DateTime
+  agenda         String    @db.Text
+  status         String    @default("DRAFT")
+  pdf_url        String?
+  parent_visible Boolean   @default(true)
+  attended_at    DateTime?
+  note           String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  counselingCase StudentCounselingCase @relation(fields: [case_id], references: [id], onDelete: Cascade)
+  student        PesertaDidik          @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  parent         ParentGuardian?       @relation(fields: [parent_id], references: [id], onDelete: SetNull)
+  creator        Staff?                @relation("ParentSummonCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([case_id])
+  @@index([student_id, scheduled_at])
+  @@index([parent_id, parent_visible])
+  @@map("parent_summon_letters")
+}
+
+model LibraryCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  books LibraryBook[]
+
+  @@map("library_categories")
+}
+
+model LibraryBook {
+  id               String   @id @default(cuid())
+  category_id      String?
+  isbn             String?  @unique
+  title            String
+  subtitle         String?
+  author           String?
+  publisher        String?
+  publication_year Int?
+  language         String   @default("id")
+  pages            Int?
+  description      String?  @db.Text
+  cover_url        String?
+  location         String?
+  is_active        Boolean  @default(true)
+  created_by       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category LibraryCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  copies   LibraryCopy[]
+
+  @@index([category_id])
+  @@index([title])
+  @@map("library_books")
+}
+
+model LibraryCopy {
+  id               String    @id @default(cuid())
+  book_id          String
+  barcode          String    @unique
+  qr_code          String?
+  acquisition_date DateTime? @db.Date
+  source           String?
+  price            Decimal?  @db.Decimal(14, 2)
+  status           String    @default("AVAILABLE")
+  condition        String    @default("GOOD")
+  location         String?
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  book  LibraryBook @relation(fields: [book_id], references: [id], onDelete: Cascade)
+  loans LibraryLoan[]
+
+  @@index([book_id, status])
+  @@index([status, condition])
+  @@map("library_copies")
+}
+
+model LibraryMember {
+  id          String    @id @default(cuid())
+  member_code String   @unique
+  type        String
+  student_id  String?
+  staff_id    String?
+  name        String
+  email       String?
+  phone       String?
+  status      String    @default("ACTIVE")
+  joined_at   DateTime  @default(now()) @db.Date
+  expired_at  DateTime? @db.Date
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  student PesertaDidik? @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  staff   Staff?        @relation("LibraryMemberStaff", fields: [staff_id], references: [id], onDelete: Cascade)
+  loans   LibraryLoan[]
+
+  @@index([type, status])
+  @@index([student_id])
+  @@index([staff_id])
+  @@map("library_members")
+}
+
+model LibraryLoan {
+  id                  String    @id @default(cuid())
+  copy_id             String
+  member_id           String
+  borrowed_at         DateTime  @default(now())
+  due_at              DateTime
+  returned_at         DateTime?
+  status              String    @default("ACTIVE")
+  condition_on_borrow String    @default("GOOD")
+  condition_on_return String?
+  notes               String?   @db.Text
+  processed_by        String?
+  returned_by         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  copy      LibraryCopy @relation(fields: [copy_id], references: [id], onDelete: Cascade)
+  member    LibraryMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  processor Staff? @relation("LibraryLoanProcessor", fields: [processed_by], references: [id], onDelete: SetNull)
+  returner  Staff? @relation("LibraryLoanReturner", fields: [returned_by], references: [id], onDelete: SetNull)
+  fines     LibraryFine[]
+
+  @@index([member_id, status])
+  @@index([copy_id, status])
+  @@index([due_at, status])
+  @@map("library_loans")
+}
+
+model LibraryFine {
+  id        String    @id @default(cuid())
+  loan_id   String
+  amount    Decimal   @db.Decimal(14, 2)
+  reason    String
+  status    String    @default("UNPAID")
+  paid_at   DateTime?
+  waived_at DateTime?
+  notes     String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  loan LibraryLoan @relation(fields: [loan_id], references: [id], onDelete: Cascade)
+
+  @@index([loan_id])
+  @@index([status])
+  @@map("library_fines")
+}
+
+model AssetCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assets Asset[]
+
+  @@map("asset_categories")
+}
+
+model AssetLocation {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  room_id     BigInt?
+  building    String?
+  floor       String?
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  room   Room?  @relation(fields: [room_id], references: [id], onDelete: SetNull)
+  assets Asset[]
+  historiesFrom AssetLocationHistory[] @relation("AssetLocationFrom")
+  historiesTo   AssetLocationHistory[] @relation("AssetLocationTo")
+
+  @@index([room_id])
+  @@map("asset_locations")
+}
+
+model Asset {
+  id                 String    @id @default(cuid())
+  asset_code         String    @unique
+  name               String
+  category_id        String?
+  location_id        String?
+  room_id            BigInt?
+  responsible_staff_id String?
+  brand              String?
+  model              String?
+  serial_number      String?
+  purchase_date      DateTime? @db.Date
+  purchase_price     Decimal?  @db.Decimal(14, 2)
+  source             String?
+  status             String    @default("ACTIVE")
+  condition          String    @default("GOOD")
+  qr_code            String?
+  image_url          String?
+  notes              String?   @db.Text
+  created_by         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  category AssetCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  location AssetLocation? @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  room     Room?          @relation(fields: [room_id], references: [id], onDelete: SetNull)
+  responsibleStaff Staff? @relation("AssetResponsible", fields: [responsible_staff_id], references: [id], onDelete: SetNull)
+  locationHistories AssetLocationHistory[]
+  conditionHistories AssetConditionHistory[]
+  loans AssetLoan[]
+  maintenances AssetMaintenance[]
+
+  @@index([category_id])
+  @@index([location_id])
+  @@index([room_id])
+  @@index([status, condition])
+  @@map("assets")
+}
+
+model AssetLocationHistory {
+  id              String   @id @default(cuid())
+  asset_id        String
+  from_location_id String?
+  to_location_id   String?
+  from_room_id    BigInt?
+  to_room_id      BigInt?
+  moved_by        String?
+  moved_at        DateTime @default(now())
+  reason          String?  @db.Text
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  asset Asset @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  fromLocation AssetLocation? @relation("AssetLocationFrom", fields: [from_location_id], references: [id], onDelete: SetNull)
+  toLocation   AssetLocation? @relation("AssetLocationTo", fields: [to_location_id], references: [id], onDelete: SetNull)
+  fromRoom Room? @relation("AssetLocationFromRoom", fields: [from_room_id], references: [id], onDelete: SetNull)
+  toRoom   Room? @relation("AssetLocationToRoom", fields: [to_room_id], references: [id], onDelete: SetNull)
+  mover Staff? @relation("AssetLocationMover", fields: [moved_by], references: [id], onDelete: SetNull)
+
+  @@index([asset_id, moved_at])
+  @@index([to_location_id])
+  @@index([to_room_id])
+  @@map("asset_location_histories")
+}
+
+model AssetConditionHistory {
+  id            String   @id @default(cuid())
+  asset_id      String
+  condition     String
+  status        String?
+  checked_by    String?
+  checked_at    DateTime @default(now())
+  description   String?  @db.Text
+  photo_url     String?
+  createdAt     DateTime @default(now())
+
+  asset Asset @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  checker Staff? @relation("AssetConditionChecker", fields: [checked_by], references: [id], onDelete: SetNull)
+
+  @@index([asset_id, checked_at])
+  @@index([condition])
+  @@map("asset_condition_histories")
+}
+
+model AssetLoan {
+  id             String    @id @default(cuid())
+  asset_id       String
+  room_id        BigInt?
+  borrower_name  String
+  borrower_type  String    @default("STAFF")
+  requester_id   String?
+  approved_by    String?
+  purpose        String    @db.Text
+  start_at       DateTime
+  due_at         DateTime
+  returned_at    DateTime?
+  status         String    @default("REQUESTED")
+  condition_out  String?
+  condition_in   String?
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  asset Asset @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  room Room? @relation(fields: [room_id], references: [id], onDelete: SetNull)
+  requester Staff? @relation("AssetLoanRequester", fields: [requester_id], references: [id], onDelete: SetNull)
+  approver Staff? @relation("AssetLoanApprover", fields: [approved_by], references: [id], onDelete: SetNull)
+
+  @@index([asset_id, status])
+  @@index([room_id, status])
+  @@index([start_at, due_at])
+  @@map("asset_loans")
+}
+
+model AssetMaintenance {
+  id             String    @id @default(cuid())
+  asset_id       String
+  technician_id  String?
+  title          String
+  description    String?   @db.Text
+  scheduled_at   DateTime
+  completed_at   DateTime?
+  cost           Decimal?   @db.Decimal(14, 2)
+  status         String     @default("SCHEDULED")
+  result_note    String?    @db.Text
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  asset Asset @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  technician Staff? @relation("AssetMaintenanceTechnician", fields: [technician_id], references: [id], onDelete: SetNull)
+
+  @@index([asset_id, scheduled_at])
+  @@index([status, scheduled_at])
+  @@map("asset_maintenances")
+}
+
+model StaffAttendance {
+  id          String   @id @default(cuid())
+  staff_id    String
+  date        DateTime @db.Date
+  check_in    DateTime?
+  check_out   DateTime?
+  status      String   @default("PRESENT")
+  source      String   @default("MANUAL")
+  recorded_by String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff    Staff  @relation("StaffAttendanceStaff", fields: [staff_id], references: [id], onDelete: Cascade)
+  recorder Staff? @relation("StaffAttendanceRecorder", fields: [recorded_by], references: [id], onDelete: SetNull)
+
+  @@unique([staff_id, date])
+  @@index([date, status])
+  @@index([recorded_by])
+  @@map("staff_attendances")
+}
+
+model StaffLeaveRequest {
+  id          String    @id @default(cuid())
+  staff_id    String
+  type        String    @default("LEAVE")
+  start_date  DateTime  @db.Date
+  end_date    DateTime  @db.Date
+  total_days  Int       @default(1)
+  reason      String    @db.Text
+  status      String    @default("PENDING")
+  reviewed_by String?
+  reviewed_at DateTime?
+  review_note String?   @db.Text
+  attachment_url String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff    Staff  @relation("StaffLeaveRequester", fields: [staff_id], references: [id], onDelete: Cascade)
+  reviewer Staff? @relation("StaffLeaveReviewer", fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@index([staff_id, status])
+  @@index([start_date, end_date])
+  @@index([reviewed_by])
+  @@map("staff_leave_requests")
+}
+
+model StaffDutySchedule {
+  id          String   @id @default(cuid())
+  staff_id    String
+  duty_date   DateTime @db.Date
+  shift       String?
+  location    String?
+  task        String   @db.Text
+  status      String   @default("SCHEDULED")
+  created_by  String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff   Staff  @relation("StaffDutyAssignee", fields: [staff_id], references: [id], onDelete: Cascade)
+  creator Staff? @relation("StaffDutyCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([duty_date, status])
+  @@index([staff_id, duty_date])
+  @@index([created_by])
+  @@map("staff_duty_schedules")
+}
+
+model StaffDocument {
+  id          String    @id @default(cuid())
+  staff_id    String
+  type        String    @default("OTHER")
+  title       String
+  file_url    String
+  file_name   String?
+  issued_at   DateTime? @db.Date
+  expires_at  DateTime? @db.Date
+  uploaded_by String?
+  is_sensitive Boolean  @default(true)
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff    Staff  @relation("StaffDocumentOwner", fields: [staff_id], references: [id], onDelete: Cascade)
+  uploader Staff? @relation("StaffDocumentUploader", fields: [uploaded_by], references: [id], onDelete: SetNull)
+
+  @@index([staff_id, type])
+  @@index([expires_at])
+  @@index([uploaded_by])
+  @@map("staff_documents")
+}
+
+model StaffContract {
+  id          String    @id @default(cuid())
+  staff_id    String
+  contract_number String?
+  title       String
+  start_date  DateTime  @db.Date
+  end_date    DateTime? @db.Date
+  status      String    @default("ACTIVE")
+  reminder_date DateTime? @db.Date
+  file_url    String?
+  created_by  String?
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff   Staff  @relation("StaffContractOwner", fields: [staff_id], references: [id], onDelete: Cascade)
+  creator Staff? @relation("StaffContractCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([staff_id, status])
+  @@index([end_date])
+  @@index([reminder_date])
+  @@index([created_by])
+  @@map("staff_contracts")
+}
+
+model StaffAssignmentLetter {
+  id          String    @id @default(cuid())
+  staff_id    String
+  letter_number String   @unique
+  title       String
+  assignment_type String @default("SURAT_TUGAS")
+  issued_at   DateTime  @db.Date
+  start_date  DateTime? @db.Date
+  end_date    DateTime? @db.Date
+  file_url    String?
+  module_source String  @default("PEGAWAI")
+  created_by  String?
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff   Staff  @relation("StaffAssignmentOwner", fields: [staff_id], references: [id], onDelete: Cascade)
+  creator Staff? @relation("StaffAssignmentCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([staff_id, issued_at])
+  @@index([created_by])
+  @@map("staff_assignment_letters")
+}
+
+model TuNumberSequence {
+  id             String   @id @default(cuid())
+  scope          String   @unique
+  prefix         String
+  current_number Int      @default(0)
+  padding        Int      @default(4)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("tu_number_sequences")
+}
+
+model LetterTemplate {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  audience    String   @default("GENERAL")
+  subject     String
+  body        String   @db.Text
+  variables   Json?
+  is_active   Boolean  @default(true)
+  created_by  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator Staff? @relation("LetterTemplateCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  outgoingLetters OutgoingLetter[]
+  generatedLetters GeneratedLetter[]
+
+  @@index([audience, is_active])
+  @@index([created_by])
+  @@map("letter_templates")
+}
+
+model IncomingLetter {
+  id            String    @id @default(cuid())
+  agenda_number String    @unique
+  letter_number String?
+  received_at   DateTime  @db.Date
+  letter_date   DateTime? @db.Date
+  sender        String
+  subject       String
+  summary       String?   @db.Text
+  file_url      String?
+  status        String    @default("RECEIVED")
+  classification String?
+  received_by   String?
+  created_by    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  receiver Staff? @relation("IncomingLetterReceiver", fields: [received_by], references: [id], onDelete: SetNull)
+  creator  Staff? @relation("IncomingLetterCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  dispositions LetterDisposition[]
+  archiveRecords ArchiveRecord[]
+
+  @@index([received_at, status])
+  @@index([received_by])
+  @@index([created_by])
+  @@map("incoming_letters")
+}
+
+model OutgoingLetter {
+  id              String    @id @default(cuid())
+  letter_number   String    @unique
+  agenda_number   String?   @unique
+  template_id     String?
+  recipient       String
+  recipient_type  String    @default("GENERAL")
+  subject         String
+  body            String?   @db.Text
+  letter_date     DateTime  @db.Date
+  status          String    @default("DRAFT")
+  file_url        String?
+  qr_code         String?
+  validation_code String    @unique
+  created_by      String?
+  signed_by       String?
+  sent_at         DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  template LetterTemplate? @relation(fields: [template_id], references: [id], onDelete: SetNull)
+  creator  Staff? @relation("OutgoingLetterCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  signer   Staff? @relation("OutgoingLetterSigner", fields: [signed_by], references: [id], onDelete: SetNull)
+  dispositions LetterDisposition[]
+  generatedLetters GeneratedLetter[]
+  approvals LetterApproval[]
+  archiveRecords ArchiveRecord[]
+
+  @@index([letter_date, status])
+  @@index([template_id])
+  @@index([created_by])
+  @@index([signed_by])
+  @@map("outgoing_letters")
+}
+
+model LetterDisposition {
+  id                 String    @id @default(cuid())
+  incoming_letter_id String?
+  outgoing_letter_id String?
+  assigned_to        String
+  from_staff_id      String?
+  instruction        String    @db.Text
+  status             String    @default("OPEN")
+  due_date           DateTime? @db.Date
+  completed_at       DateTime?
+  notes              String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  incomingLetter IncomingLetter? @relation(fields: [incoming_letter_id], references: [id], onDelete: Cascade)
+  outgoingLetter OutgoingLetter? @relation(fields: [outgoing_letter_id], references: [id], onDelete: Cascade)
+  assignee Staff @relation("LetterDispositionAssignee", fields: [assigned_to], references: [id], onDelete: Cascade)
+  creator  Staff? @relation("LetterDispositionCreator", fields: [from_staff_id], references: [id], onDelete: SetNull)
+
+  @@index([incoming_letter_id])
+  @@index([outgoing_letter_id])
+  @@index([assigned_to, status])
+  @@index([due_date])
+  @@map("letter_dispositions")
+}
+
+model GeneratedLetter {
+  id              String   @id @default(cuid())
+  template_id     String
+  outgoing_letter_id String?
+  student_id      String?
+  staff_id        String?
+  subject_name    String
+  subject_identifier String?
+  variables       Json?
+  content         String   @db.Text
+  file_url        String?
+  qr_code         String?
+  validation_code String   @unique
+  created_by      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  template LetterTemplate @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  outgoingLetter OutgoingLetter? @relation(fields: [outgoing_letter_id], references: [id], onDelete: SetNull)
+  student PesertaDidik? @relation("GeneratedLetterStudent", fields: [student_id], references: [id], onDelete: SetNull)
+  staff Staff? @relation("GeneratedLetterStaff", fields: [staff_id], references: [id], onDelete: SetNull)
+  creator Staff? @relation("GeneratedLetterCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  archiveRecords ArchiveRecord[]
+
+  @@index([template_id])
+  @@index([student_id])
+  @@index([staff_id])
+  @@index([created_by])
+  @@map("generated_letters")
+}
+
+model LetterApproval {
+  id                 String    @id @default(cuid())
+  outgoing_letter_id String
+  status             String    @default("PENDING")
+  requested_by       String?
+  reviewed_by        String?
+  reviewed_at        DateTime?
+  notes              String?   @db.Text
+  approval_request_id String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  outgoingLetter OutgoingLetter @relation(fields: [outgoing_letter_id], references: [id], onDelete: Cascade)
+  requester Staff? @relation("LetterApprovalRequester", fields: [requested_by], references: [id], onDelete: SetNull)
+  reviewer Staff? @relation("LetterApprovalReviewer", fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@index([outgoing_letter_id, status])
+  @@index([requested_by])
+  @@index([reviewed_by])
+  @@map("letter_approvals")
+}
+
+model ArchiveRecord {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  title              String
+  category           String   @default("GENERAL")
+  visibility         String   @default("INTERNAL")
+  incoming_letter_id String?
+  outgoing_letter_id String?
+  generated_letter_id String?
+  file_url           String?
+  tags               String[] @default([])
+  archived_at        DateTime @default(now())
+  created_by         String?
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  incomingLetter IncomingLetter? @relation(fields: [incoming_letter_id], references: [id], onDelete: SetNull)
+  outgoingLetter OutgoingLetter? @relation(fields: [outgoing_letter_id], references: [id], onDelete: SetNull)
+  generatedLetter GeneratedLetter? @relation(fields: [generated_letter_id], references: [id], onDelete: SetNull)
+  creator Staff? @relation("ArchiveRecordCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([category, visibility])
+  @@index([incoming_letter_id])
+  @@index([outgoing_letter_id])
+  @@index([generated_letter_id])
+  @@index([created_by])
+  @@map("archive_records")
+}
+
+model Extracurricular {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  category    String?
+  description String?  @db.Text
+  location    String?
+  capacity    Int?
+  is_active   Boolean  @default(true)
+  created_by  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator Staff? @relation("ExtracurricularCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  coaches ExtracurricularCoach[]
+  members ExtracurricularMember[]
+  schedules ExtracurricularSchedule[]
+  achievements ExtracurricularAchievement[]
+  registrations ExtracurricularRegistration[]
+
+  @@index([category, is_active])
+  @@index([created_by])
+  @@map("extracurriculars")
+}
+
+model ExtracurricularCoach {
+  id                 String   @id @default(cuid())
+  extracurricular_id String
+  staff_id           String
+  role               String   @default("PEMBINA")
+  is_primary         Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  extracurricular Extracurricular @relation(fields: [extracurricular_id], references: [id], onDelete: Cascade)
+  staff Staff @relation(fields: [staff_id], references: [id], onDelete: Cascade)
+
+  @@unique([extracurricular_id, staff_id])
+  @@index([staff_id])
+  @@map("extracurricular_coaches")
+}
+
+model ExtracurricularMember {
+  id                 String   @id @default(cuid())
+  extracurricular_id String
+  student_id         String
+  status             String   @default("ACTIVE")
+  joined_at          DateTime @default(now()) @db.Date
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  extracurricular Extracurricular @relation(fields: [extracurricular_id], references: [id], onDelete: Cascade)
+  student PesertaDidik @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  attendances ExtracurricularAttendance[]
+
+  @@unique([extracurricular_id, student_id])
+  @@index([student_id, status])
+  @@map("extracurricular_members")
+}
+
+model ExtracurricularSchedule {
+  id                 String    @id @default(cuid())
+  extracurricular_id String
+  title              String
+  type               String    @default("TRAINING")
+  start_at           DateTime
+  end_at             DateTime?
+  location           String?
+  description        String?   @db.Text
+  status             String    @default("SCHEDULED")
+  is_published       Boolean   @default(false)
+  published_event_id String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  extracurricular Extracurricular @relation(fields: [extracurricular_id], references: [id], onDelete: Cascade)
+  attendances ExtracurricularAttendance[]
+
+  @@index([extracurricular_id, start_at])
+  @@index([status, start_at])
+  @@map("extracurricular_schedules")
+}
+
+model ExtracurricularAttendance {
+  id          String   @id @default(cuid())
+  schedule_id String
+  member_id   String?
+  student_id  String
+  status      String   @default("PRESENT")
+  recorded_by String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  schedule ExtracurricularSchedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  member ExtracurricularMember? @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  student PesertaDidik @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  recorder Staff? @relation("ExtracurricularAttendanceRecorder", fields: [recorded_by], references: [id], onDelete: SetNull)
+
+  @@unique([schedule_id, student_id])
+  @@index([student_id, status])
+  @@index([recorded_by])
+  @@map("extracurricular_attendances")
+}
+
+model ExtracurricularAchievement {
+  id                 String    @id @default(cuid())
+  extracurricular_id String
+  student_id         String?
+  title              String
+  level              String?
+  organizer          String?
+  achieved_at        DateTime? @db.Date
+  rank               String?
+  description        String?   @db.Text
+  certificate_url    String?
+  portfolio_visible  Boolean   @default(true)
+  verified_by        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  extracurricular Extracurricular @relation(fields: [extracurricular_id], references: [id], onDelete: Cascade)
+  student PesertaDidik? @relation(fields: [student_id], references: [id], onDelete: SetNull)
+  verifier Staff? @relation("ExtracurricularAchievementVerifier", fields: [verified_by], references: [id], onDelete: SetNull)
+
+  @@index([extracurricular_id, achieved_at])
+  @@index([student_id, portfolio_visible])
+  @@index([verified_by])
+  @@map("extracurricular_achievements")
+}
+
+model ExtracurricularRegistration {
+  id                 String    @id @default(cuid())
+  extracurricular_id String
+  student_id         String
+  motivation         String?   @db.Text
+  status             String    @default("PENDING")
+  reviewed_by        String?
+  reviewed_at        DateTime?
+  review_note        String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  extracurricular Extracurricular @relation(fields: [extracurricular_id], references: [id], onDelete: Cascade)
+  student PesertaDidik @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  reviewer Staff? @relation("ExtracurricularRegistrationReviewer", fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@unique([extracurricular_id, student_id])
+  @@index([student_id, status])
+  @@index([reviewed_by])
+  @@map("extracurricular_registrations")
+}
+
+enum IntegrationDirection {
+  IMPORT
+  EXPORT
+  BOTH
+}
+
+enum ImportBatchStatus {
+  UPLOADED
+  VALIDATED
+  IMPORTED
+  FAILED
+  ROLLED_BACK
+}
+
+enum ValidationSeverity {
+  INFO
+  WARNING
+  ERROR
+}
+
+model DataIntegrationProfile {
+  id            String               @id @default(cuid())
+  code          String               @unique
+  name          String
+  description   String?              @db.Text
+  target_system String
+  school_level  String               @default("GENERAL")
+  direction     IntegrationDirection @default(BOTH)
+  is_active     Boolean              @default(true)
+  settings      Json?
+  created_at    DateTime             @default(now())
+  updated_at    DateTime             @updatedAt
+
+  mappings        DataFieldMapping[]
+  importBatches   ImportBatch[]
+  exportBatches   ExportBatch[]
+  validationRules DataValidationRule[]
+
+  @@index([target_system, school_level])
+  @@map("data_integration_profiles")
+}
+
+model DataFieldMapping {
+  id             String   @id @default(cuid())
+  profile_id     String
+  entity         String
+  internal_field String
+  target_field   String
+  label          String
+  required       Boolean  @default(false)
+  transform      String?
+  sort_order     Int      @default(0)
+  notes          String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  profile DataIntegrationProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([profile_id, entity, internal_field, target_field])
+  @@index([entity])
+  @@map("data_field_mappings")
+}
+
+model ImportBatch {
+  id             String            @id @default(cuid())
+  profile_id     String
+  entity         String
+  file_name      String?
+  source_url     String?
+  status         ImportBatchStatus @default(UPLOADED)
+  total_rows     Int               @default(0)
+  valid_rows     Int               @default(0)
+  error_rows     Int               @default(0)
+  created_by     String?
+  imported_at    DateTime?
+  rolled_back_at DateTime?
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+
+  profile DataIntegrationProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  rows    ImportBatchRow[]
+
+  @@index([profile_id, entity])
+  @@index([status, created_at])
+  @@map("import_batches")
+}
+
+model ImportBatchRow {
+  id                String   @id @default(cuid())
+  batch_id          String
+  row_number        Int
+  raw_data          Json
+  mapped_data       Json?
+  status            String   @default("VALID")
+  errors            Json?
+  created_record_id String?
+  created_at        DateTime @default(now())
+
+  batch ImportBatch @relation(fields: [batch_id], references: [id], onDelete: Cascade)
+
+  @@unique([batch_id, row_number])
+  @@index([status])
+  @@index([created_record_id])
+  @@map("import_batch_rows")
+}
+
+model ExportBatch {
+  id         String   @id @default(cuid())
+  profile_id String
+  entity     String
+  format     String   @default("XLSX")
+  file_name  String?
+  row_count  Int      @default(0)
+  created_by String?
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  profile DataIntegrationProfile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@index([profile_id, entity])
+  @@index([created_at])
+  @@map("export_batches")
+}
+
+model DataValidationRule {
+  id         String             @id @default(cuid())
+  profile_id String?
+  entity     String
+  field      String
+  rule       String
+  severity   ValidationSeverity @default(WARNING)
+  message    String
+  is_active  Boolean            @default(true)
+  created_at DateTime           @default(now())
+  updated_at DateTime           @updatedAt
+
+  profile DataIntegrationProfile? @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@index([entity, field])
+  @@index([profile_id])
+  @@map("data_validation_rules")
+}
+
+model DataValidationIssue {
+  id         String             @id @default(cuid())
+  entity     String
+  record_id  String?
+  field      String
+  severity   ValidationSeverity
+  message    String
+  source     String             @default("SYSTEM")
+  status     String             @default("OPEN")
+  metadata   Json?
+  created_at DateTime           @default(now())
+  updated_at DateTime           @updatedAt
+
+  @@index([entity, status])
+  @@index([severity, created_at])
+  @@index([record_id])
+  @@map("data_validation_issues")
+}
+
+// Dynamic operational roles for governance modules.
+// UserRole remains the coarse portal role; AccessRole models school operations
+// such as BENDAHARA, BK, PUSTAKAWAN, SARPRAS, and TU without enum migrations.
+model AccessRole {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?  @db.Text
+  is_system   Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  assignments UserAccessRole[]
+  permissions AccessPermission[]
+
+  @@map("access_roles")
+}
+
+model UserAccessRole {
+  id          String    @id @default(cuid())
+  user_id     String
+  role_id     String
+  assigned_by String?
+  assigned_at DateTime  @default(now())
+  expires_at  DateTime?
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role        AccessRole @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+  @@index([user_id, is_active])
+  @@index([role_id, is_active])
+  @@map("user_access_roles")
+}
+
+model AccessPermission {
+  id          String   @id @default(cuid())
+  role_id     String
+  subject     String
+  action      String
+  inverted    Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  role        AccessRole @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, subject, action])
+  @@index([subject, action])
+  @@map("access_permissions")
+}
+
+model ActivityLog {
+  id             String   @id @default(cuid())
+  actor_user_id  String?
+  actor_name     String?
+  module         String
+  action         String
+  entity_type    String?
+  entity_id      String?
+  metadata       Json?
+  ip_address     String?
+  user_agent     String?  @db.Text
+  created_at     DateTime @default(now())
+
+  @@index([module, action])
+  @@index([actor_user_id, created_at])
+  @@index([entity_type, entity_id])
+  @@index([created_at])
+  @@map("activity_logs")
+}
+
+model AuditTrail {
+  id             String   @id @default(cuid())
+  actor_user_id  String?
+  entity_type    String
+  entity_id      String
+  action         String
+  before         Json?
+  after          Json?
+  reason         String?  @db.Text
+  metadata       Json?
+  created_at     DateTime @default(now())
+
+  @@index([entity_type, entity_id])
+  @@index([actor_user_id, created_at])
+  @@index([action, created_at])
+  @@map("audit_trails")
+}
+
+model ApprovalRequest {
+  id                String   @id @default(cuid())
+  module            String
+  action            String
+  entity_type       String?
+  entity_id         String?
+  title             String
+  description       String?  @db.Text
+  requested_by      String?
+  requested_by_name String?
+  status            String   @default("PENDING")
+  payload           Json?
+  current_step      Int      @default(1)
+  decided_by        String?
+  decided_at        DateTime?
+  decision_note     String?  @db.Text
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  steps             ApprovalStep[]
+
+  @@index([module, status])
+  @@index([requested_by, created_at])
+  @@index([entity_type, entity_id])
+  @@map("approval_requests")
+}
+
+model ApprovalStep {
+  id                  String   @id @default(cuid())
+  approval_request_id String
+  step_order          Int
+  approver_role_slug  String?
+  approver_user_id    String?
+  status              String   @default("PENDING")
+  decided_by          String?
+  decided_at          DateTime?
+  note                String?  @db.Text
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  request             ApprovalRequest @relation(fields: [approval_request_id], references: [id], onDelete: Cascade)
+
+  @@unique([approval_request_id, step_order])
+  @@index([status, step_order])
+  @@map("approval_steps")
+}

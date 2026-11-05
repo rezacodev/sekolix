@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { Class, Rombel } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
 
 const suggestionsSchema = z.object({
   fromYearId: z.string(),
@@ -10,6 +11,9 @@ const suggestionsSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("read", "akademik.rombel");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const { fromYearId } = suggestionsSchema.parse(body);
 

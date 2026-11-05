@@ -52,12 +52,21 @@ export default function StudentProgressPage({ params }: { params: Promise<{ stud
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/teacher/laporan/nilai/${studentId}`)
       .then((r) => r.json())
-      .then(setData)
-      .catch(() => toast.error("Gagal memuat data siswa"))
-      .finally(() => setLoading(false));
+      .then((payload) => {
+        if (!cancelled) setData(payload);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Gagal memuat data siswa");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [studentId]);
 
   if (loading) return (

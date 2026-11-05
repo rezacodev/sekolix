@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { requireApiPermission } from "@/lib/api/guards";
 
 const prisma = new PrismaClient();
 
@@ -15,6 +16,9 @@ const updateSchema = z.object({
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const access = await requireApiPermission("read", "akademik.tahun-ajaran");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
     const tahunAjaran = await prisma.tahunAjaran.findUnique({
       where: { id, deleted_at: null }
@@ -33,6 +37,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const access = await requireApiPermission("update", "akademik.tahun-ajaran");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
     const body = await request.json();
     const validated = updateSchema.parse(body);
@@ -64,6 +71,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("delete", "akademik.tahun-ajaran");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
     await prisma.tahunAjaran.update({
       where: { id },

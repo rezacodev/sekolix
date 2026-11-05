@@ -1,103 +1,75 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, ShieldCheck, Plus, Trash2, RotateCcw } from "lucide-react";
+import { ShieldCheck, Plus, Trash2, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type AppAction = "manage" | "read" | "create" | "update" | "delete";
-type UserRole = "SUPERADMIN" | "ADMIN" | "GURU" | "STAFF" | "MURID" | "ORANGTUA";
-
-interface PermOverride {
+type AccessRole = {
   id: string;
-  role: UserRole;
-  subject: string;
-  action: AppAction;
-  inverted: boolean;
-}
-
-const CONFIGURABLE_ROLES: UserRole[] = ["STAFF", "GURU", "MURID", "ORANGTUA"];
-
-const ACTIONS: AppAction[] = ["manage", "read", "create", "update", "delete"];
-
-const SUBJECTS: { slug: string; label: string; group: string }[] = [
-  { slug: "dashboard", label: "Dashboard", group: "Umum" },
-  { slug: "penerimaan-siswa", label: "Penerimaan Siswa", group: "Umum" },
-  { slug: "landing-website", label: "Landing Website", group: "Umum" },
-  { slug: "akademik.tahun-ajaran", label: "Tahun Ajaran", group: "Akademik" },
-  { slug: "akademik.rombel", label: "Rombel", group: "Akademik" },
-  { slug: "akademik.mata-pelajaran", label: "Mata Pelajaran", group: "Akademik" },
-  { slug: "akademik.jadwal", label: "Jadwal", group: "Akademik" },
-  { slug: "akademik.nilai", label: "Nilai & Rapor", group: "Akademik" },
-  { slug: "akademik.absensi", label: "Absensi", group: "Akademik" },
-  { slug: "akademik.pengaturan", label: "Pengaturan Akademik", group: "Akademik" },
-  { slug: "pengaturan.identitas", label: "Identitas Sekolah", group: "Pengaturan" },
-  { slug: "pengaturan.notifikasi", label: "Notifikasi", group: "Pengaturan" },
-  { slug: "pengaturan.pengguna", label: "Manajemen Pengguna", group: "Pengaturan" },
-  { slug: "pengaturan.system", label: "Sistem (API, Backup)", group: "Pengaturan" },
-  { slug: "teacher.portal", label: "Portal Guru", group: "Teacher" },
-  { slug: "teacher.kelas", label: "Kelas", group: "Teacher" },
-  { slug: "teacher.tugas", label: "Tugas", group: "Teacher" },
-  { slug: "teacher.absensi", label: "Absensi (Guru)", group: "Teacher" },
-  { slug: "teacher.nilai", label: "Nilai (Guru)", group: "Teacher" },
-  { slug: "student.portal", label: "Portal Siswa", group: "Portal" },
-  { slug: "parent.portal", label: "Portal Orangtua", group: "Portal" },
-];
-
-const ROLE_LABELS: Record<UserRole, { label: string; color: string }> = {
-  SUPERADMIN: { label: "Superadmin", color: "bg-purple-100 text-purple-800 border-purple-200" },
-  ADMIN: { label: "Admin", color: "bg-red-100 text-red-800 border-red-200" },
-  GURU: { label: "Guru", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  STAFF: { label: "Staf", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-  MURID: { label: "Murid", color: "bg-green-100 text-green-800 border-green-200" },
-  ORANGTUA: { label: "Orangtua", color: "bg-orange-100 text-orange-800 border-orange-200" },
+  slug: string;
+  name: string;
+  description?: string | null;
+  is_system: boolean;
+  permissions: AccessPermission[];
 };
 
-const ACTION_LABELS: Record<AppAction, string> = {
-  manage: "Kelola (semua)",
+type AccessPermission = {
+  id: string;
+  subject: string;
+  action: string;
+  inverted: boolean;
+};
+
+type PermissionSubject = {
+  slug: string;
+  label: string;
+  group: string;
+  sensitive?: boolean;
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  manage: "Kelola",
   read: "Lihat",
   create: "Tambah",
   update: "Edit",
   delete: "Hapus",
+  export: "Export",
+  approve: "Setujui",
 };
 
-function groupBy<T>(arr: T[], fn: (item: T) => string): Record<string, T[]> {
-  return arr.reduce((acc, item) => {
-    const key = fn(item);
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item);
+function groupSubjects(subjects: PermissionSubject[]) {
+  return subjects.reduce<Record<string, PermissionSubject[]>>((acc, subject) => {
+    if (!acc[subject.group]) acc[subject.group] = [];
+    acc[subject.group].push(subject);
     return acc;
-  }, {} as Record<string, T[]>);
+  }, {});
 }
-
-// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PermissionsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const breadcrumbContext = useBreadcrumb();
+  const [roles, setRoles] = useState<AccessRole[]>([]);
+  const [subjects, setSubjects] = useState<PermissionSubject[]>([]);
+  const [actions, setActions] = useState<string[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [newSubject, setNewSubject] = useState("");
+  const [newAction, setNewAction] = useState("read");
+  const [newInverted, setNewInverted] = useState(false);
 
-  // Guard: superadmin only
   useEffect(() => {
     if (status === "loading") return;
-    if (session?.user?.role !== "SUPERADMIN") {
-      router.replace("/unauthorized");
-    }
+    if (session?.user?.role !== "SUPERADMIN") router.replace("/unauthorized");
   }, [status, session, router]);
 
   useEffect(() => {
@@ -108,160 +80,166 @@ export default function PermissionsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [selectedRole, setSelectedRole] = useState<UserRole>("STAFF");
-  const [overrides, setOverrides] = useState<PermOverride[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // New override form
-  const [newSubject, setNewSubject] = useState("");
-  const [newAction, setNewAction] = useState<AppAction>("read");
-  const [newInverted, setNewInverted] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const fetchOverrides = useCallback(async () => {
+  const fetchPermissions = useCallback(async (roleId?: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/settings/permissions?role=${selectedRole}`);
-      if (!res.ok) throw new Error();
+      const params = roleId ? `?roleId=${roleId}` : "";
+      const res = await fetch(`/api/admin/settings/permissions${params}`);
+      if (!res.ok) throw new Error("Gagal memuat permission matrix");
       const data = await res.json();
-      setOverrides(data.overrides);
-    } catch {
-      toast.error("Gagal memuat konfigurasi izin");
+      setRoles(data.accessRoles ?? []);
+      setSubjects(data.subjects ?? []);
+      setActions(data.actions ?? []);
+      setSelectedRoleId(data.selectedAccessRole?.id ?? data.accessRoles?.[0]?.id ?? "");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal memuat izin akses");
     } finally {
       setLoading(false);
     }
-  }, [selectedRole]);
+  }, []);
 
   useEffect(() => {
-    fetchOverrides();
-  }, [fetchOverrides]);
+    fetchPermissions();
+  }, [fetchPermissions]);
 
-  async function handleAdd() {
-    if (!newSubject) return toast.error("Pilih fitur terlebih dahulu");
+  const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? null;
+  const subjectGroups = useMemo(() => groupSubjects(subjects), [subjects]);
+
+  async function handleAddPermission() {
+    if (!selectedRoleId || !newSubject || !newAction) {
+      toast.error("Pilih role, fitur, dan aksi terlebih dahulu");
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch("/api/admin/settings/permissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: selectedRole, subject: newSubject, action: newAction, inverted: newInverted }),
+        body: JSON.stringify({
+          roleId: selectedRoleId,
+          subject: newSubject,
+          action: newAction,
+          inverted: newInverted,
+        }),
       });
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error ?? "Gagal menyimpan");
+        const data = await res.json();
+        throw new Error(data.error ?? "Gagal menyimpan izin");
       }
-      toast.success("Izin berhasil ditambahkan");
+      toast.success("Izin role berhasil disimpan");
       setNewSubject("");
       setNewAction("read");
       setNewInverted(false);
-      fetchOverrides();
-    } catch (e: any) {
-      toast.error(e.message);
+      await fetchPermissions(selectedRoleId);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan izin");
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(permissionId: string) {
     try {
       const res = await fetch("/api/admin/settings/permissions", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: permissionId, type: "access" }),
       });
-      if (!res.ok) throw new Error();
-      toast.success("Izin dihapus");
-      fetchOverrides();
-    } catch {
-      toast.error("Gagal menghapus izin");
+      if (!res.ok) throw new Error("Gagal menghapus izin");
+      toast.success("Izin role dihapus");
+      await fetchPermissions(selectedRoleId);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus izin");
     }
   }
 
-  const subjectGroups = groupBy(SUBJECTS, (s) => s.group);
-
-  if (status === "loading" || session?.user?.role !== "SUPERADMIN") {
-    return null;
-  }
+  if (status === "loading" || session?.user?.role !== "SUPERADMIN") return null;
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Izin Akses Role</h1>
-        <p className="text-muted-foreground">Konfigurasi izin fitur per role secara fleksibel</p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Izin Akses Role</h1>
+          <p className="text-muted-foreground">
+            Kelola role operasional dinamis seperti Bendahara, BK, Pustakawan, Sarpras, TU, dan Kepala Sekolah.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => fetchPermissions(selectedRoleId)} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+          <span className="ml-2">Refresh</span>
+        </Button>
       </div>
 
-      {/* Role overview */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {(Object.keys(ROLE_LABELS) as UserRole[]).map((role) => (
-          <Card
-            key={role}
-            className={`cursor-pointer transition-all ${selectedRole === role ? "ring-2 ring-primary" : "hover:shadow-md"}`}
-            onClick={() => setSelectedRole(role)}
-          >
-            <CardContent className="pt-4 pb-3 text-center">
-              <Badge variant="outline" className={`${ROLE_LABELS[role].color} text-xs`}>
-                {ROLE_LABELS[role].label}
-              </Badge>
-              {role === "SUPERADMIN" && (
-                <p className="text-[10px] text-muted-foreground mt-1">Semua akses</p>
-              )}
-              {role === "ADMIN" && (
-                <p className="text-[10px] text-muted-foreground mt-1">Kecuali sistem</p>
-              )}
-              {CONFIGURABLE_ROLES.includes(role) && (
-                <p className="text-[10px] text-muted-foreground mt-1">Dapat dikonfigurasi</p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+        <CardContent className="pt-4 flex gap-3">
+          <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
+          <p className="text-sm text-blue-900 dark:text-blue-200">
+            `UserRole` tetap menjadi role portal utama. Role di halaman ini adalah role operasional yang bisa diberikan ke user tanpa migration enum baru.
+          </p>
+        </CardContent>
+      </Card>
 
-      {/* Info banner for fixed roles */}
-      {(selectedRole === "SUPERADMIN" || selectedRole === "ADMIN") && (
-        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-          <CardContent className="pt-4 pb-3 flex items-center gap-3">
-            <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                {selectedRole === "SUPERADMIN"
-                  ? "Superadmin memiliki akses penuh ke semua fitur dan tidak dapat diubah."
-                  : "Admin memiliki akses penuh kecuali pengaturan sistem (integrasi API, backup). Override tidak disarankan untuk role ini."}
-              </p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Role Operasional</CardTitle>
+            <CardDescription>{roles.length} role aktif tersedia</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              roles.map((role) => (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedRoleId(role.id);
+                    fetchPermissions(role.id);
+                  }}
+                  className={`w-full rounded-lg border px-3 py-2 text-left transition ${
+                    selectedRoleId === role.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-sm">{role.name}</span>
+                    {role.is_system && <Badge variant="outline">System</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{role.slug}</p>
+                </button>
+              ))
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Override management for configurable roles */}
-      {CONFIGURABLE_ROLES.includes(selectedRole) && (
-        <>
-          {/* Add override */}
+        <div className="space-y-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Tambah Override Izin</CardTitle>
+            <CardHeader>
+              <CardTitle className="text-base">Tambah Izin</CardTitle>
               <CardDescription>
-                Override izin akan ditambahkan di atas izin default role{" "}
-                <Badge variant="outline" className={`${ROLE_LABELS[selectedRole].color} text-xs`}>
-                  {ROLE_LABELS[selectedRole].label}
-                </Badge>
+                {selectedRole ? `Role: ${selectedRole.name}` : "Pilih role terlebih dahulu"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-3 items-end">
-                <div className="flex-1 min-w-48">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="min-w-64 flex-1">
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">Fitur</label>
                   <Select value={newSubject} onValueChange={setNewSubject}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Pilih fitur..." />
+                      <SelectValue placeholder="Pilih fitur" />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(subjectGroups).map(([group, items]) => (
                         <div key={group}>
-                          <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
                             {group}
                           </div>
-                          {items.map((s) => (
-                            <SelectItem key={s.slug} value={s.slug}>
-                              {s.label}
+                          {items.map((subject) => (
+                            <SelectItem key={subject.slug} value={subject.slug}>
+                              {subject.label}
                             </SelectItem>
                           ))}
                         </div>
@@ -272,100 +250,73 @@ export default function PermissionsPage() {
 
                 <div className="w-40">
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">Aksi</label>
-                  <Select value={newAction} onValueChange={(v) => setNewAction(v as AppAction)}>
+                  <Select value={newAction} onValueChange={setNewAction}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {ACTIONS.map((a) => (
-                        <SelectItem key={a} value={a}>{ACTION_LABELS[a]}</SelectItem>
+                      {actions.map((action) => (
+                        <SelectItem key={action} value={action}>
+                          {ACTION_LABELS[action] ?? action}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Switch
-                    checked={newInverted}
-                    onCheckedChange={setNewInverted}
-                    id="inverted-toggle"
-                  />
-                  <label htmlFor="inverted-toggle" className="text-sm cursor-pointer">
-                    {newInverted ? "Tolak (cannot)" : "Izinkan (can)"}
+                <div className="flex items-center gap-2 pb-2">
+                  <Switch checked={newInverted} onCheckedChange={setNewInverted} id="inverted" />
+                  <label htmlFor="inverted" className="text-sm">
+                    {newInverted ? "Tolak" : "Izinkan"}
                   </label>
                 </div>
 
-                <Button onClick={handleAdd} disabled={saving || !newSubject}>
+                <Button onClick={handleAddPermission} disabled={saving || !selectedRoleId}>
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                  <span className="ml-1">Tambah</span>
+                  <span className="ml-2">Simpan</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Current overrides list */}
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Override Saat Ini</CardTitle>
-                <CardDescription>
-                  {overrides.length === 0
-                    ? "Menggunakan izin default role"
-                    : `${overrides.length} override aktif`}
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" onClick={fetchOverrides} disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              </Button>
+            <CardHeader>
+              <CardTitle className="text-base">Permission Matrix</CardTitle>
+              <CardDescription>
+                {selectedRole?.permissions.length ?? 0} izin terpasang untuk {selectedRole?.name ?? "-"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : overrides.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">
-                  Tidak ada override — izin mengikuti default role.
-                </p>
+              {!selectedRole ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">Pilih role untuk melihat izin.</p>
+              ) : selectedRole.permissions.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">Belum ada izin pada role ini.</p>
               ) : (
                 <div className="space-y-2">
-                  {overrides.map((o) => {
-                    const subjectInfo = SUBJECTS.find((s) => s.slug === o.subject);
+                  {selectedRole.permissions.map((permission) => {
+                    const subject = subjects.find((item) => item.slug === permission.subject);
                     return (
                       <div
-                        key={o.id}
-                        className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg border ${
-                          o.inverted
-                            ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
-                            : "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
+                        key={permission.id}
+                        className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 ${
+                          permission.inverted ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"
                         }`}
                       >
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge
-                            variant="outline"
-                            className={
-                              o.inverted
-                                ? "bg-red-100 text-red-700 border-red-200"
-                                : "bg-green-100 text-green-700 border-green-200"
-                            }
-                          >
-                            {o.inverted ? "cannot" : "can"}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className={permission.inverted ? "text-red-700" : "text-green-700"}>
+                            {permission.inverted ? "cannot" : "can"}
                           </Badge>
-                          <span className="text-sm font-medium">{ACTION_LABELS[o.action]}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {subjectInfo?.label ?? o.subject}
-                          </span>
-                          <span className="text-xs text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
-                            {subjectInfo?.group ?? "—"}
-                          </span>
+                          <span className="text-sm font-medium">{ACTION_LABELS[permission.action] ?? permission.action}</span>
+                          <span className="text-sm text-muted-foreground">{subject?.label ?? permission.subject}</span>
+                          {subject?.sensitive && <Badge variant="destructive">Sensitif</Badge>}
                         </div>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(o.id)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(permission.id)}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     );
@@ -374,35 +325,8 @@ export default function PermissionsPage() {
               )}
             </CardContent>
           </Card>
-        </>
-      )}
-
-      {/* Default permissions reference */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Referensi Izin Default</CardTitle>
-          <CardDescription>Izin bawaan sebelum override diterapkan</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {(Object.keys(ROLE_LABELS) as UserRole[]).map((role) => (
-              <div key={role} className="flex items-start gap-3">
-                <Badge variant="outline" className={`${ROLE_LABELS[role].color} text-xs shrink-0 mt-0.5`}>
-                  {ROLE_LABELS[role].label}
-                </Badge>
-                <p className="text-sm text-muted-foreground">
-                  {role === "SUPERADMIN" && "Akses penuh ke semua fitur (manage all)"}
-                  {role === "ADMIN" && "Akses penuh ke semua fitur, kecuali pengaturan.system"}
-                  {role === "STAFF" && "Read-only: dashboard, penerimaan siswa, akademik, jadwal, absensi, nilai"}
-                  {role === "GURU" && "Kelola semua fitur teacher portal (kelas, tugas, absensi, nilai) + read dashboard"}
-                  {role === "MURID" && "Akses read ke student.portal"}
-                  {role === "ORANGTUA" && "Akses read ke parent.portal"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

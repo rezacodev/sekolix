@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { requireApiPermission } from "@/lib/api/guards";
+import { logActivity } from "@/lib/governance/server";
 
 function splitTextToLines(
   text: string,
@@ -27,6 +29,9 @@ function splitTextToLines(
 
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireApiPermission("export", "penerimaan-siswa");
+    if (!access.ok) return access.response;
+
     const url = new URL(request.url);
     const applicantId = url.searchParams.get("applicantId");
     if (!applicantId)
@@ -37,6 +42,21 @@ export async function GET(request: NextRequest) {
       include: { program: true, academicYear: true, payments: true }
     });
     if (!a) return NextResponse.json({ message: "Applicant not found" }, { status: 404 });
+
+    await logActivity({
+      actorUserId: access.context.user.id,
+      actorName: access.context.user.name,
+      module: "penerimaan-siswa",
+      action: "export-biodata",
+      entityType: "Applicant",
+      entityId: a.id,
+      metadata: {
+        registrationCode: a.registrationCode ?? null,
+        programId: a.programId ?? null,
+        academicYearId: a.academicYearId ?? null,
+      },
+      request,
+    });
 
     const pdfDoc = await PDFDocument.create();
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);

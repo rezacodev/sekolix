@@ -1,11 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseInteger } from "@/lib/api/validation";
 
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireApiPermission("read", "akademik.rombel");
+    if (!access.ok) return access.response;
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const parsedPage = parseInteger(searchParams.get("page"), {
+      field: "page",
+      defaultValue: 1,
+      min: 1,
+    });
+    if (!parsedPage.ok) return parsedPage.response;
+
+    const parsedLimit = parseInteger(searchParams.get("limit"), {
+      field: "limit",
+      defaultValue: 10,
+      min: 1,
+      max: 100,
+    });
+    if (!parsedLimit.ok) return parsedLimit.response;
+
+    const page = parsedPage.value;
+    const limit = parsedLimit.value;
     const search = searchParams.get("search") || "";
 
     const skip = (page - 1) * limit;

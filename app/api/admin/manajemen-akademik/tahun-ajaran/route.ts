@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parsePagination } from "@/lib/api/validation";
 
 const prisma = new PrismaClient();
 
@@ -14,9 +16,13 @@ const createSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const access = await requireApiPermission("read", "akademik.tahun-ajaran");
+  if (!access.ok) return access.response;
+
   const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "0");
-  const pageSize = parseInt(searchParams.get("pageSize") || "10");
+  const pagination = parsePagination(searchParams);
+  if (!pagination.ok) return pagination.response;
+
   const search = searchParams.get("search") || "";
   const isActive = searchParams.get("isActive");
 
@@ -32,8 +38,8 @@ export async function GET(request: NextRequest) {
   const [data, totalCount] = await Promise.all([
     prisma.tahunAjaran.findMany({
       where,
-      skip: page * pageSize,
-      take: pageSize,
+      skip: pagination.value.skip,
+      take: pagination.value.take,
       orderBy: { createdAt: "desc" }
     }),
     prisma.tahunAjaran.count({ where })
@@ -44,6 +50,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("create", "akademik.tahun-ajaran");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const validated = createSchema.parse(body);
 

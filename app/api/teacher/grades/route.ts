@@ -2,6 +2,36 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTeacherAcademicScope, teacherCanAccessStudents } from "@/lib/api/scope";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
+import { z } from "zod";
+
+const gradeQuerySchema = z.object({
+  assessmentId: z.coerce.bigint().optional(),
+  subjectId: z.coerce.bigint().optional(),
+  studentId: z.string().min(1).optional(),
+});
+
+const gradePayloadSchema = z.object({
+  assessmentId: z.coerce.bigint(),
+  studentId: z.string().min(1),
+  score: z.coerce.number().min(0),
+  notes: z.string().max(1000).optional().nullable(),
+});
+
+const batchGradePayloadSchema = z.object({
+  assessmentId: z.coerce.bigint(),
+  grades: z
+    .array(
+      z.object({
+        studentId: z.string().min(1),
+        score: z.coerce.number().min(0),
+        notes: z.string().max(1000).optional().nullable(),
+      })
+    )
+    .min(1)
+    .max(200),
+});
 
 export async function GET(request: Request) {
   try {
@@ -13,16 +43,35 @@ export async function GET(request: Request) {
 
     const teacherId = session.user.staffId;
     const { searchParams } = new URL(request.url);
-    const assessmentId = searchParams.get("assessmentId");
-    const subjectId = searchParams.get("subjectId");
-    const studentId = searchParams.get("studentId");
+    const parsedQuery = gradeQuerySchema.safeParse(Object.fromEntries(searchParams));
+    if (!parsedQuery.success) {
+      return NextResponse.json({ error: "Invalid query", details: parsedQuery.error.flatten() }, { status: 400 });
+    }
+
+    const { assessmentId, subjectId, studentId } = parsedQuery.data;
+    const scope = await getTeacherAcademicScope(teacherId);
+
+    if (studentId) {
+      const studentAccess = await teacherCanAccessStudents(teacherId, [studentId]);
+      if (!studentAccess.ok) {
+        return NextResponse.json({ error: "Student outside teacher scope" }, { status: 403 });
+      }
+    }
+
+    if (!scope.rombelIds.length) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        total: 0,
+      });
+    }
 
     // Get teacher's subjects
     const teacherSubjects = await prisma.teacherSubject.findMany({
       where: {
         teacher_id: teacherId,
         deleted_at: null,
-        ...(subjectId ? { subject_id: BigInt(subjectId) } : {}),
+        ...(subjectId ? { subject_id: subjectId } : {}),
       },
       select: {
         subject_id: true,
@@ -46,7 +95,7 @@ export async function GET(request: Request) {
           in: subjectIds,
         },
         deleted_at: null,
-        ...(assessmentId ? { id: BigInt(assessmentId) } : {}),
+        ...(assessmentId ? { id: assessmentId } : {}),
       },
       include: {
         subject: true,
@@ -64,6 +113,11 @@ export async function GET(request: Request) {
           in: assessmentIds,
         },
         ...(studentId ? { student_id: studentId } : {}),
+        student: {
+          rombels: {
+            some: { id: { in: scope.rombelIds }, deleted_at: null },
+          },
+        },
       },
       include: {
         student: {
@@ -137,22 +191,19 @@ export async function POST(request: Request) {
     }
 
     const teacherId = session.user.staffId;
-    const body = await request.json();
-
-    const { assessmentId, studentId, score, notes } = body;
-
-    // Validate required fields
-    if (!assessmentId || !studentId || score === undefined) {
-      return NextResponse.json(
-        { error: "Missing required fields: assessmentId, studentId, score" },
-        { status: 400 }
-      );
+    const actorUserId = session.user.id;
+    const actorName = session.user.name;
+    const parsedBody = gradePayloadSchema.safeParse(await request.json());
+    if (!parsedBody.success) {
+      return NextResponse.json({ error: "Validation error", details: parsedBody.error.flatten() }, { status: 400 });
     }
+
+    const { assessmentId, studentId, score, notes } = parsedBody.data;
 
     // Verify teacher has access to this assessment
     const assessment = await prisma.assessment.findFirst({
       where: {
-        id: BigInt(assessmentId),
+        id: assessmentId,
         deleted_at: null,
         subject: {
           teacherSubjects: {
@@ -175,8 +226,13 @@ export async function POST(request: Request) {
       );
     }
 
+    const studentAccess = await teacherCanAccessStudents(teacherId, [studentId]);
+    if (!studentAccess.ok) {
+      return NextResponse.json({ error: "Student outside teacher scope" }, { status: 403 });
+    }
+
     // Validate score doesn't exceed max_score
-    const scoreValue = parseFloat(score);
+    const scoreValue = score;
     const maxScore = assessment.max_score ? parseFloat(assessment.max_score.toString()) : 100;
 
     if (scoreValue > maxScore) {
@@ -186,17 +242,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const before = await prisma.grade.findUnique({
+      where: {
+        student_id_assessment_id: {
+          student_id: studentId,
+          assessment_id: assessmentId,
+        },
+      },
+    });
+
     // Create or update grade
     const grade = await prisma.grade.upsert({
       where: {
         student_id_assessment_id: {
           student_id: studentId,
-          assessment_id: BigInt(assessmentId),
+          assessment_id: assessmentId,
         },
       },
       create: {
         student_id: studentId,
-        assessment_id: BigInt(assessmentId),
+        assessment_id: assessmentId,
         score: scoreValue,
         notes: notes || null,
       },
@@ -212,6 +277,34 @@ export async function POST(request: Request) {
             nisn: true,
           },
         },
+      },
+    });
+
+    await logActivity({
+      actorUserId,
+      actorName,
+      module: "teacher.nilai",
+      action: "upsert",
+      entityType: "Grade",
+      entityId: String(grade.id),
+      metadata: {
+        assessmentId: String(assessment.id),
+        studentId,
+        score: scoreValue,
+      },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId,
+      entityType: "Grade",
+      entityId: String(grade.id),
+      action: before ? "update" : "create",
+      before,
+      after: grade,
+      reason: "Teacher grade upsert",
+      metadata: {
+        assessmentId: String(assessment.id),
+        studentId,
       },
     });
 
@@ -253,21 +346,19 @@ export async function PUT(request: Request) {
     }
 
     const teacherId = session.user.staffId;
-    const body = await request.json();
-
-    const { assessmentId, grades } = body;
-
-    if (!assessmentId || !Array.isArray(grades) || grades.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid request: assessmentId and grades array required" },
-        { status: 400 }
-      );
+    const actorUserId = session.user.id;
+    const actorName = session.user.name;
+    const parsedBody = batchGradePayloadSchema.safeParse(await request.json());
+    if (!parsedBody.success) {
+      return NextResponse.json({ error: "Validation error", details: parsedBody.error.flatten() }, { status: 400 });
     }
+
+    const { assessmentId, grades } = parsedBody.data;
 
     // Verify teacher has access to this assessment
     const assessment = await prisma.assessment.findFirst({
       where: {
-        id: BigInt(assessmentId),
+        id: assessmentId,
         deleted_at: null,
         subject: {
           teacherSubjects: {
@@ -287,13 +378,28 @@ export async function PUT(request: Request) {
       );
     }
 
+    const studentAccess = await teacherCanAccessStudents(
+      teacherId,
+      grades.map((grade) => grade.studentId)
+    );
+    if (!studentAccess.ok) {
+      return NextResponse.json({ error: "One or more students are outside teacher scope" }, { status: 403 });
+    }
+
     const maxScore = assessment.max_score ? parseFloat(assessment.max_score.toString()) : 100;
+    const beforeGrades = await prisma.grade.findMany({
+      where: {
+        assessment_id: assessmentId,
+        student_id: { in: grades.map((grade) => grade.studentId) },
+      },
+    });
+    const beforeByStudentId = new Map(beforeGrades.map((grade) => [grade.student_id, grade]));
 
     // Batch upsert grades
     const results = await Promise.all(
       grades.map(async (gradeData) => {
         const { studentId, score, notes } = gradeData;
-        const scoreValue = parseFloat(score);
+        const scoreValue = score;
 
         if (scoreValue > maxScore) {
           throw new Error(`Score for student ${studentId} exceeds max score ${maxScore}`);
@@ -303,12 +409,12 @@ export async function PUT(request: Request) {
           where: {
             student_id_assessment_id: {
               student_id: studentId,
-              assessment_id: BigInt(assessmentId),
+              assessment_id: assessmentId,
             },
           },
           create: {
             student_id: studentId,
-            assessment_id: BigInt(assessmentId),
+            assessment_id: assessmentId,
             score: scoreValue,
             notes: notes || null,
           },
@@ -318,6 +424,38 @@ export async function PUT(request: Request) {
           },
         });
       })
+    );
+
+    await logActivity({
+      actorUserId,
+      actorName,
+      module: "teacher.nilai",
+      action: "batch-upsert",
+      entityType: "Assessment",
+      entityId: String(assessment.id),
+      metadata: {
+        assessmentId: String(assessment.id),
+        count: results.length,
+        studentIds: grades.map((grade) => grade.studentId),
+      },
+      request,
+    });
+    await Promise.all(
+      results.map((grade) =>
+        writeAuditTrail({
+          actorUserId,
+          entityType: "Grade",
+          entityId: String(grade.id),
+          action: beforeByStudentId.has(grade.student_id) ? "update" : "create",
+          before: beforeByStudentId.get(grade.student_id),
+          after: grade,
+          reason: "Teacher grade batch upsert",
+          metadata: {
+            assessmentId: String(assessment.id),
+            studentId: grade.student_id,
+          },
+        })
+      )
     );
 
     return NextResponse.json({

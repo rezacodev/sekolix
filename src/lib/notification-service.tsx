@@ -1,7 +1,8 @@
 // Notification Service untuk menangani berbagai jenis notifikasi
 // E-mail notifications (mock), in-app notifications, dan reminders
 
-import { Notification } from "@/contexts/student/NotificationProvider";
+import { Notification, NotificationType } from "@/contexts/student/NotificationProvider";
+import type React from "react";
 import { BookOpen, Bell, Award, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export type NotificationEvent = 
@@ -17,8 +18,18 @@ export type NotificationEvent =
 export interface NotificationPayload {
   event: NotificationEvent;
   userId: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   timestamp: Date;
+}
+
+function text(value: unknown) {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
+function notificationType(value: unknown): NotificationType {
+  return value === "success" || value === "error" || value === "warning" || value === "info"
+    ? value
+    : "info";
 }
 
 export class NotificationService {
@@ -28,18 +39,18 @@ export class NotificationService {
    */
   static generateNotification(
     event: NotificationEvent,
-    data: Record<string, any>
+    data: Record<string, unknown>
   ): Omit<Notification, "id" | "timestamp"> {
     switch (event) {
       case "assignment_new":
         return {
           type: "info",
           title: "Tugas Baru",
-          message: `Tugas baru: "${data.assignmentName}" di ${data.className}. Deadline: ${data.deadline}`,
+          message: `Tugas baru: "${text(data.assignmentName)}" di ${text(data.className)}. Deadline: ${text(data.deadline)}`,
           icon: <BookOpen className="w-5 h-5" />,
           action: {
             label: "Lihat Tugas",
-            href: `/student/kelas/${data.classId}/tugas`,
+            href: `/student/kelas/${text(data.classId)}/tugas`,
           },
           duration: 7000,
         };
@@ -48,7 +59,7 @@ export class NotificationService {
         return {
           type: "success",
           title: "Nilai Keluar",
-          message: `Nilai untuk "${data.assignmentName}" sudah diumumkan. Skor: ${data.score}/${data.maxScore}`,
+          message: `Nilai untuk "${text(data.assignmentName)}" sudah diumumkan. Skor: ${text(data.score)}/${text(data.maxScore)}`,
           icon: <Award className="w-5 h-5" />,
           action: {
             label: "Lihat Nilai",
@@ -61,7 +72,7 @@ export class NotificationService {
         return {
           type: "warning",
           title: "Ujian Dijadwalkan",
-          message: `Ujian "${data.examName}" dijadwalkan ${data.examDate} pukul ${data.examTime}`,
+          message: `Ujian "${text(data.examName)}" dijadwalkan ${text(data.examDate)} pukul ${text(data.examTime)}`,
           icon: <Calendar className="w-5 h-5" />,
           action: {
             label: "Lihat Detail",
@@ -74,7 +85,7 @@ export class NotificationService {
         return {
           type: "warning",
           title: "Pengingat Ujian",
-          message: `Ujian "${data.examName}" akan dimulai dalam ${data.hoursUntil} jam.`,
+          message: `Ujian "${text(data.examName)}" akan dimulai dalam ${text(data.hoursUntil)} jam.`,
           icon: <Bell className="w-5 h-5" />,
           duration: 0, // Don't auto-dismiss
           dismissible: true,
@@ -84,11 +95,11 @@ export class NotificationService {
         return {
           type: "info",
           title: "Materi Baru Tersedia",
-          message: `Materi pembelajaran "${data.materialName}" sudah dipublikasikan di ${data.className}`,
+          message: `Materi pembelajaran "${text(data.materialName)}" sudah dipublikasikan di ${text(data.className)}`,
           icon: <BookOpen className="w-5 h-5" />,
           action: {
             label: "Pelajari",
-            href: `/student/kelas/${data.classId}/materi`,
+            href: `/student/kelas/${text(data.classId)}/materi`,
           },
           duration: 7000,
         };
@@ -97,11 +108,11 @@ export class NotificationService {
         return {
           type: "info",
           title: "Balasan Forum",
-          message: `${data.replierName} membalas pertanyaan Anda di forum ${data.className}`,
+          message: `${text(data.replierName)} membalas pertanyaan Anda di forum ${text(data.className)}`,
           icon: <Bell className="w-5 h-5" />,
           action: {
             label: "Baca Balasan",
-            href: `/student/kelas/${data.classId}/forum`,
+            href: `/student/kelas/${text(data.classId)}/forum`,
           },
           duration: 7000,
         };
@@ -110,7 +121,7 @@ export class NotificationService {
         return {
           type: "warning",
           title: "Perhatian Kehadiran",
-          message: `Kehadiran Anda di ${data.className} rendah. Silakan tingkatkan kehadiran Anda.`,
+          message: `Kehadiran Anda di ${text(data.className)} rendah. Silakan tingkatkan kehadiran Anda.`,
           icon: <AlertCircle className="w-5 h-5" />,
           duration: 0,
           dismissible: true,
@@ -118,12 +129,12 @@ export class NotificationService {
 
       case "custom":
         return {
-          type: data.type || "info",
-          title: data.title || "Notifikasi",
-          message: data.message || "",
-          icon: data.icon,
-          action: data.action,
-          duration: data.duration ?? 5000,
+          type: notificationType(data.type),
+          title: text(data.title) || "Notifikasi",
+          message: text(data.message),
+          icon: data.icon as React.ReactNode,
+          action: data.action as Notification["action"],
+          duration: typeof data.duration === "number" ? data.duration : 5000,
         };
 
       default:
@@ -143,7 +154,7 @@ export class NotificationService {
   static async sendEmailNotification(
     email: string,
     event: NotificationEvent,
-    data: Record<string, any>
+    data: Record<string, unknown>
   ): Promise<boolean> {
     console.log(`[Email Notification] Sending to ${email}:`, event, data);
 
@@ -189,46 +200,7 @@ export class NotificationService {
    * In production, this would use WebSocket or Server-Sent Events
    */
   static async pollNotifications(userId: string): Promise<NotificationPayload[]> {
-    // Mock: return random notification
-    const notifications: NotificationPayload[] = [];
-    const randomEvent = Math.random();
-
-    if (randomEvent < 0.3) {
-      notifications.push({
-        event: "assignment_new",
-        userId,
-        data: {
-          assignmentName: "Essay: Dampak Globalisasi",
-          className: "XI IPA 1",
-          classId: "kelas-1",
-          deadline: "10 Juni 2026",
-        },
-        timestamp: new Date(),
-      });
-    } else if (randomEvent < 0.6) {
-      notifications.push({
-        event: "grade_released",
-        userId,
-        data: {
-          assignmentName: "Quiz Matematika",
-          score: 92,
-          maxScore: 100,
-        },
-        timestamp: new Date(),
-      });
-    } else if (randomEvent < 0.9) {
-      notifications.push({
-        event: "exam_scheduled",
-        userId,
-        data: {
-          examName: "PAS Fisika",
-          examDate: "15 Juni 2026",
-          examTime: "08:00",
-        },
-        timestamp: new Date(),
-      });
-    }
-
-    return notifications;
+    console.log(`[Notification Poll] No notification source configured for ${userId}`);
+    return [];
   }
 }

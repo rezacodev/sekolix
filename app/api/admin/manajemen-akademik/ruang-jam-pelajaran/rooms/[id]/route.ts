@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
 
 // GET - Get single room
 export async function GET(
@@ -7,9 +9,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const room = await prisma.room.findUnique({
-      where: { id: BigInt(id) }
+      where: { id: parsedId.value }
     });
 
     if (!room) {
@@ -35,7 +43,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("update", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const body = await request.json();
     const { code, name, type, floor, building, capacity, facilities, description, is_active } = body;
 
@@ -52,7 +66,7 @@ export async function PUT(
       const existing = await prisma.room.findFirst({
         where: {
           code,
-          id: { not: BigInt(id) }
+          id: { not: parsedId.value }
         }
       });
       if (existing) {
@@ -64,7 +78,7 @@ export async function PUT(
     }
 
     const room = await prisma.room.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: {
         code,
         name,
@@ -94,9 +108,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("delete", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     await prisma.room.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: { deleted_at: new Date() }
     });
 

@@ -222,6 +222,22 @@ export async function POST(
       );
     }
 
+    const studentIds = Array.from(new Set(records.map((record) => record.studentId)));
+    const scopedStudentCount = await prisma.pesertaDidik.count({
+      where: {
+        id: { in: studentIds },
+        deleted_at: null,
+        rombels: { some: { id: rombelId } },
+      },
+    });
+
+    if (scopedStudentCount !== studentIds.length) {
+      return NextResponse.json(
+        { error: "One or more students are outside this class" },
+        { status: 403 }
+      );
+    }
+
     // Create or update attendance records
     const attendanceDate = new Date(date);
     const results = await Promise.all(

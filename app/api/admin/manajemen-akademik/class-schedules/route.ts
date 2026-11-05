@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt, parsePagination } from "@/lib/api/validation";
 
 const prisma = new PrismaClient();
 
@@ -16,9 +18,13 @@ const createSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const access = await requireApiPermission("read", "akademik.jadwal");
+  if (!access.ok) return access.response;
+
   const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "0");
-  const pageSize = parseInt(searchParams.get("pageSize") || "10");
+  const pagination = parsePagination(searchParams);
+  if (!pagination.ok) return pagination.response;
+
   const class_id = searchParams.get("class_id");
   const rombel_id = searchParams.get("rombel_id");
   const teacher_id = searchParams.get("teacher_id");
@@ -31,8 +37,16 @@ export async function GET(request: NextRequest) {
     day?: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
     deleted_at: null;
   } = { deleted_at: null };
-  if (class_id) where.class_id = BigInt(class_id);
-  if (rombel_id) where.rombel_id = BigInt(rombel_id);
+  if (class_id) {
+    const parsed = parseBigInt(class_id, "class_id");
+    if (!parsed.ok) return parsed.response;
+    where.class_id = parsed.value;
+  }
+  if (rombel_id) {
+    const parsed = parseBigInt(rombel_id, "rombel_id");
+    if (!parsed.ok) return parsed.response;
+    where.rombel_id = parsed.value;
+  }
   if (teacher_id) where.teacher_id = teacher_id;
   if (
     day &&
@@ -65,8 +79,8 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: [{ day: "asc" }, { start_time: "asc" }],
-      skip: page * pageSize,
-      take: pageSize
+      skip: pagination.value.skip,
+      take: pagination.value.take
     }),
     prisma.classSchedule.count({ where })
   ]);
@@ -103,6 +117,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("create", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const validated = createSchema.parse(body);
 

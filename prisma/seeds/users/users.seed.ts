@@ -191,7 +191,7 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
   }
 
   // ── Murid ─────────────────────────────────────────────────────────────────
-  let muridUser = await prisma.user.findFirst({ where: { email: "murid@sekolix.com" } });
+  const muridUser = await prisma.user.findFirst({ where: { email: "murid@sekolix.com" } });
   if (!muridUser) {
     await prisma.user.create({
       data: {
@@ -207,7 +207,7 @@ export async function seedUsersAndStaff(school: { id: string; name: string; shor
   }
 
   // ── Orangtua ──────────────────────────────────────────────────────────────
-  let orangtuaUser = await prisma.user.findFirst({ where: { email: "orangtua@sekolix.com" } });
+  const orangtuaUser = await prisma.user.findFirst({ where: { email: "orangtua@sekolix.com" } });
   if (!orangtuaUser) {
     await prisma.user.create({
       data: {

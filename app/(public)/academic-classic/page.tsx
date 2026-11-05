@@ -175,7 +175,8 @@ export default async function AcademicClassicPage() {
       name: String(m.name ?? ""),
       position: String(m.position ?? m.role ?? ""),
       department: String(m.department ?? ""),
-      image: String(m.image ?? m.photo ?? ""),
+      image: String(m.image ?? m.photo ?? "") ||
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop",
       email: m.email ? String(m.email) : undefined,
       phone: m.phone ? String(m.phone) : undefined,
       bio: m.bio ? String(m.bio) : undefined,

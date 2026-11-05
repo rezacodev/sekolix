@@ -21,71 +21,34 @@ export function LivescoreLeaderboard({
   totalQuestions: number;
 }) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
+    const controller = new AbortController();
+    const loadLeaderboard = () => {
+      setLoading(true);
+      fetch(`/api/student/livescore?sessionId=${encodeURIComponent(sessionId)}`, {
+        signal: controller.signal,
+      })
+        .then((response) => (response.ok ? response.json() : []))
+        .then((payload) => {
+          setLeaderboard(Array.isArray(payload) ? payload : payload.data ?? []);
+        })
+        .catch((error) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setLeaderboard([]);
+        })
+        .finally(() => setLoading(false));
+    };
 
-    // Mock data - replace dengan API call real
-    const mockLeaderboard: LeaderboardEntry[] = [
-      {
-        rank: 1,
-        name: "Budi Santoso",
-        score: 95,
-        answeredQuestions: 40,
-        totalQuestions: 40,
-        isCurrentUser: false,
-      },
-      {
-        rank: 2,
-        name: "Siti Nurhaliza",
-        score: 92,
-        answeredQuestions: 39,
-        totalQuestions: 40,
-        isCurrentUser: false,
-      },
-      {
-        rank: 3,
-        name: "Anda",
-        score: 85,
-        answeredQuestions: 34,
-        totalQuestions: 40,
-        isCurrentUser: true,
-      },
-      {
-        rank: 4,
-        name: "Ahmad Wijaya",
-        score: 78,
-        answeredQuestions: 31,
-        totalQuestions: 40,
-        isCurrentUser: false,
-      },
-      {
-        rank: 5,
-        name: "Dewi Suryani",
-        score: 72,
-        answeredQuestions: 28,
-        totalQuestions: 40,
-        isCurrentUser: false,
-      },
-    ];
+    const immediate = window.setTimeout(loadLeaderboard, 0);
+    const interval = window.setInterval(loadLeaderboard, 15000);
 
-    setLeaderboard(mockLeaderboard);
-    setLoading(false);
-
-    // Polling every 15 seconds
-    const interval = setInterval(() => {
-      // Mock update - replace dengan API call real
-      setLeaderboard((prev) =>
-        prev.map((entry) => ({
-          ...entry,
-          score: entry.score + Math.floor(Math.random() * 3),
-          answeredQuestions: Math.min(entry.answeredQuestions + 1, totalQuestions),
-        }))
-      );
-    }, 15000);
-
-    return () => clearInterval(interval);
+    return () => {
+      controller.abort();
+      window.clearTimeout(immediate);
+      window.clearInterval(interval);
+    };
   }, [sessionId, totalQuestions]);
 
   return (
@@ -100,6 +63,10 @@ export function LivescoreLeaderboard({
         <div className="space-y-2">
           {loading ? (
             <div className="text-center py-4 text-gray-500">Loading...</div>
+          ) : leaderboard.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              Livescore belum tersedia untuk sesi ini
+            </div>
           ) : (
             leaderboard.map((entry) => (
               <div

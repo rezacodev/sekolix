@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTeacherAcademicScope } from "@/lib/api/scope";
+import type { Prisma } from "@prisma/client";
+import { z } from "zod";
+
+const studentQuerySchema = z.object({
+  search: z.string().max(100).optional().nullable(),
+  rombelId: z.coerce.bigint().optional(),
+  classId: z.coerce.bigint().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
 
 export async function GET(request: Request) {
   try {
@@ -12,40 +23,29 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
-    const rombelId = searchParams.get("rombelId");
-    const classId = searchParams.get("classId");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const parsedQuery = studentQuerySchema.safeParse(Object.fromEntries(searchParams));
+    if (!parsedQuery.success) {
+      return NextResponse.json({ error: "Invalid query", details: parsedQuery.error.flatten() }, { status: 400 });
+    }
+
+    const { search, rombelId, classId, page, limit } = parsedQuery.data;
     const skip = (page - 1) * limit;
 
     // Check user role
-    const isAdmin = session.user.role === "ADMIN";
+    const isAdmin = ["SUPERADMIN", "ADMIN"].includes(session.user.role);
     const isTeacher = session.user.staffRole === "TEACHER";
     const teacherId = session.user.staffId;
 
-    const whereClause: Record<string, unknown> = {
+    const whereClause: Prisma.PesertaDidikWhereInput = {
       deleted_at: null,
     };
+    const rombelFilter: Prisma.RombelWhereInput = { deleted_at: null };
 
     // Role-based filtering
     if (!isAdmin && isTeacher && teacherId) {
-      // Teacher only sees students in their classes
-      const teacherSubjects = await prisma.teacherSubject.findMany({
-        where: {
-          teacher_id: teacherId,
-          deleted_at: null,
-        },
-        select: {
-          rombel_id: true,
-        },
-      });
+      const scope = await getTeacherAcademicScope(teacherId);
 
-      const rombelIds = teacherSubjects
-        .map(ts => ts.rombel_id)
-        .filter((id): id is bigint => id !== null);
-
-      if (rombelIds.length === 0) {
+      if (scope.rombelIds.length === 0 || (rombelId && !scope.rombelIds.includes(rombelId))) {
         return NextResponse.json({
           success: true,
           data: [],
@@ -56,26 +56,20 @@ export async function GET(request: Request) {
         });
       }
 
-      whereClause.rombel_id = {
-        in: rombelIds,
-      };
+      rombelFilter.id = rombelId ?? { in: scope.rombelIds };
+    } else if (!isAdmin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    } else if (rombelId) {
+      rombelFilter.id = rombelId;
     }
 
     // Additional filters
-    if (rombelId) {
-      whereClause.rombels = {
-        some: {
-          id: BigInt(rombelId),
-        },
-      };
+    if (classId) {
+      rombelFilter.class_id = classId;
     }
 
-    if (classId) {
-      whereClause.rombels = {
-        some: {
-          class_id: BigInt(classId),
-        },
-      };
+    if (rombelFilter.id || rombelFilter.class_id) {
+      whereClause.rombels = { some: rombelFilter };
     }
 
     if (search) {

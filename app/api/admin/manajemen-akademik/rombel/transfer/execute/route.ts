@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { Rombel } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
+import { logActivity } from "@/lib/governance/server";
 
 const executeSchema = z.object({
   fromYearId: z.string(),
@@ -11,6 +13,9 @@ const executeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("update", "akademik.rombel");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const { fromYearId, toYearId, studentIds } = executeSchema.parse(body);
 
@@ -99,6 +104,21 @@ export async function POST(request: NextRequest) {
       await Promise.all(transferPromises);
       await tx.transferBatch.update({ where: { id: batch.id }, data: { status: "COMPLETED" } });
       return batch;
+    });
+
+    await logActivity({
+      actorUserId: access.context.user.id,
+      actorName: access.context.user.name,
+      module: "akademik.rombel",
+      action: "transfer-batch",
+      entityType: "TransferBatch",
+      entityId: result.id,
+      metadata: {
+        fromYearId,
+        toYearId,
+        studentCount: studentIds.length,
+      },
+      request,
     });
 
     return NextResponse.json({

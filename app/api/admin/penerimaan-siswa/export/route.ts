@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { PDFDocument as PDFLibDocument, rgb, StandardFonts } from "pdf-lib";
 import type { Prisma, ApplicantStatus, Applicant } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
+import { logActivity } from "@/lib/governance/server";
 
 type ApplicantExport = {
   id: string;
@@ -135,6 +137,9 @@ async function pdfBufferFromApplicants(applicants: ApplicantExport[]): Promise<B
 
 export async function GET(req: Request) {
   try {
+    const access = await requireApiPermission("export", "penerimaan-siswa");
+    if (!access.ok) return access.response;
+
     const url = new URL(req.url);
     const type = (url.searchParams.get("type") || "pdf").toLowerCase();
     const yearId = url.searchParams.get("yearId") || undefined;
@@ -142,6 +147,21 @@ export async function GET(req: Request) {
     const program = url.searchParams.get("program") || undefined;
 
     const applicants = await applicantsForExport({ yearId, status, program });
+    await logActivity({
+      actorUserId: access.context.user.id,
+      actorName: access.context.user.name,
+      module: "penerimaan-siswa",
+      action: "export",
+      entityType: "Applicant",
+      metadata: {
+        type,
+        yearId: yearId ?? null,
+        status: status ?? null,
+        program: program ?? null,
+        count: applicants.length,
+      },
+      request: req,
+    });
 
     const today = new Date().toISOString().slice(0, 10);
 

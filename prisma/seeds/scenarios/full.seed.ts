@@ -4,6 +4,7 @@ import { seedUsers } from '../users';
 import { seedGuru } from '../guru';
 import { seedDummy } from '../dummy';
 import { seedLandingPage } from '../landing-page/landing-page.seed';
+import { seedModulTambahanDemo } from '../modul-tambahan';
 
 /**
  * Full seeding scenario - complete dataset for development/testing
@@ -28,6 +29,7 @@ export async function seedFull() {
 
   // Seed comprehensive dummy data
   await seedDummy(classGroups, years, programs, subjects);
+  await seedModulTambahanDemo();
 
   console.log('✅ Full seeding completed');
 }

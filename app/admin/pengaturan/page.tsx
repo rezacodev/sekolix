@@ -1,40 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+const SETTINGS_LINKS = [
+  { href: "/admin/pengaturan/identitas-sekolah", title: "Identitas Sekolah", description: "Profil, logo, kontak, dan identitas publik sekolah." },
+  { href: "/admin/pengaturan/notifikasi", title: "Notifikasi", description: "SMTP email dan pengaturan notifikasi dalam aplikasi." },
+  { href: "/admin/pengaturan/integrasi-api", title: "Integrasi & API", description: "API key dan webhook untuk integrasi eksternal." },
+  { href: "/admin/pengaturan/backup-restore", title: "Backup & Restore", description: "Export dan restore data sekolah." },
+  { href: "/admin/pengguna", title: "Manajemen Pengguna", description: "Akun, role utama, dan status user." },
+  { href: "/admin/pengaturan/permissions", title: "Izin Akses Role", description: "Permission matrix untuk role operasional dinamis." },
+  { href: "/admin/pengaturan/audit-log", title: "Audit Log", description: "Activity log dan audit trail perubahan data sensitif." },
+  { href: "/admin/pengaturan/approval", title: "Approval Workflow", description: "Alur persetujuan dasar untuk aksi penting." },
+];
 
 export default function SettingsPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Pengaturan</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Halaman pengaturan umum (placeholder).</p>
-      <div className="mt-4 space-y-2">
-        <Link
-          href="/admin/settings/identitas-sekolah"
-          className="block text-sm text-primary hover:underline"
-        >
-          Identitas Sekolah
-        </Link>
-        <Link
-          href="/admin/settings/notifikasi"
-          className="block text-sm text-primary hover:underline"
-        >
-          Notifikasi
-        </Link>
-        <Link
-          href="/admin/settings/integrasi-api"
-          className="block text-sm text-primary hover:underline"
-        >
-          Integrasi & API
-        </Link>
-        <Link
-          href="/admin/settings/backup-restore"
-          className="block text-sm text-primary hover:underline"
-        >
-          Backup & Restore
-        </Link>
-        <Link href="/admin/users" className="block text-sm text-primary hover:underline">
-          Manajemen Pengguna
-        </Link>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Pengaturan</h1>
+        <p className="text-muted-foreground">Konfigurasi sistem, keamanan, dan tata kelola aplikasi.</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {SETTINGS_LINKS.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <Card className="h-full transition hover:border-primary/50 hover:shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">{item.title}</CardTitle>
+                <CardDescription>{item.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <span className="text-sm font-medium text-primary">Buka pengaturan</span>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

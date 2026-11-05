@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import type { Prisma, StaffRole } from "@prisma/client";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -165,6 +166,24 @@ export async function POST(request: NextRequest) {
     };
 
     const gtk = await prisma.staff.create({ data: createData });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "akademik.gtk",
+      action: "create",
+      entityType: "Staff",
+      entityId: gtk.id,
+      metadata: { name: gtk.name, role: gtk.role },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "Staff",
+      entityId: gtk.id,
+      action: "create",
+      after: gtk,
+      reason: "Admin GTK create",
+    });
     return NextResponse.json(gtk, { status: 201 });
   } catch (error) {
     console.error("Error creating gtk:", error);
@@ -187,9 +206,31 @@ export async function DELETE(request: NextRequest) {
     const id = url.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID GTK diperlukan" }, { status: 400 });
 
-    await prisma.staff.update({
+    const before = await prisma.staff.findUnique({ where: { id } });
+    if (!before) return NextResponse.json({ error: "GTK tidak ditemukan" }, { status: 404 });
+
+    const gtk = await prisma.staff.update({
       where: { id },
       data: { deleted_at: new Date() }
+    });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "akademik.gtk",
+      action: "delete",
+      entityType: "Staff",
+      entityId: id,
+      metadata: { name: before.name, role: before.role },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "Staff",
+      entityId: id,
+      action: "delete",
+      before,
+      after: gtk,
+      reason: "Admin GTK soft delete",
     });
 
     return NextResponse.json({ message: "GTK berhasil dihapus" }, { status: 200 });

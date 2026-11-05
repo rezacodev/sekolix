@@ -66,18 +66,24 @@ function useCountdown(endAt: string, status: string) {
   const [remaining, setRemaining] = useState("");
 
   useEffect(() => {
-    if (status !== "OPEN") { setRemaining(""); return; }
     const update = () => {
-      const diff = new Date(endAt).getTime() - Date.now();
+      if (status !== "OPEN") {
+        setRemaining("");
+        return;
+      }
+      const diff = new Date(endAt).getTime() - new Date().getTime();
       if (diff <= 0) { setRemaining("Waktu habis"); return; }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
       setRemaining(`${h > 0 ? h + "j " : ""}${m}m ${s}d`);
     };
-    update();
+    const immediate = setTimeout(update, 0);
     const timer = setInterval(update, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(timer);
+    };
   }, [endAt, status]);
 
   return remaining;

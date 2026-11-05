@@ -2,16 +2,19 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { teacherOwnsQuestions } from "@/lib/api/scope";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
 import { z } from "zod";
 
-async function getStaffId(): Promise<string | null> {
+async function getTeacherContext(): Promise<{ staffId: string; userId: string; name?: string | null } | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) return null;
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     include: { staff: true },
   });
-  return user?.staff?.[0]?.id ?? null;
+  const staffId = user?.staff?.[0]?.id;
+  return user && staffId ? { staffId, userId: user.id, name: user.name } : null;
 }
 
 const updateSchema = z.object({
@@ -21,7 +24,11 @@ const updateSchema = z.object({
   duration: z.number().int().min(1).optional(),
   passing_grade: z.number().int().min(0).max(100).optional(),
   randomize: z.boolean().optional(),
-  question_ids: z.array(z.number().int()).optional(),
+  question_ids: z.array(z.coerce.bigint()).optional(),
+});
+
+const paramsSchema = z.object({
+  id: z.coerce.bigint(),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -29,13 +36,18 @@ type Params = { params: Promise<{ id: string }> };
 // GET /api/teacher/ujian/paket/[id]
 export async function GET(_req: Request, { params }: Params) {
   try {
-    const staffId = await getStaffId();
-    if (!staffId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const teacher = await getTeacherContext();
+    if (!teacher) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { staffId } = teacher;
 
-    const { id } = await params;
+    const parsedParams = paramsSchema.safeParse(await params);
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: "Invalid params", details: parsedParams.error.flatten() }, { status: 400 });
+    }
+    const { id } = parsedParams.data;
 
     const pkg = await prisma.examPackage.findFirst({
-      where: { id: BigInt(id), teacher_id: staffId, deleted_at: null },
+      where: { id, teacher_id: staffId, deleted_at: null },
       include: {
         subject: { select: { id: true, name: true } },
         questions: {
@@ -99,13 +111,18 @@ export async function GET(_req: Request, { params }: Params) {
 // PUT /api/teacher/ujian/paket/[id]
 export async function PUT(request: Request, { params }: Params) {
   try {
-    const staffId = await getStaffId();
-    if (!staffId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const teacher = await getTeacherContext();
+    if (!teacher) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { staffId } = teacher;
 
-    const { id } = await params;
+    const parsedParams = paramsSchema.safeParse(await params);
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: "Invalid params", details: parsedParams.error.flatten() }, { status: 400 });
+    }
+    const { id } = parsedParams.data;
 
     const existing = await prisma.examPackage.findFirst({
-      where: { id: BigInt(id), teacher_id: staffId, deleted_at: null },
+      where: { id, teacher_id: staffId, deleted_at: null },
     });
     if (!existing) return NextResponse.json({ error: "Package not found" }, { status: 404 });
 
@@ -116,16 +133,24 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     const { question_ids, ...fields } = parsed.data;
+    const uniqueQuestionIds = question_ids ? Array.from(new Set(question_ids)) : undefined;
+
+    if (uniqueQuestionIds) {
+      const canUseQuestions = await teacherOwnsQuestions(staffId, existing.subject_id, uniqueQuestionIds);
+      if (!canUseQuestions) {
+        return NextResponse.json({ error: "One or more questions are outside teacher scope" }, { status: 403 });
+      }
+    }
 
     const pkg = await prisma.$transaction(async (tx) => {
       // Replace questions if provided
-      if (question_ids !== undefined) {
-        await tx.examPackageQuestion.deleteMany({ where: { package_id: BigInt(id) } });
-        if (question_ids.length > 0) {
+      if (uniqueQuestionIds !== undefined) {
+        await tx.examPackageQuestion.deleteMany({ where: { package_id: id } });
+        if (uniqueQuestionIds.length > 0) {
           await tx.examPackageQuestion.createMany({
-            data: question_ids.map((qid, idx) => ({
-              package_id: BigInt(id),
-              question_id: BigInt(qid),
+            data: uniqueQuestionIds.map((qid, idx) => ({
+              package_id: id,
+              question_id: qid,
               order: idx,
             })),
           });
@@ -133,7 +158,7 @@ export async function PUT(request: Request, { params }: Params) {
       }
 
       return tx.examPackage.update({
-        where: { id: BigInt(id) },
+        where: { id },
         data: {
           ...(fields.title !== undefined ? { title: fields.title } : {}),
           ...(fields.description !== undefined ? { description: fields.description } : {}),
@@ -144,6 +169,33 @@ export async function PUT(request: Request, { params }: Params) {
         },
         include: { questions: { select: { id: true } } },
       });
+    });
+
+    await logActivity({
+      actorUserId: teacher.userId,
+      actorName: teacher.name,
+      module: "teacher.cbt",
+      action: "update",
+      entityType: "ExamPackage",
+      entityId: String(pkg.id),
+      metadata: {
+        subjectId: String(existing.subject_id),
+        questionCount: pkg.questions.length,
+      },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: teacher.userId,
+      entityType: "ExamPackage",
+      entityId: String(pkg.id),
+      action: "update",
+      before: existing,
+      after: pkg,
+      reason: "Teacher CBT package update",
+      metadata: {
+        subjectId: String(existing.subject_id),
+        questionCount: pkg.questions.length,
+      },
     });
 
     return NextResponse.json({
@@ -161,19 +213,50 @@ export async function PUT(request: Request, { params }: Params) {
 // DELETE /api/teacher/ujian/paket/[id]
 export async function DELETE(_req: Request, { params }: Params) {
   try {
-    const staffId = await getStaffId();
-    if (!staffId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const teacher = await getTeacherContext();
+    if (!teacher) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { staffId } = teacher;
 
-    const { id } = await params;
+    const parsedParams = paramsSchema.safeParse(await params);
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: "Invalid params", details: parsedParams.error.flatten() }, { status: 400 });
+    }
+    const { id } = parsedParams.data;
 
     const existing = await prisma.examPackage.findFirst({
-      where: { id: BigInt(id), teacher_id: staffId, deleted_at: null },
+      where: { id, teacher_id: staffId, deleted_at: null },
     });
     if (!existing) return NextResponse.json({ error: "Package not found" }, { status: 404 });
 
     await prisma.examPackage.update({
-      where: { id: BigInt(id) },
+      where: { id },
       data: { deleted_at: new Date() },
+    });
+
+    await logActivity({
+      actorUserId: teacher.userId,
+      actorName: teacher.name,
+      module: "teacher.cbt",
+      action: "delete",
+      entityType: "ExamPackage",
+      entityId: String(id),
+      metadata: {
+        subjectId: String(existing.subject_id),
+        title: existing.title,
+      },
+      request: _req,
+    });
+    await writeAuditTrail({
+      actorUserId: teacher.userId,
+      entityType: "ExamPackage",
+      entityId: String(id),
+      action: "delete",
+      before: existing,
+      reason: "Teacher CBT package soft delete",
+      metadata: {
+        subjectId: String(existing.subject_id),
+        title: existing.title,
+      },
     });
 
     return NextResponse.json({ success: true });

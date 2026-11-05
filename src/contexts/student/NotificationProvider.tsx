@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useRef } from "react";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 
@@ -31,9 +31,15 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const nextIdRef = useRef(0);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
 
   const addNotification = useCallback((notification: Omit<Notification, "id" | "timestamp">) => {
-    const id = Math.random().toString(36).substr(2, 9);
+    nextIdRef.current += 1;
+    const id = `notification-${nextIdRef.current}`;
     const duration = notification.duration ?? 5000;
     const newNotification: Notification = {
       ...notification,
@@ -53,11 +59,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
 
     return id;
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
+  }, [removeNotification]);
 
   const clearNotifications = useCallback(() => {
     setNotifications([]);

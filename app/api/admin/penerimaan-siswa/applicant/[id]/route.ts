@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { UserRole } from "@/types";
 import db from "@/lib/db";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
 
 const applicantUpdateSchema = z
   .object({
@@ -23,7 +24,7 @@ export async function PATCH(request: NextRequest, context: ApplicantRouteContext
     const { id } = resolvedParams;
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role as UserRole | undefined;
-    if (!session || !userRole || !allowedRoles.includes(userRole)) {
+    if (!session?.user || !userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: "Akses ditolak" }, { status: 403 });
     }
 
@@ -52,6 +53,25 @@ export async function PATCH(request: NextRequest, context: ApplicantRouteContext
       where: { id },
       data: updates
     });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "penerimaan-siswa.applicant",
+      action: "update",
+      entityType: "Applicant",
+      entityId: id,
+      metadata: updates,
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "Applicant",
+      entityId: id,
+      action: "update",
+      before: applicant,
+      after: updatedApplicant,
+      reason: "SPMB applicant update",
+    });
 
     return NextResponse.json({ status: "ok", applicant: updatedApplicant });
   } catch (error) {
@@ -74,7 +94,7 @@ export async function DELETE(request: NextRequest, context: ApplicantRouteContex
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role as UserRole | undefined;
 
-    if (!session || !userRole || !allowedRoles.includes(userRole)) {
+    if (!session?.user || !userRole || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ message: "Akses ditolak" }, { status: 403 });
     }
 
@@ -96,6 +116,24 @@ export async function DELETE(request: NextRequest, context: ApplicantRouteContex
 
     await db.applicant.delete({
       where: { id }
+    });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "penerimaan-siswa.applicant",
+      action: "delete",
+      entityType: "Applicant",
+      entityId: id,
+      metadata: { registrationCode: applicant.registrationCode, fullName: applicant.fullName },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "Applicant",
+      entityId: id,
+      action: "delete",
+      before: applicant,
+      reason: "SPMB applicant delete",
     });
 
     return NextResponse.json({ status: "ok", message: "Calon berhasil dihapus" });

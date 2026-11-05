@@ -12,7 +12,7 @@ import { NotificationService, NotificationEvent } from "@/lib/notification-servi
 export function useNotificationHandler() {
   const { addNotification } = useNotification();
 
-  const notify = (event: NotificationEvent, data: Record<string, any>) => {
+  const notify = (event: NotificationEvent, data: Record<string, unknown>) => {
     const notification = NotificationService.generateNotification(event, data);
     const id = addNotification(notification);
     return id;

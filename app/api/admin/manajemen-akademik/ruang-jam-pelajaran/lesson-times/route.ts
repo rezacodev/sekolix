@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { DayOfWeek, Prisma } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parsePagination } from "@/lib/api/validation";
 
 // GET - List all lesson times with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "0");
-    const pageSize = parseInt(searchParams.get("pageSize") || "20");
+    const pagination = parsePagination(searchParams, { page: 0, pageSize: 20, maxPageSize: 100 });
+    if (!pagination.ok) return pagination.response;
+
     const search = searchParams.get("search") || "";
     const day = searchParams.get("day") || "";
     const is_break = searchParams.get("is_break") || "";
@@ -40,8 +46,8 @@ export async function GET(request: NextRequest) {
     const [data, totalCount] = await Promise.all([
       prisma.lessonTime.findMany({
         where,
-        skip: page * pageSize,
-        take: pageSize,
+        skip: pagination.value.skip,
+        take: pagination.value.take,
         orderBy: [
           { day: "asc" },
           { session: "asc" }
@@ -69,6 +75,9 @@ export async function GET(request: NextRequest) {
 // POST - Create new lesson time
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("create", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const { day, session, start_time, end_time, is_break, break_label, is_active } = body;
 

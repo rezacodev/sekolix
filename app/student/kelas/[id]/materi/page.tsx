@@ -11,7 +11,6 @@ import {
   Calendar,
   User,
   Search,
-  ChevronDown,
   Lock,
   CheckCircle2,
   Clock,
@@ -37,78 +36,24 @@ export default function MateriPage({ params }: { params: { id: string } }) {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [expandedChapter, setExpandedChapter] = useState<string | null>(null);
 
-  // Mock data - replace dengan API call
   useEffect(() => {
-    const mockMaterials: Material[] = [
-      {
-        id: "1",
-        title: "Bab 1: Pendahuluan Matematika",
-        description: "Pengenalan konsep dasar dan notasi matematika",
-        type: "pdf",
-        url: "/materials/bab1.pdf",
-        uploadedBy: "Budi Santoso",
-        uploadedDate: "2026-05-01",
-        releaseDate: "2026-05-01",
-        isPublished: true,
-        accessCount: 45,
-        lastAccessed: "2026-05-28",
-      },
-      {
-        id: "2",
-        title: "Video: Penjelasan Aljabar",
-        description: "Video penjelasan detail tentang aljabar linear",
-        type: "video",
-        url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        uploadedBy: "Budi Santoso",
-        uploadedDate: "2026-05-05",
-        releaseDate: "2026-05-05",
-        isPublished: true,
-        accessCount: 32,
-        lastAccessed: "2026-05-25",
-      },
-      {
-        id: "3",
-        title: "Bab 2: Fungsi dan Grafik",
-        description: "Materi tentang fungsi, domain, range, dan grafik fungsi",
-        type: "ppt",
-        url: "/materials/bab2.ppt",
-        uploadedBy: "Budi Santoso",
-        uploadedDate: "2026-05-10",
-        releaseDate: "2026-05-10",
-        isPublished: true,
-        accessCount: 28,
-        lastAccessed: "2026-05-24",
-      },
-      {
-        id: "4",
-        title: "E-Book: Kalkulus Dasar",
-        description: "E-book lengkap tentang kalkulus untuk pemula",
-        type: "ebook",
-        url: "/materials/kalkulus.pdf",
-        uploadedBy: "Budi Santoso",
-        uploadedDate: "2026-05-15",
-        releaseDate: "2026-05-15",
-        isPublished: true,
-        accessCount: 15,
-      },
-      {
-        id: "5",
-        title: "Bab 3: Limit dan Turunan",
-        description: "Materi mendatang (belum dirilis)",
-        type: "pdf",
-        url: "/materials/bab3.pdf",
-        uploadedBy: "Budi Santoso",
-        uploadedDate: "2026-05-20",
-        releaseDate: "2026-06-05",
-        isPublished: true,
-        accessCount: 0,
-      },
-    ];
+    const controller = new AbortController();
 
-    setMaterials(mockMaterials);
-    setLoading(false);
+    fetch(`/api/student/materials?rombelId=${encodeURIComponent(rombelId)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => {
+        setMaterials(Array.isArray(data) ? data : data.data ?? []);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setMaterials([]);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, [rombelId]);
 
   const handleMaterialAccess = async (material: Material) => {
@@ -158,7 +103,13 @@ export default function MateriPage({ params }: { params: { id: string } }) {
 
         {/* Materi Items */}
         <div className="space-y-3">
-          {filteredMaterials.length === 0 ? (
+          {loading ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-gray-500">
+                Memuat materi...
+              </CardContent>
+            </Card>
+          ) : filteredMaterials.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center text-gray-500">
                 Tidak ada materi yang cocok

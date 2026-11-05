@@ -36,6 +36,14 @@ import {
   ChevronDown,
   Menu,
   ClipboardList,
+  WalletCards,
+  ShieldAlert,
+  LibraryBig,
+  Boxes,
+  UsersRound,
+  FileText,
+  Trophy,
+  DatabaseZap,
   Check
 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -120,6 +128,194 @@ const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = 
     { label: "Website Sekolah", href: "/admin/landing-website" },
     { label: "Pengaturan Website", href: "/admin/landing-website/website-settings" },
     { label: "Tema" }
+  ],
+  "/admin/keuangan": [{ label: "Keuangan/SPP" }],
+  "/admin/keuangan/tagihan": [
+    { label: "Keuangan/SPP", href: "/admin/keuangan" },
+    { label: "Tagihan" }
+  ],
+  "/admin/keuangan/pembayaran": [
+    { label: "Keuangan/SPP", href: "/admin/keuangan" },
+    { label: "Pembayaran" }
+  ],
+  "/admin/keuangan/laporan": [
+    { label: "Keuangan/SPP", href: "/admin/keuangan" },
+    { label: "Laporan" }
+  ],
+  "/admin/bk": [{ label: "BK & Kesiswaan" }],
+  "/admin/bk/kasus": [
+    { label: "BK & Kesiswaan", href: "/admin/bk" },
+    { label: "Kasus" }
+  ],
+  "/admin/bk/kedisiplinan": [
+    { label: "BK & Kesiswaan", href: "/admin/bk" },
+    { label: "Kedisiplinan" }
+  ],
+  "/admin/bk/prestasi": [
+    { label: "BK & Kesiswaan", href: "/admin/bk" },
+    { label: "Prestasi" }
+  ],
+  "/admin/bk/rujukan": [
+    { label: "BK & Kesiswaan", href: "/admin/bk" },
+    { label: "Rujukan & Surat" }
+  ],
+  "/admin/bk/laporan": [
+    { label: "BK & Kesiswaan", href: "/admin/bk" },
+    { label: "Laporan" }
+  ],
+  "/admin/perpustakaan": [{ label: "Perpustakaan" }],
+  "/admin/perpustakaan/katalog": [
+    { label: "Perpustakaan", href: "/admin/perpustakaan" },
+    { label: "Katalog" }
+  ],
+  "/admin/perpustakaan/eksemplar": [
+    { label: "Perpustakaan", href: "/admin/perpustakaan" },
+    { label: "Eksemplar" }
+  ],
+  "/admin/perpustakaan/anggota": [
+    { label: "Perpustakaan", href: "/admin/perpustakaan" },
+    { label: "Anggota" }
+  ],
+  "/admin/perpustakaan/sirkulasi": [
+    { label: "Perpustakaan", href: "/admin/perpustakaan" },
+    { label: "Sirkulasi" }
+  ],
+  "/admin/perpustakaan/laporan": [
+    { label: "Perpustakaan", href: "/admin/perpustakaan" },
+    { label: "Laporan" }
+  ],
+  "/admin/inventaris": [{ label: "Inventaris/Sarpras" }],
+  "/admin/inventaris/aset": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Aset" }
+  ],
+  "/admin/inventaris/lokasi": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Lokasi" }
+  ],
+  "/admin/inventaris/kondisi": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Kondisi" }
+  ],
+  "/admin/inventaris/mutasi": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Mutasi" }
+  ],
+  "/admin/inventaris/peminjaman": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Peminjaman" }
+  ],
+  "/admin/inventaris/pemeliharaan": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Pemeliharaan" }
+  ],
+  "/admin/inventaris/label": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Label QR" }
+  ],
+  "/admin/inventaris/laporan": [
+    { label: "Inventaris/Sarpras", href: "/admin/inventaris" },
+    { label: "Laporan" }
+  ],
+  "/admin/pegawai": [{ label: "Manajemen Pegawai" }],
+  "/admin/pegawai/absensi": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Absensi" }
+  ],
+  "/admin/pegawai/cuti": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Cuti/Izin" }
+  ],
+  "/admin/pegawai/piket": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Piket" }
+  ],
+  "/admin/pegawai/dokumen": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Dokumen" }
+  ],
+  "/admin/pegawai/kontrak": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Kontrak" }
+  ],
+  "/admin/pegawai/surat-tugas": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Surat Tugas" }
+  ],
+  "/admin/pegawai/laporan": [
+    { label: "Manajemen Pegawai", href: "/admin/pegawai" },
+    { label: "Laporan" }
+  ],
+  "/admin/tata-usaha": [{ label: "Tata Usaha" }],
+  "/admin/tata-usaha/surat-masuk": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Surat Masuk" }
+  ],
+  "/admin/tata-usaha/surat-keluar": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Surat Keluar" }
+  ],
+  "/admin/tata-usaha/template": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Template" }
+  ],
+  "/admin/tata-usaha/generate": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Generate Surat" }
+  ],
+  "/admin/tata-usaha/disposisi": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Disposisi" }
+  ],
+  "/admin/tata-usaha/arsip": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Arsip" }
+  ],
+  "/admin/tata-usaha/laporan": [
+    { label: "Tata Usaha", href: "/admin/tata-usaha" },
+    { label: "Laporan" }
+  ],
+  "/admin/ekstrakurikuler": [{ label: "Ekstrakurikuler" }],
+  "/admin/ekstrakurikuler/master": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Master" }
+  ],
+  "/admin/ekstrakurikuler/anggota": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Anggota" }
+  ],
+  "/admin/ekstrakurikuler/kegiatan": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Kegiatan" }
+  ],
+  "/admin/ekstrakurikuler/presensi": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Presensi" }
+  ],
+  "/admin/ekstrakurikuler/prestasi": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Prestasi" }
+  ],
+  "/admin/ekstrakurikuler/laporan": [
+    { label: "Ekstrakurikuler", href: "/admin/ekstrakurikuler" },
+    { label: "Laporan" }
+  ],
+  "/admin/integrasi-data": [{ label: "Integrasi Data Pendidikan" }],
+  "/admin/integrasi-data/profil": [
+    { label: "Integrasi Data Pendidikan", href: "/admin/integrasi-data" },
+    { label: "Profil & Mapping" }
+  ],
+  "/admin/integrasi-data/import": [
+    { label: "Integrasi Data Pendidikan", href: "/admin/integrasi-data" },
+    { label: "Import Preview" }
+  ],
+  "/admin/integrasi-data/export": [
+    { label: "Integrasi Data Pendidikan", href: "/admin/integrasi-data" },
+    { label: "Export & Template" }
+  ],
+  "/admin/integrasi-data/validasi": [
+    { label: "Integrasi Data Pendidikan", href: "/admin/integrasi-data" },
+    { label: "Validasi Data" }
   ],
   "/admin/penerimaan-siswa/pendaftaran-baru": [
     { label: "Penerimaan Siswa", href: "/admin/penerimaan-siswa" },
@@ -245,6 +441,14 @@ const BREADCRUMB_MAP: Record<string, Array<{ label: string; href?: string }>> = 
     { label: "Pengaturan", href: "/admin/pengaturan" },
     { label: "Izin Akses Role" }
   ],
+  "/admin/pengaturan/audit-log": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Audit Log" }
+  ],
+  "/admin/pengaturan/approval": [
+    { label: "Pengaturan", href: "/admin/pengaturan" },
+    { label: "Approval Workflow" }
+  ],
   "/admin/pengguna": [
     { label: "Pengaturan", href: "/admin/pengaturan" },
     { label: "Manajemen Pengguna" }
@@ -369,6 +573,139 @@ const appCategories: AppCategory[] = [
     ]
   },
   {
+    id: "keuangan",
+    name: "Keuangan/SPP",
+    icon: WalletCards,
+    color: "bg-emerald",
+    description: "Tagihan dan pembayaran siswa",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "finance-dashboard", label: "Dashboard", href: "/admin/keuangan" },
+      { id: "finance-invoices", label: "Tagihan", href: "/admin/keuangan/tagihan" },
+      { id: "finance-payments", label: "Pembayaran", href: "/admin/keuangan/pembayaran" },
+      { id: "finance-reports", label: "Laporan", href: "/admin/keuangan/laporan" }
+    ]
+  },
+  {
+    id: "bk",
+    name: "BK & Kesiswaan",
+    icon: ShieldAlert,
+    color: "bg-emerald",
+    description: "Konseling, disiplin, dan prestasi",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "bk-dashboard", label: "Dashboard", href: "/admin/bk" },
+      { id: "bk-cases", label: "Kasus BK", href: "/admin/bk/kasus" },
+      { id: "bk-discipline", label: "Kedisiplinan", href: "/admin/bk/kedisiplinan" },
+      { id: "bk-achievements", label: "Prestasi", href: "/admin/bk/prestasi" },
+      { id: "bk-referrals", label: "Rujukan & Surat", href: "/admin/bk/rujukan" },
+      { id: "bk-reports", label: "Laporan", href: "/admin/bk/laporan" }
+    ]
+  },
+  {
+    id: "perpustakaan",
+    name: "Perpustakaan",
+    icon: LibraryBig,
+    color: "bg-emerald",
+    description: "Katalog, anggota, dan sirkulasi",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "library-dashboard", label: "Dashboard", href: "/admin/perpustakaan" },
+      { id: "library-catalog", label: "Katalog", href: "/admin/perpustakaan/katalog" },
+      { id: "library-copies", label: "Eksemplar", href: "/admin/perpustakaan/eksemplar" },
+      { id: "library-members", label: "Anggota", href: "/admin/perpustakaan/anggota" },
+      { id: "library-circulation", label: "Sirkulasi", href: "/admin/perpustakaan/sirkulasi" },
+      { id: "library-reports", label: "Laporan", href: "/admin/perpustakaan/laporan" }
+    ]
+  },
+  {
+    id: "inventaris",
+    name: "Inventaris/Sarpras",
+    icon: Boxes,
+    color: "bg-teal",
+    description: "Aset, lokasi, peminjaman, dan pemeliharaan",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "inventory-dashboard", label: "Dashboard", href: "/admin/inventaris" },
+      { id: "inventory-assets", label: "Aset", href: "/admin/inventaris/aset" },
+      { id: "inventory-locations", label: "Lokasi", href: "/admin/inventaris/lokasi" },
+      { id: "inventory-condition", label: "Kondisi", href: "/admin/inventaris/kondisi" },
+      { id: "inventory-move", label: "Mutasi", href: "/admin/inventaris/mutasi" },
+      { id: "inventory-loans", label: "Peminjaman", href: "/admin/inventaris/peminjaman" },
+      { id: "inventory-maintenance", label: "Pemeliharaan", href: "/admin/inventaris/pemeliharaan" },
+      { id: "inventory-labels", label: "Label QR", href: "/admin/inventaris/label" },
+      { id: "inventory-reports", label: "Laporan", href: "/admin/inventaris/laporan" }
+    ]
+  },
+  {
+    id: "pegawai",
+    name: "Manajemen Pegawai",
+    icon: UsersRound,
+    color: "bg-cyan",
+    description: "Absensi, cuti, dokumen, dan kontrak",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "staff-dashboard", label: "Dashboard", href: "/admin/pegawai" },
+      { id: "staff-attendance", label: "Absensi", href: "/admin/pegawai/absensi" },
+      { id: "staff-leave", label: "Cuti/Izin", href: "/admin/pegawai/cuti" },
+      { id: "staff-duty", label: "Piket", href: "/admin/pegawai/piket" },
+      { id: "staff-documents", label: "Dokumen", href: "/admin/pegawai/dokumen" },
+      { id: "staff-contracts", label: "Kontrak", href: "/admin/pegawai/kontrak" },
+      { id: "staff-letters", label: "Surat Tugas", href: "/admin/pegawai/surat-tugas" },
+      { id: "staff-reports", label: "Laporan", href: "/admin/pegawai/laporan" }
+    ]
+  },
+  {
+    id: "tata-usaha",
+    name: "Tata Usaha",
+    icon: FileText,
+    color: "bg-indigo",
+    description: "Surat masuk, keluar, disposisi, dan arsip",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "office-dashboard", label: "Dashboard", href: "/admin/tata-usaha" },
+      { id: "office-incoming", label: "Surat Masuk", href: "/admin/tata-usaha/surat-masuk" },
+      { id: "office-outgoing", label: "Surat Keluar", href: "/admin/tata-usaha/surat-keluar" },
+      { id: "office-template", label: "Template", href: "/admin/tata-usaha/template" },
+      { id: "office-generate", label: "Generate Surat", href: "/admin/tata-usaha/generate" },
+      { id: "office-disposition", label: "Disposisi", href: "/admin/tata-usaha/disposisi" },
+      { id: "office-archive", label: "Arsip", href: "/admin/tata-usaha/arsip" },
+      { id: "office-reports", label: "Laporan", href: "/admin/tata-usaha/laporan" }
+    ]
+  },
+  {
+    id: "ekstrakurikuler",
+    name: "Ekstrakurikuler",
+    icon: Trophy,
+    color: "bg-rose",
+    description: "Ekskul, kegiatan, presensi, dan prestasi",
+    allowedRoles: ["SUPERADMIN", "ADMIN", "STAFF"],
+    subMenus: [
+      { id: "extra-dashboard", label: "Dashboard", href: "/admin/ekstrakurikuler" },
+      { id: "extra-master", label: "Master", href: "/admin/ekstrakurikuler/master" },
+      { id: "extra-members", label: "Anggota", href: "/admin/ekstrakurikuler/anggota" },
+      { id: "extra-schedules", label: "Kegiatan", href: "/admin/ekstrakurikuler/kegiatan" },
+      { id: "extra-attendance", label: "Presensi", href: "/admin/ekstrakurikuler/presensi" },
+      { id: "extra-achievements", label: "Prestasi", href: "/admin/ekstrakurikuler/prestasi" },
+      { id: "extra-reports", label: "Laporan", href: "/admin/ekstrakurikuler/laporan" }
+    ]
+  },
+  {
+    id: "integrasi-data",
+    name: "Integrasi Data",
+    icon: DatabaseZap,
+    color: "bg-blue",
+    description: "Dapodik, EMIS, e-Rapor friendly",
+    allowedRoles: ["SUPERADMIN", "ADMIN"],
+    subMenus: [
+      { id: "integration-dashboard", label: "Dashboard", href: "/admin/integrasi-data" },
+      { id: "integration-profiles", label: "Profil & Mapping", href: "/admin/integrasi-data/profil" },
+      { id: "integration-import", label: "Import Preview", href: "/admin/integrasi-data/import" },
+      { id: "integration-export", label: "Export & Template", href: "/admin/integrasi-data/export" },
+      { id: "integration-validation", label: "Validasi Data", href: "/admin/integrasi-data/validasi" }
+    ]
+  },
+  {
     id: "settings",
     name: "Pengaturan",
     icon: Settings,
@@ -385,7 +722,9 @@ const appCategories: AppCategory[] = [
       { id: "settings-notifikasi", label: "Notifikasi", href: "/admin/pengaturan/notifikasi" },
       { id: "settings-integrasi", label: "Integrasi & API", href: "/admin/pengaturan/integrasi-api", superadminOnly: true },
       { id: "settings-backup", label: "Backup & Restore", href: "/admin/pengaturan/backup-restore", superadminOnly: true },
-      { id: "settings-permissions", label: "Izin Akses Role", href: "/admin/pengaturan/permissions", superadminOnly: true }
+      { id: "settings-permissions", label: "Izin Akses Role", href: "/admin/pengaturan/permissions", superadminOnly: true },
+      { id: "settings-audit", label: "Audit Log", href: "/admin/pengaturan/audit-log", superadminOnly: true },
+      { id: "settings-approval", label: "Approval Workflow", href: "/admin/pengaturan/approval", superadminOnly: true }
     ]
   }
 ];
@@ -409,6 +748,20 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
       menuToExpand = "settings";
     } else if (pathname.startsWith("/admin/manajemen-akademik")) {
       menuToExpand = "akademik";
+    } else if (pathname.startsWith("/admin/keuangan")) {
+      menuToExpand = "keuangan";
+    } else if (pathname.startsWith("/admin/bk")) {
+      menuToExpand = "bk";
+    } else if (pathname.startsWith("/admin/perpustakaan")) {
+      menuToExpand = "perpustakaan";
+    } else if (pathname.startsWith("/admin/inventaris")) {
+      menuToExpand = "inventaris";
+    } else if (pathname.startsWith("/admin/pegawai")) {
+      menuToExpand = "pegawai";
+    } else if (pathname.startsWith("/admin/tata-usaha")) {
+      menuToExpand = "tata-usaha";
+    } else if (pathname.startsWith("/admin/ekstrakurikuler")) {
+      menuToExpand = "ekstrakurikuler";
     }
 
     return menuToExpand ? [menuToExpand] : [];
@@ -483,7 +836,8 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
     const hydrateTheme = async () => {
       try {
         const response = await fetch("/api/admin/admin-theme");
-        if (response.ok) {
+        const contentType = response.headers.get("content-type") ?? "";
+        if (response.ok && contentType.includes("application/json")) {
           const data = await response.json();
           const dbTheme = data?.adminTheme;
           if (dbTheme && ADMIN_THEMES.some(t => t.id === dbTheme)) {

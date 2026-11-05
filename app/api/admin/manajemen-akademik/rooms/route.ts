@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
 
 export async function GET() {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const rooms = await prisma.room.findMany({
       where: {
         is_active: true,

@@ -20,6 +20,7 @@ declare module "next-auth" {
       staffRole?: "TEACHER" | "STAFF";
       isDualRole?: boolean;
       abilityRules?: object[];
+      accessRoles?: Array<{ slug: string; name: string }>;
     } & DefaultSession["user"];
   }
 
@@ -37,5 +38,6 @@ declare module "next-auth/jwt" {
     staffRole?: string;
     isDualRole?: boolean;
     abilityRules?: object[];
+    accessRoles?: Array<{ slug: string; name: string }>;
   }
 }

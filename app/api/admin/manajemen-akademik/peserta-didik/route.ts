@@ -5,11 +5,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { logActivity, writeAuditTrail } from "@/lib/governance/server";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const checkExisting = url.searchParams.get("checkExisting");
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     const data = await request.json();
     const { nik, fullName, phone, email } = data;
 
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Field wajib: nik, fullName, phone" }, { status: 400 });
     }
 
-    await db.pesertaDidik.create({
+    const student = await db.pesertaDidik.create({
       data: {
         nik,
         fullName,
@@ -150,6 +151,24 @@ export async function POST(request: NextRequest) {
         email: email || null,
         registrationCode: data.registrationCode || null
       }
+    });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "akademik.siswa",
+      action: "create",
+      entityType: "PesertaDidik",
+      entityId: student.id,
+      metadata: { fullName: student.fullName },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "PesertaDidik",
+      entityId: student.id,
+      action: "create",
+      after: student,
+      reason: "Admin student create",
     });
 
     revalidatePath("/admin/manajemen-akademik/peserta-didik");
@@ -167,7 +186,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     const data = await request.json();
     const { id, nik, fullName, phone, email } = data;
 
@@ -178,7 +197,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    await db.pesertaDidik.update({
+    const before = await db.pesertaDidik.findUnique({ where: { id } });
+    if (!before) return NextResponse.json({ message: "Peserta didik tidak ditemukan" }, { status: 404 });
+
+    const student = await db.pesertaDidik.update({
       where: { id },
       data: {
         nik,
@@ -186,6 +208,25 @@ export async function PATCH(request: NextRequest) {
         phone,
         email: email || null
       }
+    });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "akademik.siswa",
+      action: "update",
+      entityType: "PesertaDidik",
+      entityId: student.id,
+      metadata: { fullName: student.fullName },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "PesertaDidik",
+      entityId: student.id,
+      action: "update",
+      before,
+      after: student,
+      reason: "Admin student update",
     });
 
     revalidatePath("/admin/manajemen-akademik/peserta-didik");
@@ -203,12 +244,33 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     if (!id) return NextResponse.json({ message: "ID peserta didik diperlukan" }, { status: 400 });
 
+    const before = await db.pesertaDidik.findUnique({ where: { id } });
+    if (!before) return NextResponse.json({ message: "Peserta didik tidak ditemukan" }, { status: 404 });
+
     await db.pesertaDidik.delete({ where: { id } });
+    await logActivity({
+      actorUserId: session.user.id,
+      actorName: session.user.name,
+      module: "akademik.siswa",
+      action: "delete",
+      entityType: "PesertaDidik",
+      entityId: id,
+      metadata: { fullName: before.fullName },
+      request,
+    });
+    await writeAuditTrail({
+      actorUserId: session.user.id,
+      entityType: "PesertaDidik",
+      entityId: id,
+      action: "delete",
+      before,
+      reason: "Admin student delete",
+    });
 
     revalidatePath("/admin/manajemen-akademik/peserta-didik");
 

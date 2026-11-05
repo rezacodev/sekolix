@@ -77,17 +77,29 @@ export async function GET(request: Request) {
       select: { rombel_id: true, subject_id: true }
     });
 
+    const teachingClauses = staffTeacherSubjects
+      .filter(ts => ts.rombel_id !== null)
+      .map(ts => ({
+        rombel_id: ts.rombel_id!,
+        subject_id: ts.subject_id
+      }));
+
+    // Return empty if no teaching assignments
+    if (!staffTeacherSubjects.length || teachingClauses.length === 0) {
+      return NextResponse.json({
+        items: [],
+        totalCount: 0,
+        page,
+        pageSize
+      });
+    }
+
     // Build where clause
     const where: Prisma.AssignmentWhereInput = {
       deleted_at: null,
       academic_year: activeTahunAjaran.label,
       semester: currentSemester,
-      OR: staffTeacherSubjects
-        .filter(ts => ts.rombel_id !== null)
-        .map(ts => ({
-          rombel_id: ts.rombel_id!,
-          subject_id: ts.subject_id
-        }))
+      AND: [{ OR: teachingClauses }]
     };
 
     if (status === "upcoming") {
@@ -97,9 +109,19 @@ export async function GET(request: Request) {
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+      const andClauses: Prisma.AssignmentWhereInput[] = Array.isArray(where.AND)
+        ? where.AND
+        : where.AND
+          ? [where.AND]
+          : [];
+      where.AND = [
+        ...andClauses,
+        {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
     }
 
@@ -109,16 +131,6 @@ export async function GET(request: Request) {
 
     if (rombelId) {
       where.rombel_id = BigInt(rombelId);
-    }
-
-    // Return empty if no teaching assignments
-    if (!staffTeacherSubjects.length || !where.OR || (where.OR as Array<unknown>).length === 0) {
-      return NextResponse.json({
-        items: [],
-        totalCount: 0,
-        page,
-        pageSize
-      });
     }
 
     // Get total count

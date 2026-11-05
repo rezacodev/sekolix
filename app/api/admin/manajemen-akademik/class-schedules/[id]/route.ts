@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { z } from "zod";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
 
 const prisma = new PrismaClient();
 
@@ -17,9 +19,15 @@ const updateSchema = z.object({
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const classSchedule = await prisma.classSchedule.findUnique({
-      where: { id: BigInt(id), deleted_at: null },
+      where: { id: parsedId.value, deleted_at: null },
       include: {
         class: {
           select: { id: true, name: true }
@@ -75,7 +83,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const access = await requireApiPermission("update", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const body = await request.json();
     const validated = updateSchema.parse(body);
 
@@ -96,7 +110,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Get current schedule to check for conflicts
     const currentSchedule = await prisma.classSchedule.findUnique({
-      where: { id: BigInt(id) }
+      where: { id: parsedId.value }
     });
 
     if (!currentSchedule) {
@@ -116,7 +130,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (checkStartTime && checkEndTime) {
         const conflict = await prisma.classSchedule.findFirst({
           where: {
-            id: { not: BigInt(id) },
+            id: { not: parsedId.value },
             class_id: checkClassId,
             day: checkDay,
             deleted_at: null,
@@ -156,7 +170,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (validated.room !== undefined) updateData.room = validated.room;
 
     const classSchedule = await prisma.classSchedule.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: updateData,
       include: {
         class: {
@@ -218,9 +232,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("delete", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     await prisma.classSchedule.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: { deleted_at: new Date() }
     });
 

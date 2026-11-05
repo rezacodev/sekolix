@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
+import { logActivity } from "@/lib/governance/server";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("update", "akademik.rombel");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
-    const targetRombelId = BigInt(id);
+    const parsedTargetRombelId = parseBigInt(id);
+    if (!parsedTargetRombelId.ok) return parsedTargetRombelId.response;
+
+    const targetRombelId = parsedTargetRombelId.value;
     const { sourceRombelId, studentIds } = await request.json();
 
     if (!sourceRombelId || !studentIds || !Array.isArray(studentIds)) {
@@ -16,6 +25,9 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    const parsedSourceRombelId = parseBigInt(String(sourceRombelId), "sourceRombelId");
+    if (!parsedSourceRombelId.ok) return parsedSourceRombelId.response;
 
     // Validate target rombel exists
     const targetRombel = await prisma.rombel.findUnique({
@@ -58,7 +70,7 @@ export async function POST(
     await prisma.$transaction(async (tx) => {
       // Disconnect students from source rombel
       await tx.rombel.update({
-        where: { id: BigInt(sourceRombelId) },
+        where: { id: parsedSourceRombelId.value },
         data: {
           students: {
             disconnect: studentIds.map(id => ({ id }))
@@ -84,7 +96,7 @@ export async function POST(
     });
 
     const updatedSourceRombel = await prisma.rombel.findUnique({
-      where: { id: BigInt(sourceRombelId) },
+      where: { id: parsedSourceRombelId.value },
       include: { students: true }
     });
 
@@ -97,10 +109,25 @@ export async function POST(
 
     if (updatedSourceRombel) {
       await prisma.rombel.update({
-        where: { id: BigInt(sourceRombelId) },
+        where: { id: parsedSourceRombelId.value },
         data: { student_count: updatedSourceRombel.students.length }
       });
     }
+
+    await logActivity({
+      actorUserId: access.context.user.id,
+      actorName: access.context.user.name,
+      module: "akademik.rombel",
+      action: "transfer-students",
+      entityType: "Rombel",
+      entityId: String(targetRombelId),
+      metadata: {
+        sourceRombelId: String(parsedSourceRombelId.value),
+        targetRombelId: String(targetRombelId),
+        studentCount: studentIds.length,
+      },
+      request,
+    });
 
     return NextResponse.json({
       success: true,

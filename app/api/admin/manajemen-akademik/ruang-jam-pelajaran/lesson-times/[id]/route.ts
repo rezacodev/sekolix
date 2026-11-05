@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
 
 // GET - Get single lesson time
 export async function GET(
@@ -7,9 +9,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const lessonTime = await prisma.lessonTime.findUnique({
-      where: { id: BigInt(id) }
+      where: { id: parsedId.value }
     });
 
     if (!lessonTime) {
@@ -35,7 +43,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("update", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const body = await request.json();
     const { day, session, start_time, end_time, is_break, break_label, is_active } = body;
 
@@ -62,7 +76,7 @@ export async function PUT(
           session,
           is_break: false,
           deleted_at: null,
-          id: { not: BigInt(id) }
+          id: { not: parsedId.value }
         }
       });
       if (existing) {
@@ -74,7 +88,7 @@ export async function PUT(
     }
 
     const lessonTime = await prisma.lessonTime.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: {
         day,
         session: session || 0,
@@ -102,9 +116,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("delete", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     await prisma.lessonTime.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: { deleted_at: new Date() }
     });
 

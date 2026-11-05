@@ -4,6 +4,7 @@ import { seedUsers } from '../users';
 import { seedGuru } from '../guru';
 import { seedDummy } from '../dummy';
 import { seedLandingPage } from '../landing-page/landing-page.seed';
+import { seedModulTambahanDemo } from '../modul-tambahan';
 
 /**
  * Demo seeding scenario - includes sample data for demonstration
@@ -28,6 +29,7 @@ export async function seedDemo() {
 
   // Seed dummy data for demo purposes
   await seedDummy(classGroups, years, programs, subjects);
+  await seedModulTambahanDemo();
 
   console.log('✅ Demo seeding completed');
 }

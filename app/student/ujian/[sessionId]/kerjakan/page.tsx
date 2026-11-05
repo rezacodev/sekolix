@@ -11,11 +11,9 @@ import {
   Send,
   AlertTriangle,
   Loader,
-  Eye,
-  EyeOff,
-  Zap,
 } from "lucide-react";
-import { LivescoreLeaderboard } from "@/components/student/LivescoreLeaderboard";
+
+type AnswerValue = string | string[];
 
 interface Question {
   id: string;
@@ -31,7 +29,7 @@ interface Question {
 
 interface ExamState {
   currentQuestion: number;
-  answers: Record<string, any>;
+  answers: Record<string, AnswerValue>;
   marked: Set<string>;
   timeRemaining: number;
   totalTime: number;
@@ -56,11 +54,9 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
   const [tabSwitches, setTabSwitches] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
-  const visibilityRef = useRef<any>(null);
 
-  // Mock questions - replace dengan API call
   useEffect(() => {
-    const mockQuestions: Question[] = [
+    const disabledPrototypeQuestions: Question[] = [
       {
         id: "1",
         number: 1,
@@ -106,7 +102,10 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
         marked: false,
       },
     ];
-    setQuestions(mockQuestions);
+    const timer = window.setTimeout(() => {
+      setQuestions(disabledPrototypeQuestions.filter(() => false));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Timer
@@ -151,7 +150,6 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
       }
     };
 
-    visibilityRef.current = handleVisibilityChange;
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [tabSwitches, router]);
@@ -164,7 +162,7 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
           await document.documentElement.requestFullscreen();
           setShowFullscreen(true);
         }
-      } catch (err) {
+      } catch {
         console.log("Fullscreen not supported");
       }
     };
@@ -178,7 +176,7 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
   const seconds = state.timeRemaining % 60;
   const timeWarning = state.timeRemaining < 300;
 
-  const handleAnswer = (answer: any) => {
+  const handleAnswer = (answer: AnswerValue) => {
     const newState = { ...state };
     newState.answers[currentQ.id] = answer;
 
@@ -221,8 +219,19 @@ export default function KerjakanPage({ params }: { params: { sessionId: string }
 
   if (!currentQ) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader className="w-8 h-8 animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 text-center dark:bg-gray-900">
+        <div className="max-w-md space-y-3">
+          <Loader className="mx-auto h-8 w-8 text-gray-400" />
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Sesi ujian belum tersedia
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Modul pengerjaan ujian siswa menunggu API sesi aktif. Data contoh sudah dinonaktifkan agar tidak tampil sebagai data produksi.
+          </p>
+          <Button variant="outline" onClick={() => router.push("/student/ujian")}>
+            Kembali ke daftar ujian
+          </Button>
+        </div>
       </div>
     );
   }

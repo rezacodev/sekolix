@@ -101,12 +101,21 @@ export default function DetailHasilPage({ params }: { params: Promise<{ jadwalId
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/teacher/ujian/hasil/${jadwalId}`)
       .then((r) => r.json())
-      .then((d) => setData(d))
-      .catch(() => toast.error("Gagal memuat data hasil ujian"))
-      .finally(() => setLoading(false));
+      .then((payload) => {
+        if (!cancelled) setData(payload);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Gagal memuat data hasil ujian");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [jadwalId]);
 
   if (loading) {

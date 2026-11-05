@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RoomType, Prisma } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parsePagination } from "@/lib/api/validation";
 
 // GET - List all rooms with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireApiPermission("read", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "0");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const pagination = parsePagination(searchParams);
+    if (!pagination.ok) return pagination.response;
+
     const search = searchParams.get("search") || "";
     const type = searchParams.get("type") || "";
     const is_active = searchParams.get("is_active") || "";
@@ -37,8 +43,8 @@ export async function GET(request: NextRequest) {
     const [data, totalCount] = await Promise.all([
       prisma.room.findMany({
         where,
-        skip: page * pageSize,
-        take: pageSize,
+        skip: pagination.value.skip,
+        take: pagination.value.take,
         orderBy: [
           { building: "asc" },
           { floor: "asc" },
@@ -67,6 +73,9 @@ export async function GET(request: NextRequest) {
 // POST - Create new room
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("create", "akademik.jadwal");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const { code, name, type, floor, building, capacity, facilities, description, is_active } = body;
 

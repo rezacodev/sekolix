@@ -97,25 +97,45 @@ export const authOptions: NextAuthOptions = {
         session.user.staffRole = t.staffRole as "TEACHER" | "STAFF" | undefined;
         session.user.isDualRole = t.isDualRole ?? false;
 
-        // Build CASL ability rules (include DB overrides for STAFF role)
+        // Build ability rules from coarse UserRole + dynamic operational access roles.
         try {
           let overrides: RolePermissionOverride[] = [];
           const role = session.user.role as UserRole;
-          if (role === "STAFF") {
-            const dbOverrides = await (db as any).rolePermission.findMany({
-              where: { role },
-            });
-            overrides = dbOverrides.map((o: any) => ({
-              role: o.role,
-              subject: o.subject,
-              action: o.action,
-              inverted: o.inverted,
-            }));
-          }
-          session.user.abilityRules = buildRules(role, overrides) as object[];
+          const dbOverrides = await db.rolePermission.findMany({ where: { role } });
+          overrides = dbOverrides.map((o) => ({
+            role: o.role,
+            subject: o.subject,
+            action: o.action,
+            inverted: o.inverted,
+          }));
+
+          const accessAssignments = await db.userAccessRole.findMany({
+            where: {
+              user_id: session.user.id,
+              is_active: true,
+              OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
+            },
+            include: { role: { include: { permissions: true } } },
+          });
+
+          session.user.accessRoles = accessAssignments.map((assignment) => ({
+            slug: assignment.role.slug,
+            name: assignment.role.name,
+          }));
+          const accessPermissions = accessAssignments.flatMap((assignment) =>
+            (assignment.role.permissions ?? []).map((permission) => ({
+              roleSlug: assignment.role.slug,
+              subject: permission.subject,
+              action: permission.action,
+              inverted: permission.inverted,
+            }))
+          );
+
+          session.user.abilityRules = buildRules(role, overrides, accessPermissions) as object[];
         } catch (error) {
           console.error("Error building ability rules:", error);
           session.user.abilityRules = [];
+          session.user.accessRoles = [];
         }
       }
       return session;

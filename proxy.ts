@@ -2,13 +2,28 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 // Roles allowed into the admin panel
-const ADMIN_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const ADMIN_ROLES = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
+const FINANCE_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const BK_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const LIBRARY_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const INVENTORY_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const STAFF_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const OFFICE_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const EXTRACURRICULAR_PANEL_ROLES = ["SUPERADMIN", "ADMIN", "STAFF"] as const;
+const INTEGRATION_PANEL_ROLES = ["SUPERADMIN", "ADMIN"] as const;
 // Roles that can access teacher portal
 const TEACHER_ROLES = ["SUPERADMIN", "GURU"] as const;
 // Roles allowed to manage system-level config (integrasi API, backup, dll)
 const SYSTEM_CONFIG_ROLES = ["SUPERADMIN"] as const;
 // System-config routes within admin
-const SYSTEM_CONFIG_PATHS = ["/admin/pengaturan/integrasi-api", "/admin/pengaturan/backup"] as const;
+const SYSTEM_CONFIG_PATHS = [
+  "/admin/pengaturan/integrasi-api",
+  "/admin/pengaturan/backup",
+  "/admin/pengaturan/backup-restore",
+  "/admin/pengaturan/permissions",
+  "/admin/pengaturan/audit-log",
+  "/admin/pengaturan/approval",
+] as const;
 
 // Public-facing paths that never require login
 const PUBLIC_PREFIXES = [
@@ -19,6 +34,8 @@ const PUBLIC_PREFIXES = [
   "/profil",
   "/apply",
   "/api/penerimaan-siswa",
+  "/api/admin/admin-theme",
+  "/api/verify",
 ] as const;
 
 export default withAuth(
@@ -29,7 +46,34 @@ export default withAuth(
 
     // Admin panel routes
     if (pathname.startsWith("/admin")) {
-      if (!role || !ADMIN_ROLES.includes(role as typeof ADMIN_ROLES[number])) {
+      const financePanelAccess =
+        pathname.startsWith("/admin/keuangan") &&
+        FINANCE_PANEL_ROLES.includes(role as typeof FINANCE_PANEL_ROLES[number]);
+      const bkPanelAccess =
+        pathname.startsWith("/admin/bk") &&
+        BK_PANEL_ROLES.includes(role as typeof BK_PANEL_ROLES[number]);
+      const libraryPanelAccess =
+        pathname.startsWith("/admin/perpustakaan") &&
+        LIBRARY_PANEL_ROLES.includes(role as typeof LIBRARY_PANEL_ROLES[number]);
+      const inventoryPanelAccess =
+        pathname.startsWith("/admin/inventaris") &&
+        INVENTORY_PANEL_ROLES.includes(role as typeof INVENTORY_PANEL_ROLES[number]);
+      const staffPanelAccess =
+        pathname.startsWith("/admin/pegawai") &&
+        STAFF_PANEL_ROLES.includes(role as typeof STAFF_PANEL_ROLES[number]);
+      const officePanelAccess =
+        pathname.startsWith("/admin/tata-usaha") &&
+        OFFICE_PANEL_ROLES.includes(role as typeof OFFICE_PANEL_ROLES[number]);
+      const extracurricularPanelAccess =
+        pathname.startsWith("/admin/ekstrakurikuler") &&
+        EXTRACURRICULAR_PANEL_ROLES.includes(role as typeof EXTRACURRICULAR_PANEL_ROLES[number]);
+      const integrationPanelAccess =
+        pathname.startsWith("/admin/integrasi-data") &&
+        INTEGRATION_PANEL_ROLES.includes(role as typeof INTEGRATION_PANEL_ROLES[number]);
+      if (!role || (!financePanelAccess && !bkPanelAccess && !libraryPanelAccess && !inventoryPanelAccess && !staffPanelAccess && !officePanelAccess && !extracurricularPanelAccess && !integrationPanelAccess && !ADMIN_ROLES.includes(role as typeof ADMIN_ROLES[number]))) {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+      if (pathname.startsWith("/admin/integrasi-data") && !integrationPanelAccess) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
 
@@ -95,6 +139,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest|json|css|js|map|txt|xml)$).*)",
   ]
 };

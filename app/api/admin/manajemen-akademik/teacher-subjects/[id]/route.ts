@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const access = await requireApiPermission("read", "akademik.mata-pelajaran");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     const teacherSubject = await prisma.teacherSubject.findUnique({
-      where: { id: BigInt(id), deleted_at: null },
+      where: { id: parsedId.value, deleted_at: null },
       include: {
         teacher: { select: { id: true, name: true, nip: true, email: true } },
         subject: {
@@ -54,9 +62,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("delete", "akademik.mata-pelajaran");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
+    const parsedId = parseBigInt(id);
+    if (!parsedId.ok) return parsedId.response;
+
     await prisma.teacherSubject.update({
-      where: { id: BigInt(id) },
+      where: { id: parsedId.value },
       data: { deleted_at: new Date() }
     });
 

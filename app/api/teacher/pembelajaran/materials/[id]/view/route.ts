@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt } from "@/lib/api/validation";
 
 // POST - Increment view count
 export async function POST(
@@ -7,11 +9,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const access = await requireApiPermission("read", "teacher.portal");
+    if (!access.ok) return access.response;
+
     const { id } = await params;
-    const materialId = BigInt(id);
+    const parsedMaterialId = parseBigInt(id);
+    if (!parsedMaterialId.ok) return parsedMaterialId.response;
 
     await prisma.teachingMaterial.update({
-      where: { id: materialId },
+      where: { id: parsedMaterialId.value },
       data: {
         views: {
           increment: 1,

@@ -1,0 +1,6 @@
+-- Sync UserRole enum with application roles used by auth, permissions, and seeds.
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'SUPERADMIN';
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'GURU';
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'STAFF';
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'MURID';
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'ORANGTUA';

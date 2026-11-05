@@ -14,37 +14,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // TODO: Query database for user notifications
-    // For now, return mock data
-
-    const mockNotifications = [
-      {
-        id: "1",
-        type: "info",
-        title: "Tugas Baru",
-        message: 'Tugas baru: "Essay: Dampak Globalisasi" di XI IPA 1',
-        action: {
-          label: "Lihat Tugas",
-          href: "/student/kelas/kelas-1/tugas",
-        },
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        type: "success",
-        title: "Nilai Keluar",
-        message: 'Nilai untuk "Quiz Matematika" sudah diumumkan. Skor: 92/100',
-        action: {
-          label: "Lihat Nilai",
-          href: "/student/nilai",
-        },
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-      },
-    ];
-
     return NextResponse.json({
       success: true,
-      data: mockNotifications,
+      data: [],
     });
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
@@ -69,12 +41,9 @@ export async function POST(req: NextRequest) {
   try {
     const { event, data } = await req.json();
 
-    // TODO: Save notification to database
-    // For now, just validate and return success
-
     return NextResponse.json({
       success: true,
-      message: "Notification created",
+      message: "Notification accepted",
       event,
       data,
     });

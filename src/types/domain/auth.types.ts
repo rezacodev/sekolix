@@ -25,6 +25,7 @@ export interface AuthSession {
   user?: AuthUser & {
     id: string;
     role: UserRole;
+    accessRoles?: Array<{ slug: string; name: string }>;
   };
   expires?: string;
 }

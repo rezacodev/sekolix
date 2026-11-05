@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { requireApiPermission } from "@/lib/api/guards";
+import { parseBigInt, parsePagination } from "@/lib/api/validation";
 
 const prisma = new PrismaClient();
 
@@ -12,9 +14,13 @@ const createSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const access = await requireApiPermission("read", "akademik.mata-pelajaran");
+  if (!access.ok) return access.response;
+
   const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "0");
-  const pageSize = parseInt(searchParams.get("pageSize") || "10");
+  const pagination = parsePagination(searchParams);
+  if (!pagination.ok) return pagination.response;
+
   const teacher_id = searchParams.get("teacher_id");
   const subject_id = searchParams.get("subject_id");
   const class_id = searchParams.get("class_id");
@@ -28,9 +34,21 @@ export async function GET(request: NextRequest) {
     deleted_at: null;
   } = { deleted_at: null };
   if (teacher_id) where.teacher_id = teacher_id;
-  if (subject_id) where.subject_id = BigInt(subject_id);
-  if (class_id) where.class_id = BigInt(class_id);
-  if (rombel_id) where.rombel_id = BigInt(rombel_id);
+  if (subject_id) {
+    const parsed = parseBigInt(subject_id, "subject_id");
+    if (!parsed.ok) return parsed.response;
+    where.subject_id = parsed.value;
+  }
+  if (class_id) {
+    const parsed = parseBigInt(class_id, "class_id");
+    if (!parsed.ok) return parsed.response;
+    where.class_id = parsed.value;
+  }
+  if (rombel_id) {
+    const parsed = parseBigInt(rombel_id, "rombel_id");
+    if (!parsed.ok) return parsed.response;
+    where.rombel_id = parsed.value;
+  }
 
   const [data, totalCount] = await Promise.all([
     prisma.teacherSubject.findMany({
@@ -44,8 +62,8 @@ export async function GET(request: NextRequest) {
           select: { id: true, name: true }
         }
       },
-      skip: page * pageSize,
-      take: pageSize,
+      skip: pagination.value.skip,
+      take: pagination.value.take,
       orderBy: { created_at: "desc" }
     }),
     prisma.teacherSubject.count({ where })
@@ -72,6 +90,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireApiPermission("create", "akademik.mata-pelajaran");
+    if (!access.ok) return access.response;
+
     const body = await request.json();
     const validated = createSchema.parse(body);
 
